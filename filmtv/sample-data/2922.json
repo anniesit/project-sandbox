@@ -1,0 +1,21 @@
+{
+  "counts": { "articles": 10390, "books": 1935 },
+  "imageBase": "",
+  "items": [
+    { "id": "FMP-120504", "isPost": "2922", "journal": "多情河歌集", "journalIssue": null, "datePublished": "1957-01-01", "year": "1957", "title": "多情河歌集", "section": null, "author": null, "page": "1", "type": "14", "image": "2922_001.jpg", "href": "#" },
+    { "id": "FMP-120505", "isPost": "2922", "journal": "多情河歌集", "journalIssue": null, "datePublished": "1957-01-01", "year": "1957", "title": "多情河", "section": null, "author": "李雋青---姚敏", "page": "1", "type": "9", "image": "2922_002.jpg", "href": "#" },
+    { "id": "FMP-120506", "isPost": "2922", "journal": "多情河歌集", "journalIssue": null, "datePublished": "1957-01-01", "year": "1957", "title": "河上相思", "section": null, "author": "司徒明---姚敏", "page": "2", "type": "9", "image": "2922_003.jpg", "href": "#" },
+    { "id": "FMP-120507", "isPost": "2922", "journal": "多情河歌集", "journalIssue": null, "datePublished": "1957-01-01", "year": "1957", "title": "歌唱姻緣", "section": null, "author": "李雋青---姚敏", "page": "3", "type": "9", "image": "2922_004.jpg", "href": "#" },
+    { "id": "FMP-120508", "isPost": "2922", "journal": "多情河歌集", "journalIssue": null, "datePublished": "1957-01-01", "year": "1957", "title": "種田歌", "section": null, "author": "李雋青---姚敏", "page": "4", "type": "9", "image": "2922_005.jpg", "href": "#" },
+    { "id": "FMP-120509", "isPost": "2922", "journal": "多情河歌集", "journalIssue": null, "datePublished": "1957-01-01", "year": "1957", "title": "摸泥鰍", "section": null, "author": "李雋青---姚敏", "page": "5", "type": "9", "image": "2922_006.jpg", "href": "#" },
+    { "id": "FMP-120510", "isPost": "2922", "journal": "多情河歌集", "journalIssue": null, "datePublished": "1957-01-01", "year": "1957", "title": "辦嫁粧", "section": null, "author": "李雋青---姚敏", "page": "6", "type": "9", "image": "2922_007.jpg", "href": "#" },
+    { "id": "FMP-120511", "isPost": "2922", "journal": "多情河歌集", "journalIssue": null, "datePublished": "1957-01-01", "year": "1957", "title": "假意真情", "section": null, "author": "李雋青---姚敏", "page": "7", "type": "9", "image": "2922_008.jpg", "href": "#" },
+    { "id": "FMP-120512", "isPost": "2922", "journal": "多情河歌集", "journalIssue": null, "datePublished": "1957-01-01", "year": "1957", "title": "等情郎", "section": null, "author": "李雋青---姚敏", "page": "8", "type": "9", "image": "2922_009.jpg", "href": "#" },
+    { "id": "FMP-120513", "isPost": "2922", "journal": "多情河歌集", "journalIssue": null, "datePublished": "1957-01-01", "year": "1957", "title": "小妹妹的心", "section": null, "author": "李雋青---王福齡", "page": "9", "type": "9", "image": "2922_010.jpg", "href": "#" },
+    { "id": "FMP-120514", "isPost": "2922", "journal": "多情河歌集", "journalIssue": null, "datePublished": "1957-01-01", "year": "1957", "title": "表錯情", "section": null, "author": "李雋青---王福齡", "page": "10", "type": "9", "image": "2922_011.jpg", "href": "#" },
+    { "id": "FMP-120515", "isPost": "2922", "journal": "多情河歌集", "journalIssue": null, "datePublished": "1957-01-01", "year": "1957", "title": "多情河本事", "section": null, "author": null, "page": "11", "type": "21", "image": "2922_012.jpg", "href": "#" },
+    { "id": "FMP-120516", "isPost": "2922", "journal": "多情河歌集", "journalIssue": null, "datePublished": "1957-01-01", "year": "1957", "title": "人物介紹", "section": null, "author": null, "page": "12", "type": "6", "image": "2922_013.jpg---2922_014.jpg", "href": "#" },
+    { "id": "FMP-120517", "isPost": "2922", "journal": "多情河歌集", "journalIssue": null, "datePublished": "1957-01-01", "year": "1957", "title": "你想什麽", "section": null, "author": "李雋青---王福齡", "page": "14", "type": "9", "image": "2922_015.jpg", "href": "#" },
+    { "id": "FMP-120518", "isPost": "2922", "journal": "多情河歌集", "journalIssue": null, "datePublished": "1957-01-01", "year": "1957", "title": "新片預告 國語歌唱片", "section": null, "author": null, "page": "15", "type": "14", "image": "2922_016.jpg", "href": "#" }
+  ]
+}
