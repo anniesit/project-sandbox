@@ -1,6 +1,6 @@
 {
   "counts": { "articles": 10390, "books": 1935 },
-  "imageBase": "https://storage.lib.hkbu.edu.hk/filmpamphlet/Image/2922/",
+  "imageBase": "https://storage.lib.hkbu.edu.hk/filmpamphlet/Thumbnail/2922/",
   "items": [
     { "id": "FMP-120504", "isPost": "2922", "journal": "多情河歌集", "journalIssue": null, "datePublished": "1957-01-01", "year": "1957", "title": "多情河歌集", "section": null, "author": null, "page": "1", "type": "14", "image": "2922_001.jpg", "href": "#" },
     { "id": "FMP-120505", "isPost": "2922", "journal": "多情河歌集", "journalIssue": null, "datePublished": "1957-01-01", "year": "1957", "title": "多情河", "section": null, "author": "李雋青---姚敏", "page": "1", "type": "9", "image": "2922_002.jpg", "href": "#" },
