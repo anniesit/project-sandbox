@@ -396,15 +396,22 @@
   }
 
   /* ---------- composition ---------- */
-  // Article publication line = journal › issue  (date lives in [data-field=book-date]).
+  // "25" -> "第25期"; leaves an already-formatted issue untouched; empty -> "".
+  function formatIssue(issue) {
+    if (issue == null || String(issue).trim() === "") return "";
+    var s = String(issue).trim();
+    return /期/.test(s) ? s : "第" + s + "期";
+  }
+  // Article publication line = journal › 第N期  (date lives in [data-field=book-date]).
   function articlePublication(item) {
     var s = item.journal || "";
-    if (item.journalIssue) s += " › " + item.journalIssue;
+    var iss = formatIssue(item.journalIssue);
+    if (iss) s += " › " + iss;
     return s;
   }
-  // Book/issue title = journal (+ issue if present).
+  // Book/issue title = journal + 第N期 (when present).
   function bookTitle(item) {
-    return (item.journal || "") + (item.journalIssue ? item.journalIssue : "");
+    return (item.journal || "") + formatIssue(item.journalIssue);
   }
   function typeInfo(code) {
     if (code == null || String(code).trim() === "") return null;
