@@ -385,7 +385,11 @@
       this.onerror = null;
       this.src = placeholder();
     };
-    img.src = imageBase && file ? imageBase + file : placeholder();
+    // image may be a full URL (current sample/backend) or a filename to prefix
+    // with imageBase. Absolute URL -> use as-is; otherwise imageBase + file.
+    var src = "";
+    if (file) src = /^https?:\/\//.test(file) ? file : (imageBase || "") + file;
+    img.src = src || placeholder();
   }
 
   function placeholder() {
