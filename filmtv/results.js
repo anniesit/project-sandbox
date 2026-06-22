@@ -1,47 +1,38 @@
 /* ============================================================
- * results.js — Film/TV publication search-results renderer
+ * results.js — Film/TV publication search-results RENDERER
  *
- * Webflow authors the markup (one visible template per list, with
- * data-* hooks). This script fetches ONE data URL, hides each
- * template, and renders cloned + filled copies. Sample JSON now;
- * backend swaps DATA_URL later (same JSON shape).
+ * Ownership split:
+ *   - results.js (this file) owns the VISUAL: rendering data into the
+ *     Webflow templates + the view toggle (article <-> book).
+ *   - The backend integration owns the STATE: fetching, the loading
+ *     spinner, pagination, and result limits. It calls render() with
+ *     each page of data; this file does not paginate or manage loading.
  *
- * - Dependency-free, multi-instance safe (scoped to each [data-results]).
- * - Never writes inline styles. Toggles classes / data-* / native
- *   attributes only. All styling lives in Webflow (DS tokens).
+ * Integration API (global):
+ *   window.filmtvResults.render(rootEl, { items, counts, imageBase })
+ *     rootEl  : the [data-results] element (or omit to render all)
+ *     items   : array for the CURRENT page (book view groups them by isPost)
+ *     counts  : { articles, books } for the toggle (optional; else computed)
+ *     imageBase: optional prefix when items carry filenames (else full URLs)
+ *   window.filmtvResults.setView(rootEl, "article" | "book")
  *
- * data-* contract (revised to match the Webflow build):
- *   [data-results]                     init root; carries data-view state
- *   [data-view-btn=article|book]       toggle buttons (aria-pressed, cc-active)
- *   [data-count=article|book]          <- counts.{articles,books} (fallback: computed)
- *   [data-dropdown] (sort)             DS single-select dropdown
- *     input[name="sort"][data-sort]      holds chosen value ("year"|"title")
- *     [data-dropdown-option][data-value]  options
- *   [data-view-panel=article|book]     view container (grid)
+ * A thin self-fetch of DATA_URL runs only as the MOCK driver; the backend
+ * can remove it and call render() directly.
  *
- *   ARTICLE template: [data-tpl=article-card]
- *     img[data-field=thumbnail]        <- imageBase + image (first of "a---b")
- *     [data-field=publication]         <- journal › journalIssue  (LEAF node only)
- *     [data-field=book-date]           <- datePublished; empty -> hide its "(…)" wrapper
- *     [data-field=title]               <- title; empty -> "無標題"
- *     [data-field=section|author|page] <- value only; empty -> hide its row + label (closest li)
- *     [data-field=article-type]        <- ARTICLE_TYPES[code].label + colour variant
- *                                         class (is-film/-cultural/-comm/-other); empty -> hide
+ * - Dependency-free, multi-instance safe. Never writes inline element styles.
+ *   (It injects ONE <style> rule at runtime for view-panel visibility — see
+ *   injectViewCss; this keeps the Designer canvas showing both panels.)
  *
- *   BOOK template: [data-tpl=book-row]   (one per isPost group)
- *     img[data-field=cover]            <- group cover image
- *     [data-field=publication]         <- journal (book/issue title)   (LEAF node only)
- *     [data-field=book-date]           <- datePublished; empty -> hide the date row
- *     .book-article-list > (item tpl = first .book-row-article)  "section ｜ title" + tag
- *       [data-field=section]           <- article section (empty -> hidden)
- *       [data-field=title]             <- article title  (empty -> hidden; if section ALSO
- *                                         empty -> "無標題"); .pipe hidden unless both present
- *       [data-field=article-type]      <- type tag (label + variant; empty -> hide)
- *   [data-chart]                       deferred mount point (untouched)
- *
- * NOTE: "publication" appears on >1 element in the article card; we only
- * write LEAF nodes (no nested [data-field]) so the "(date)" wrapper that
- * holds [data-field=book-date] is never clobbered.
+ * data-* contract: see the Webflow build. Field hooks:
+ *   [data-tpl=article-card] / [data-tpl=book-row]   (templates; may be <template> tags)
+ *   img[data-field=thumbnail|cover]
+ *   [data-field=publication]   journal › 第N期 (book: journal+第N期) — LEAF nodes only
+ *   [data-field=book-date]     datePublished; empty -> hide its wrapper
+ *   [data-field=title]         empty -> "無標題" (book article: only if section also empty)
+ *   [data-field=section|author|page]  value only; empty -> hide its row + label
+ *   [data-field=article-type]  ARTICLE_TYPES[code] -> label + colour variant; empty -> hide
+ *   .book-article-list > .book-row-article  (nested article template = first one)
+ *   [data-view-toggle] / [data-view-btn] / [data-count] / [data-view-panel]
  * ============================================================ */
 (function () {
   "use strict";
@@ -53,17 +44,13 @@
       return s ? s.src : window.location.href;
     })();
 
-  /* >>> SINGLE SWAP POINT <<< replace with the live API URL (same JSON shape). */
+  /* >>> MOCK DATA URL <<< the backend replaces this (or removes the self-fetch
+     and calls render() directly with live, paginated data). */
   var DATA_URL = new URL("./sample-data/2922.json", SELF).href;
 
-  /* Article-type code -> { label, variant }. Sourced from the "文章類別"
-     filter accordion in Webflow; the 3 dividers split the list into 4 colour
-     groups (is-film / is-cultural / is-comm / is-other). Keep in sync with
-     that accordion (single source of truth).
-     NOTE: code "1" is duplicated in the accordion (廣告、優惠券 AND
-     雜誌表格…); mapped here to the first. Give one a unique code upstream. */
+  /* Article-type code -> { label, variant }. Sourced from the "文章類別" filter
+     accordion (the 3 dividers split it into 4 colour groups). Single source of truth. */
   var ARTICLE_TYPES = {
-    // is-film
     "21": { label: "電影故事、小說、本事", variant: "is-film" },
     "19": { label: "電影對白、劇本、分鏡大綱", variant: "is-film" },
     "9":  { label: "歌詞、歌譜", variant: "is-film" },
@@ -76,7 +63,6 @@
     "11": { label: "電視節目表、活動日程", variant: "is-film" },
     "18": { label: "職員表、演員表、人物表", variant: "is-film" },
     "32": { label: "作品年表", variant: "is-film" },
-    // is-cultural
     "13": { label: "編輯的話、讀者來信、序言、後記", variant: "is-cultural" },
     "15": { label: "唱片、音樂資訊及評論", variant: "is-cultural" },
     "28": { label: "文學創作、書摘", variant: "is-cultural" },
@@ -85,13 +71,11 @@
     "7":  { label: "消閒讀物、資訊讀物、教學文章", variant: "is-cultural" },
     "17": { label: "插畫、漫畫、小遊戲", variant: "is-cultural" },
     "29": { label: "辭典、詞條", variant: "is-cultural" },
-    // is-comm
     "23": { label: "公司通訊、資料", variant: "is-comm" },
     "16": { label: "產品、商鋪", variant: "is-comm" },
     "1":  { label: "廣告、優惠券", variant: "is-comm" },
     "12": { label: "抽獎得獎名單", variant: "is-comm" },
     "10": { label: "雜誌表格、意見調查表格、報名表格", variant: "is-comm" },
-    // is-other
     "3":  { label: "目錄、內容、片目索引", variant: "is-other" },
     "14": { label: "封面、封底、版權頁", variant: "is-other" },
     "2":  { label: "照片集", variant: "is-other" },
@@ -102,12 +86,30 @@
   };
   var TYPE_VARIANT_CLASSES = ["is-film", "is-cultural", "is-comm", "is-other"];
 
+  /* ---------- bootstrap ---------- */
   ready(function () {
+    injectViewCss();
     var roots = document.querySelectorAll("[data-results]");
-    for (var i = 0; i < roots.length; i++) initResults(roots[i]);
+    for (var i = 0; i < roots.length; i++) {
+      initToggle(roots[i]);
+      mockFetch(roots[i]); // MOCK driver only; backend calls render() instead
+    }
   });
 
-  function initResults(root) {
+  // Runtime-only rule so the inactive view-panel is hidden even though the
+  // panels are CSS grids (`.u-grid` would beat `[u-d="none"]`). Injected by JS,
+  // so the Designer canvas (no JS) keeps both panels visible for editing.
+  function injectViewCss() {
+    if (document.getElementById("filmtv-results-css")) return;
+    var st = document.createElement("style");
+    st.id = "filmtv-results-css";
+    st.textContent =
+      '[data-results][data-view="article"] [data-view-panel="book"],' +
+      '[data-results][data-view="book"] [data-view-panel="article"]{display:none !important}';
+    (document.head || document.documentElement).appendChild(st);
+  }
+
+  function mockFetch(root) {
     var url = root.getAttribute("data-src") || DATA_URL;
     fetch(url, { credentials: "omit" })
       .then(function (r) {
@@ -115,186 +117,163 @@
         return r.json();
       })
       .then(function (data) {
-        setup(root, data || {});
+        renderResults(root, data || {});
       })
       .catch(function (err) {
-        console.error("[results] failed to load " + url + ":", err);
+        console.error("[results] mock load failed (" + url + "):", err);
       });
   }
 
-  function setup(root, data) {
-    var items = Array.isArray(data.items) ? data.items : [];
-    var imageBase = data.imageBase || "";
-
-    var articleTpl = root.querySelector('[data-tpl="article-card"]');
-    var bookTpl = root.querySelector('[data-tpl="book-row"]');
-    if (!articleTpl && !bookTpl) {
-      console.warn("[results] no templates under [data-results]");
-      return;
-    }
-    // Cache pristine templates, then hide the originals so only clones show
-    // at runtime (in the Designer there is no JS, so the static template stays
-    // visible for QC).
-    var articleHost = articleTpl ? articleTpl.parentNode : null;
-    var articlePristine = articleTpl ? articleTpl.cloneNode(true) : null;
-    if (articleTpl) articleTpl.setAttribute("u-d", "none");
-
-    var bookHost = bookTpl ? bookTpl.parentNode : null;
-    var bookPristine = bookTpl ? bookTpl.cloneNode(true) : null;
-    if (bookTpl) bookTpl.setAttribute("u-d", "none");
-
-    var sortKey = currentSort(root);
-
-    function buildCard(item) {
-      var card = articlePristine.cloneNode(true);
-      activate(card);
-      if (item.href) card.setAttribute("href", item.href);
-      setImg(card.querySelector('[data-field="thumbnail"]'), item.image, imageBase, item.title);
-      setLeafField(card, "publication", articlePublication(item)); // journal › issue
-      setDate(card, item.datePublished);          // the "(date)" span; hides wrapper if empty
-      setTitle(card, item.title);                 // 無標題 fallback
-      setMeta(card, "section", formatList(item.section));
-      setMeta(card, "author", formatList(item.author));
-      setMeta(card, "page", item.page);
-      setArticleType(card, item.type);            // label + colour variant; hides if empty
-      return card;
-    }
-
-    function buildBookRow(group) {
-      var first = group.items[0] || {};
-      var row = bookPristine.cloneNode(true);
-      activate(row);
-      setImg(row.querySelector('[data-field="cover"]'), first.image, imageBase, first.journal);
-      setLeafField(row, "publication", bookTitle(first)); // book/issue title
-      setDate(row, first.datePublished);                  // hides the date row if empty
-      renderBookArticles(row, group.items);
-      return row;
-    }
-
-    // Nested article list inside a book row (the hooked .book-article-list).
-    function renderBookArticles(row, articles) {
-      var list = row.querySelector(".book-article-list");
-      if (!list) return;
-      var article0 = list.querySelector(".book-row-article");
-      if (!article0) return;
-      var liTpl = article0.closest("li") || article0;
-      var liHost = liTpl.parentNode;
-      while (liHost.firstChild) liHost.removeChild(liHost.firstChild); // drop static demo rows
-      for (var i = 0; i < articles.length; i++) {
-        var li = liTpl.cloneNode(true);
-        fillBookArticle(li, articles[i]);
-        liHost.appendChild(li);
-      }
-    }
-
-    // A nested book article shows "section ｜ title" + a type tag.
-    // both empty -> "無標題"; only one -> show it (hide the pipe); type empty -> hide tag.
-    function fillBookArticle(li, a) {
-      var sectionEl = leaf(li, "section");
-      var titleEl = leaf(li, "title");
-      var pipe = li.querySelector(".pipe-wrap, .pipe");
-      var section = formatList(a.section);
-      var title = a.title == null ? "" : String(a.title);
-      var hasSection = section.trim() !== "";
-      var hasTitle = title.trim() !== "";
-
-      if (sectionEl) toggle(sectionEl, hasSection, section);
-      if (titleEl) {
-        if (hasTitle) toggle(titleEl, true, title);
-        else if (!hasSection) toggle(titleEl, true, "無標題"); // both empty
-        else toggle(titleEl, false, ""); // section only
-      }
-      if (pipe) toggle(pipe, hasSection && hasTitle, null);
-      setArticleType(li, a.type);
-      var link = li.querySelector("a[href]");
-      if (link && a.href) link.setAttribute("href", a.href);
-    }
-
-    function renderArticles() {
-      if (!articleTpl) return;
-      removeClones(articleHost);
-      var ordered = sortItems(items, sortKey);
-      var frag = document.createDocumentFragment();
-      for (var i = 0; i < ordered.length; i++) frag.appendChild(buildCard(ordered[i]));
-      articleHost.appendChild(frag);
-    }
-
-    function renderBooks() {
-      if (!bookTpl) return;
-      removeClones(bookHost);
-      var groups = groupBy(sortItems(items, sortKey), "isPost");
-      var frag = document.createDocumentFragment();
-      for (var i = 0; i < groups.length; i++) frag.appendChild(buildBookRow(groups[i]));
-      bookHost.appendChild(frag);
-    }
-
-    function setCounts() {
-      var c = data.counts || {};
-      var aCount = c.articles != null ? c.articles : items.length;
-      var bCount = c.books != null ? c.books : groupBy(items, "isPost").length;
-      setAll(root, '[data-count="article"]', formatNum(aCount));
-      setAll(root, '[data-count="book"]', formatNum(bCount));
-    }
-
-    function setView(view) {
-      root.setAttribute("data-view", view);
-      var btns = root.querySelectorAll("[data-view-btn]");
-      for (var i = 0; i < btns.length; i++) {
-        var on = btns[i].getAttribute("data-view-btn") === view;
-        btns[i].setAttribute("aria-pressed", on ? "true" : "false");
-        btns[i].classList.toggle("cc-active", on);
-      }
-      var panels = root.querySelectorAll("[data-view-panel]");
-      for (var j = 0; j < panels.length; j++) {
-        var show = panels[j].getAttribute("data-view-panel") === view;
-        if (show) panels[j].removeAttribute("u-d");
-        else panels[j].setAttribute("u-d", "none");
-      }
-    }
-
-    function reorder() {
-      sortKey = currentSort(root);
-      renderArticles();
-      renderBooks();
-    }
-
-    // Toggle (delegated)
+  /* ---------- view toggle (visual; no data) ---------- */
+  function initToggle(root) {
     root.addEventListener("click", function (e) {
       var btn = e.target.closest ? e.target.closest("[data-view-btn]") : null;
       if (btn && root.contains(btn)) {
         e.preventDefault();
-        setView(btn.getAttribute("data-view-btn"));
+        setView(root, btn.getAttribute("data-view-btn"));
       }
     });
-
-    // Sort — DS single-select dropdown writes its value to input[name="sort"].
-    var sortInput = root.querySelector('[name="sort"]');
-    if (sortInput) sortInput.addEventListener("change", reorder);
-    var sortDropdown = root.querySelector("[data-dropdown]");
-    if (sortDropdown) {
-      sortDropdown.addEventListener("click", function (e) {
-        if (e.target.closest && e.target.closest("[data-dropdown-option]")) {
-          window.setTimeout(reorder, 0);
-        }
-      });
-    }
-
-    renderArticles();
-    renderBooks();
-    setCounts();
-    setView(root.getAttribute("data-view") || "article");
+    setView(root, root.getAttribute("data-view") || "article");
   }
 
-  /* ---------- field helpers ---------- */
+  function setView(root, view) {
+    root.setAttribute("data-view", view);
+    var btns = root.querySelectorAll("[data-view-btn]");
+    for (var i = 0; i < btns.length; i++) {
+      var on = btns[i].getAttribute("data-view-btn") === view;
+      btns[i].setAttribute("aria-pressed", on ? "true" : "false");
+      btns[i].classList.toggle("cc-active", on);
+    }
+  }
+
+  /* ---------- renderer (backend calls this per page) ---------- */
+  function renderResults(root, data) {
+    if (!root) {
+      var all = document.querySelectorAll("[data-results]");
+      for (var n = 0; n < all.length; n++) renderResults(all[n], data);
+      return;
+    }
+    data = data || {};
+    var items = Array.isArray(data.items) ? data.items : [];
+    var imageBase = data.imageBase || "";
+
+    var aTplEl = root.querySelector('[data-tpl="article-card"]');
+    var bTplEl = root.querySelector('[data-tpl="book-row"]');
+
+    if (aTplEl) {
+      var aTpl = tplSource(aTplEl), aHost = aTplEl.parentNode;
+      hideTemplate(aTplEl);
+      removeClones(aHost);
+      var af = document.createDocumentFragment();
+      for (var i = 0; i < items.length; i++) af.appendChild(buildCard(aTpl, items[i], imageBase));
+      aHost.appendChild(af);
+    }
+    if (bTplEl) {
+      var bTpl = tplSource(bTplEl), bHost = bTplEl.parentNode;
+      hideTemplate(bTplEl);
+      removeClones(bHost);
+      var groups = groupBy(items, "isPost");
+      var bf = document.createDocumentFragment();
+      for (var g = 0; g < groups.length; g++) bf.appendChild(buildBookRow(bTpl, groups[g], imageBase));
+      bHost.appendChild(bf);
+    }
+    setCounts(root, data, items);
+  }
+
+  function setCounts(root, data, items) {
+    var c = data.counts || {};
+    var aCount = c.articles != null ? c.articles : items.length;
+    var bCount = c.books != null ? c.books : groupBy(items, "isPost").length;
+    setAll(root, '[data-count="article"]', formatNum(aCount));
+    setAll(root, '[data-count="book"]', formatNum(bCount));
+  }
+
+  /* ---------- builders ---------- */
+  function buildCard(tpl, item, imageBase) {
+    var card = tpl.cloneNode(true);
+    activate(card);
+    if (item.href) card.setAttribute("href", item.href);
+    setImg(card.querySelector('[data-field="thumbnail"]'), item.image, imageBase, item.title);
+    setLeafField(card, "publication", articlePublication(item));
+    setDate(card, item.datePublished);
+    setTitle(card, item.title);
+    setMeta(card, "section", formatList(item.section));
+    setMeta(card, "author", formatList(item.author));
+    setMeta(card, "page", item.page);
+    setArticleType(card, item.type);
+    return card;
+  }
+
+  function buildBookRow(tpl, group, imageBase) {
+    var first = group.items[0] || {};
+    var row = tpl.cloneNode(true);
+    activate(row);
+    setImg(row.querySelector('[data-field="cover"]'), first.image, imageBase, first.journal);
+    setLeafField(row, "publication", bookTitle(first));
+    setDate(row, first.datePublished);
+    renderBookArticles(row, group.items);
+    return row;
+  }
+
+  // Nested article list inside a book row (.book-article-list). The first
+  // .book-row-article's <li> is the template; the rest (static demo) are dropped.
+  function renderBookArticles(row, articles) {
+    var list = row.querySelector(".book-article-list");
+    if (!list) return;
+    var article0 = list.querySelector(".book-row-article");
+    if (!article0) return;
+    var liTpl = article0.closest("li") || article0;
+    var liHost = liTpl.parentNode;
+    while (liHost.firstChild) liHost.removeChild(liHost.firstChild);
+    for (var i = 0; i < articles.length; i++) {
+      var li = liTpl.cloneNode(true);
+      fillBookArticle(li, articles[i]);
+      liHost.appendChild(li);
+    }
+  }
+
+  // "section ｜ title" + type tag. both empty -> "無標題"; only one -> show it
+  // (hide the pipe); type empty -> hide tag.
+  function fillBookArticle(li, a) {
+    var sectionEl = leaf(li, "section");
+    var titleEl = leaf(li, "title");
+    var pipe = li.querySelector(".pipe-wrap, .pipe");
+    var section = formatList(a.section);
+    var title = a.title == null ? "" : String(a.title);
+    var hasSection = section.trim() !== "";
+    var hasTitle = title.trim() !== "";
+
+    if (sectionEl) toggle(sectionEl, hasSection, section);
+    if (titleEl) {
+      if (hasTitle) toggle(titleEl, true, title);
+      else if (!hasSection) toggle(titleEl, true, "無標題");
+      else toggle(titleEl, false, "");
+    }
+    if (pipe) toggle(pipe, hasSection && hasTitle, null);
+    setArticleType(li, a.type);
+    var link = li.querySelector("a[href]");
+    if (link && a.href) link.setAttribute("href", a.href);
+  }
+
+  /* ---------- template helpers ---------- */
+  // Accept either a normal element template or a <template> tag. NOTE: when
+  // using <template>, put data-tpl on the <template> element itself (its inner
+  // content is not reachable via the page's querySelector).
+  function tplSource(el) {
+    if (el && el.content && el.content.firstElementChild) return el.content.firstElementChild;
+    return el;
+  }
+  function hideTemplate(el) {
+    if (el.tagName === "TEMPLATE") return; // inert already, nothing rendered
+    el.setAttribute("u-d", "none");
+  }
   function activate(node) {
     node.removeAttribute("u-d");
     node.removeAttribute("data-tpl");
     node.setAttribute("data-clone", "");
   }
 
-  // Return only LEAF [data-field=name] nodes (no nested [data-field]),
-  // so wrapper nodes that contain another field (e.g. the "(date)" block)
-  // are never overwritten.
+  /* ---------- field helpers ---------- */
   function leafFields(scope, name) {
     var all = scope.querySelectorAll('[data-field="' + name + '"]');
     var out = [];
@@ -303,50 +282,34 @@
     }
     return out;
   }
-
-  function setLeafField(scope, name, value) {
-    var els = leafFields(scope, name);
-    for (var i = 0; i < els.length; i++) {
-      els[i].textContent = value == null ? "" : String(value);
-    }
-  }
-
   function leaf(scope, name) {
     return leafFields(scope, name)[0] || null;
   }
-
-  // Show (and set text) or hide an element via the u-d="none" attribute.
+  function setLeafField(scope, name, value) {
+    var els = leafFields(scope, name);
+    for (var i = 0; i < els.length; i++) els[i].textContent = value == null ? "" : String(value);
+  }
   function toggle(el, show, text) {
     if (!el) return;
     if (show) {
       if (text != null) el.textContent = text;
       el.removeAttribute("u-d");
-    } else {
-      el.setAttribute("u-d", "none");
-    }
+    } else el.setAttribute("u-d", "none");
   }
-
-  // Main heading: always shown, "無標題" when title is empty.
   function setTitle(scope, title) {
     var el = leaf(scope, "title");
     if (el) el.textContent = title && String(title).trim() ? String(title) : "無標題";
   }
-
-  // book-date value sits inside a wrapper (the "(…)" block on the card, or the
-  // "出版日期：" row in the book). Empty -> hide the whole wrapper (label included).
   function setDate(scope, date) {
     var el = leaf(scope, "book-date");
     if (!el) return;
     var wrap = el.parentElement || el;
-    if (date == null || String(date).trim() === "") {
-      wrap.setAttribute("u-d", "none");
-    } else {
+    if (date == null || String(date).trim() === "") wrap.setAttribute("u-d", "none");
+    else {
       el.textContent = String(date);
       wrap.removeAttribute("u-d");
     }
   }
-
-  // article-type tag: set label + swap colour variant class; hide tag if empty.
   function setArticleType(scope, code) {
     var els = scope.querySelectorAll('[data-field="article-type"]');
     var info = typeInfo(code);
@@ -362,8 +325,6 @@
       if (info.variant) el.classList.add(info.variant);
     }
   }
-
-  // Set a meta value; hide its row (closest <li> / .article-card-metarow) when empty.
   function setMeta(scope, name, value) {
     var els = leafFields(scope, name);
     var empty = value == null || String(value).trim() === "";
@@ -376,7 +337,6 @@
       }
     }
   }
-
   function setImg(img, image, imageBase, alt) {
     if (!img) return;
     var file = String(image || "").split("---")[0];
@@ -385,13 +345,10 @@
       this.onerror = null;
       this.src = placeholder();
     };
-    // image may be a full URL (current sample/backend) or a filename to prefix
-    // with imageBase. Absolute URL -> use as-is; otherwise imageBase + file.
     var src = "";
     if (file) src = /^https?:\/\//.test(file) ? file : (imageBase || "") + file;
     img.src = src || placeholder();
   }
-
   function placeholder() {
     var svg =
       '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="219">' +
@@ -400,20 +357,17 @@
   }
 
   /* ---------- composition ---------- */
-  // "25" -> "第25期"; leaves an already-formatted issue untouched; empty -> "".
   function formatIssue(issue) {
     if (issue == null || String(issue).trim() === "") return "";
     var s = String(issue).trim();
     return /期/.test(s) ? s : "第" + s + "期";
   }
-  // Article publication line = journal › 第N期  (date lives in [data-field=book-date]).
   function articlePublication(item) {
     var s = item.journal || "";
     var iss = formatIssue(item.journalIssue);
     if (iss) s += " › " + iss;
     return s;
   }
-  // Book/issue title = journal + 第N期 (when present).
   function bookTitle(item) {
     return (item.journal || "") + formatIssue(item.journalIssue);
   }
@@ -426,7 +380,11 @@
     return String(v).split("---").join("、");
   }
 
-  /* ---------- data ops ---------- */
+  /* ---------- utils ---------- */
+  function ready(fn) {
+    if (document.readyState !== "loading") fn();
+    else document.addEventListener("DOMContentLoaded", fn);
+  }
   function groupBy(arr, key) {
     var map = {}, order = [];
     for (var i = 0; i < arr.length; i++) {
@@ -441,29 +399,6 @@
       return map[k];
     });
   }
-
-  // Isolated so a backend returning pre-ordered items can bypass this.
-  function sortItems(list, key) {
-    var copy = list.slice();
-    if (key === "title") {
-      copy.sort(function (a, b) {
-        return String(a.title || "").localeCompare(String(b.title || ""), "zh-Hant");
-      });
-    } else if (key === "year") {
-      copy.sort(function (a, b) {
-        return String(a.year || a.datePublished || "").localeCompare(
-          String(b.year || b.datePublished || "")
-        );
-      });
-    }
-    return copy;
-  }
-
-  /* ---------- dom utils ---------- */
-  function ready(fn) {
-    if (document.readyState !== "loading") fn();
-    else document.addEventListener("DOMContentLoaded", fn);
-  }
   function removeClones(host) {
     if (!host) return;
     var clones = host.querySelectorAll(":scope > [data-clone]");
@@ -473,14 +408,11 @@
     var els = root.querySelectorAll(selector);
     for (var i = 0; i < els.length; i++) els[i].textContent = value;
   }
-  function currentSort(root) {
-    var input = root.querySelector('[name="sort"]');
-    if (input && input.value) return input.value;
-    var sel = root.querySelector('[data-dropdown-option][aria-selected="true"]');
-    return sel ? sel.getAttribute("data-value") : "";
-  }
   function formatNum(n) {
     var num = Number(n);
     return isFinite(num) ? num.toLocaleString("en-US") : String(n);
   }
+
+  /* ---------- public API (for backend integration) ---------- */
+  window.filmtvResults = { render: renderResults, setView: setView };
 })();
