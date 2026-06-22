@@ -68,14 +68,14 @@
     "28": { label: "文學創作、書摘", variant: "is-cultural" },
     "27": { label: "文學及藝術評論、書評", variant: "is-cultural" },
     "20": { label: "現場表演、舞台藝術", variant: "is-cultural" },
-    "7":  { label: "消閒讀物、資訊讀物、教學文章", variant: "is-cultural" },
+    "7":  { label: "消閒、資訊讀物、教學文章", variant: "is-cultural" },
     "17": { label: "插畫、漫畫、小遊戲", variant: "is-cultural" },
     "29": { label: "辭典、詞條", variant: "is-cultural" },
     "23": { label: "公司通訊、資料", variant: "is-comm" },
     "16": { label: "產品、商鋪", variant: "is-comm" },
     "1":  { label: "廣告、優惠券", variant: "is-comm" },
     "12": { label: "抽獎得獎名單", variant: "is-comm" },
-    "10": { label: "雜誌表格、意見調查表格、報名表格", variant: "is-comm" },
+    "10": { label: "報名、意見調查、雜誌表格", variant: "is-comm" },
     "3":  { label: "目錄、內容、片目索引", variant: "is-other" },
     "14": { label: "封面、封底、版權頁", variant: "is-other" },
     "2":  { label: "照片集", variant: "is-other" },
@@ -125,15 +125,34 @@
   }
 
   /* ---------- view toggle (visual; no data) ---------- */
+  // On a user toggle (and only on an actual change) we flip the panel AND fire
+  // a bubbling "filmtv:viewchange" event { detail: { view } }. Article and book
+  // views are separate queries with different entry limits, so the backend
+  // listens for this, fetches that view's first page, and calls render():
+  //   document.addEventListener("filmtv:viewchange", e =>
+  //     loadView(e.detail.view).then(data => filmtvResults.render(e.target, data)));
   function initToggle(root) {
     root.addEventListener("click", function (e) {
       var btn = e.target.closest ? e.target.closest("[data-view-btn]") : null;
-      if (btn && root.contains(btn)) {
-        e.preventDefault();
-        setView(root, btn.getAttribute("data-view-btn"));
-      }
+      if (!btn || !root.contains(btn)) return;
+      e.preventDefault();
+      var view = btn.getAttribute("data-view-btn");
+      if (view === root.getAttribute("data-view")) return; // no change -> no re-fetch
+      setView(root, view);
+      emitViewChange(root, view);
     });
-    setView(root, root.getAttribute("data-view") || "article");
+    setView(root, root.getAttribute("data-view") || "article"); // initial state: no event
+  }
+
+  function emitViewChange(root, view) {
+    var ev;
+    try {
+      ev = new CustomEvent("filmtv:viewchange", { detail: { view: view }, bubbles: true });
+    } catch (err) {
+      ev = document.createEvent("CustomEvent");
+      ev.initCustomEvent("filmtv:viewchange", true, false, { view: view });
+    }
+    root.dispatchEvent(ev);
   }
 
   function setView(root, view) {
