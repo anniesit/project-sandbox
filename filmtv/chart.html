@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>影視刊物資料庫 · 年份統計</title>
+  <link rel="stylesheet" href="chart.css" />
+  <style>
+    /* demo page chrome only — the chart owns its own styles in chart.css */
+    body {
+      margin: 0;
+      padding: 2.5rem clamp(1rem, 4vw, 3rem);
+      background: #f3f1ee;
+      color: #1c1a18;
+      font-family: "General Sans", system-ui, -apple-system, "Noto Sans TC", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 980px; margin: 0 auto; }
+    .page-head { margin-bottom: 1.5rem; }
+    .page-head h1 { margin: 0 0 0.25rem; font-size: 1.5rem; letter-spacing: 0.01em; }
+    .page-head p { margin: 0; color: #6b6661; font-size: 0.9rem; }
+    .panel {
+      background: #fff;
+      border: 1px solid rgba(28, 26, 24, 0.10);
+      border-radius: 12px;
+      padding: 1.5rem clamp(1rem, 3vw, 1.75rem);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+    .presets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+    }
+    .preset {
+      padding: 0.4rem 0.8rem;
+      border: 1px solid rgba(28, 26, 24, 0.16);
+      border-radius: 999px;
+      background: #fff;
+      font: inherit;
+      font-size: 0.8125rem;
+      color: #3a3733;
+      cursor: pointer;
+      transition: all 0.12s ease;
+    }
+    .preset:hover { border-color: #8a1c2b; color: #8a1c2b; }
+    .preset.is-active {
+      background: #8a1c2b;
+      border-color: #8a1c2b;
+      color: #fff;
+    }
+    .hint {
+      margin-top: 1rem;
+      font-size: 0.78rem;
+      color: #8a847d;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="page-head">
+      <h1>影視刊物資料庫</h1>
+      <p>檢索結果年份統計 · 依刊物分色堆疊（西元 1920–1997）</p>
+    </header>
+
+    <div class="panel">
+      <!-- demo "result set" presets: each calls filmtvChart.render() with a
+           subset, showing the y-axis rescale to the new max + the stack recompose -->
+      <div class="presets" id="presets">
+        <button class="preset is-active" data-preset="all">全部結果</button>
+        <button class="preset" data-preset="early">1920–1950</button>
+        <button class="preset" data-preset="late">1960–1997</button>
+        <button class="preset" data-preset="tv">電視時代（香港電視・新電影）</button>
+        <button class="preset" data-preset="one">單一刊物（電影特刊）</button>
+      </div>
+
+      <!-- chart.js mounts here. data-height is optional (default 360). -->
+      <div data-chart data-height="360" data-src="sample-data/chart-sample.json"></div>
+
+      <p class="hint">滑過長條檢視該年總數與各刊物筆數 · 點按圖例可顯示／隱藏刊物，Y 軸自動配合目前顯示結果的最大值</p>
+    </div>
+  </div>
+
+  <script src="chart.js"></script>
+  <script>
+    // Demo-only driver: fetch the sample once, then feed filtered subsets to the
+    // chart on preset click — this mimics different search result sets arriving
+    // from the backend. (chart.js already auto-loaded the full set on init.)
+    (function () {
+      var chartEl = document.querySelector("[data-chart]");
+      var presets = document.getElementById("presets");
+      var ALL = null;
+
+      var FILTERS = {
+        all: function () { return ALL.items; },
+        early: function () { return ALL.items.filter(function (it) { return +it.year <= 1950; }); },
+        late: function () { return ALL.items.filter(function (it) { return +it.year >= 1960; }); },
+        tv: function () {
+          return ALL.items.filter(function (it) {
+            var p = it.id.slice(0, 3); return p === "TVW" || p === "SDY";
+          });
+        },
+        one: function () { return ALL.items.filter(function (it) { return it.id.slice(0, 3) === "FMP"; }); }
+      };
+
+      fetch("sample-data/chart-sample.json")
+        .then(function (r) { return r.json(); })
+        .then(function (data) { ALL = data; });
+
+      presets.addEventListener("click", function (e) {
+        var btn = e.target.closest(".preset");
+        if (!btn || !ALL) return;
+        presets.querySelectorAll(".preset").forEach(function (b) { b.classList.remove("is-active"); });
+        btn.classList.add("is-active");
+        window.filmtvChart.render(chartEl, { items: FILTERS[btn.getAttribute("data-preset")]() });
+      });
+    })();
+  </script>
+</body>
+</html>
