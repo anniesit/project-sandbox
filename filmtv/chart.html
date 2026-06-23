@@ -60,7 +60,7 @@
   <div class="wrap">
     <header class="page-head">
       <h1>影視刊物資料庫</h1>
-      <p>檢索結果年份統計 · 依刊物分色堆疊（西元 1920–1997）</p>
+      <p>檢索結果年份統計 · 依刊物分色堆疊（西元 1926–1997）</p>
     </header>
 
     <div class="panel">
@@ -68,10 +68,10 @@
            subset, showing the y-axis rescale to the new max + the stack recompose -->
       <div class="presets" id="presets">
         <button class="preset is-active" data-preset="all">全部結果</button>
-        <button class="preset" data-preset="early">1920–1950</button>
-        <button class="preset" data-preset="late">1960–1997</button>
-        <button class="preset" data-preset="tv">電視時代（香港電視・新電影）</button>
-        <button class="preset" data-preset="one">單一刊物（電影特刊）</button>
+        <button class="preset" data-preset="early">小冊子年代（1926–1958）</button>
+        <button class="preset" data-preset="late">雙周刊年代（1979–1997）</button>
+        <button class="preset" data-preset="mag">電影雙周刊</button>
+        <button class="preset" data-preset="tv">香港電視</button>
       </div>
 
       <!-- chart.js mounts here. data-height is optional (default 360). -->
@@ -91,16 +91,13 @@
       var presets = document.getElementById("presets");
       var ALL = null;
 
+      var CE = ["CEM", "CEI", "CEY", "CED", "CEF", "CEV", "CEH", "CEP", "CEO"];
       var FILTERS = {
         all: function () { return ALL.items; },
-        early: function () { return ALL.items.filter(function (it) { return +it.year <= 1950; }); },
-        late: function () { return ALL.items.filter(function (it) { return +it.year >= 1960; }); },
-        tv: function () {
-          return ALL.items.filter(function (it) {
-            var p = it.id.slice(0, 3); return p === "TVW" || p === "SDY";
-          });
-        },
-        one: function () { return ALL.items.filter(function (it) { return it.id.slice(0, 3) === "FMP"; }); }
+        early: function () { return ALL.items.filter(function (it) { return +it.year <= 1958; }); },
+        late: function () { return ALL.items.filter(function (it) { return +it.year >= 1979; }); },
+        mag: function () { return ALL.items.filter(function (it) { return CE.indexOf(it.id.slice(0, 3)) >= 0; }); },
+        tv: function () { return ALL.items.filter(function (it) { return it.id.slice(0, 3) === "TVW"; }); }
       };
 
       fetch("sample-data/chart-sample.json")

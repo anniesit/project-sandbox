@@ -38,10 +38,29 @@
   /* >>> MOCK DATA URL <<< backend replaces this (or removes the self-fetch). */
   var DATA_URL = new URL("./sample-data/chart-sample.json", SELF).href;
 
-  /* publication key: first 3 chars of an entry id. One-line swap point for
-     real data (e.g. a different slice, or item.collection). */
+  /* Publication taxonomy — the stack groups. A publication is keyed by the
+     first 3 chars of an entry id, but several prefixes can roll up into ONE
+     series (the City Entertainment magazine family -> 電影雙周刊). This array is
+     the single source of truth for grouping, legend label, stack order and
+     colour; edit it when the real id scheme is finalised. Unlisted prefixes
+     fall back to the prefix itself, labelled from the item's journal field. */
+  var PUBLICATIONS = [
+    { key: "FMP", label: "電影小冊子", prefixes: ["FMP"] },
+    { key: "TVW", label: "香港電視", prefixes: ["TVW"] },
+    { key: "CEM", label: "電影雙周刊", prefixes: ["CEM", "CEI", "CEY", "CED", "CEF", "CEV", "CEH", "CEP", "CEO"] },
+    { key: "CEB", label: "電影雙周刊出版書籍", prefixes: ["CEB"] }
+  ];
+  var PREFIX_MAP = {}, GROUP_ORDER = {}, GROUP_LABEL = {};
+  PUBLICATIONS.forEach(function (p, i) {
+    GROUP_ORDER[p.key] = i;
+    GROUP_LABEL[p.key] = p.label;
+    p.prefixes.forEach(function (pre) { PREFIX_MAP[pre] = p.key; });
+  });
+
+  // entry -> stack group key: first 3 id chars, mapped through the taxonomy.
   function publicationKey(item) {
-    return String(item && item.id != null ? item.id : "").slice(0, 3);
+    var prefix = String(item && item.id != null ? item.id : "").slice(0, 3);
+    return PREFIX_MAP[prefix] || prefix;
   }
 
   /* Fallback categorical palette (CSS vars --filmtv-chart-color-N override). */
@@ -170,19 +189,29 @@
     var years = [];
     for (var y = minY; y <= maxY; y++) years.push(y);
 
-    var keys = Object.keys(groups);
-    var built = keys.map(function (k) {
+    var built = Object.keys(groups).map(function (k) {
       var g = groups[k];
       return {
         key: g.key,
-        label: topLabel(g.labels) || g.key,
+        label: GROUP_LABEL[g.key] || topLabel(g.labels) || g.key,
         counts: years.map(function (yy) { return g.counts[yy] || 0; }),
         total: g.total
       };
     });
-    // largest publication at the bottom of the stack (stable order)
-    built.sort(function (a, b) { return b.total - a.total || (a.key < b.key ? -1 : 1); });
-    built.forEach(function (s, i) { s.color = palette[i % palette.length]; });
+    // taxonomy order first (stable stack + colour), then any unlisted by size
+    built.sort(function (a, b) {
+      var ia = a.key in GROUP_ORDER ? GROUP_ORDER[a.key] : 1e9;
+      var ib = b.key in GROUP_ORDER ? GROUP_ORDER[b.key] : 1e9;
+      return ia - ib || b.total - a.total || (a.key < b.key ? -1 : 1);
+    });
+    // fixed colour per publication (by taxonomy index) so colours don't shift
+    // when the result set filters down to a subset of publications
+    var spare = PUBLICATIONS.length;
+    built.forEach(function (s) {
+      s.color = s.key in GROUP_ORDER
+        ? palette[GROUP_ORDER[s.key] % palette.length]
+        : palette[(spare++) % palette.length];
+    });
 
     return finalizeModel(years, built, palette);
   }
@@ -209,7 +238,7 @@
     var totals = years.map(function (_, i) {
       return series.reduce(function (a, s) { return a + (s.counts[i] || 0); }, 0);
     });
-    var axis = niceAxis(Math.max.apply(null, totals.concat(1)), 5);
+    var axis = niceAxis(Math.max.apply(null, totals.concat(1)));
     var yMax = axis.max;
 
     var plotW = W - GEOM.left - GEOM.right;
@@ -337,15 +366,28 @@
   }
 
   /* ---------- scales / helpers ---------- */
-  // round the axis max up to a "nice" number so gridlines land on clean values
-  function niceAxis(max, ticks) {
-    if (!isFinite(max) || max <= 0) return { max: 1, step: 1 };
-    var rough = max / ticks;
-    var mag = Math.pow(10, Math.floor(Math.log10(rough)));
-    var norm = rough / mag;
-    var nice = norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 2.5 ? 2.5 : norm <= 5 ? 5 : 10;
-    var step = nice * mag;
-    return { max: Math.ceil(max / step) * step, step: step };
+  // Smallest "nice" axis max >= data max, using integer steps of 1/2/5×10^k
+  // that yield 2–8 gridlines. Among those, pick the one with the LEAST empty
+  // headroom (so 63 -> 70, not 80), tie-broken toward ~5 gridlines.
+  function niceAxis(max) {
+    max = Math.max(Number(max) || 0, 1);
+    var exp = Math.floor(Math.log10(max));
+    var bases = [1, 2, 5];
+    var best = null;
+    for (var e = exp + 1; e >= exp - 2; e--) {
+      var pow = Math.pow(10, e);
+      for (var b = 0; b < bases.length; b++) {
+        var step = bases[b] * pow;
+        var ticks = Math.ceil(max / step);
+        if (ticks < 2 || ticks > 8) continue;
+        var axisMax = ticks * step;
+        var dist = Math.abs(ticks - 5);
+        if (!best || axisMax < best.max || (axisMax === best.max && dist < best.dist)) {
+          best = { max: axisMax, step: step, dist: dist };
+        }
+      }
+    }
+    return best ? { max: best.max, step: best.step } : { max: max, step: max };
   }
 
   // pick 5 / 10 / 20-year label spacing so x labels don't collide
