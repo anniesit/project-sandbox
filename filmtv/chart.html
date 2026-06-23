@@ -77,7 +77,8 @@
       <!-- chart.js mounts here. data-height is optional (default 360). -->
       <div data-chart data-height="360" data-src="sample-data/chart-sample.json"></div>
 
-      <p class="hint">滑過長條檢視該年總數與各刊物筆數 · 點按圖例可顯示／隱藏刊物，Y 軸自動配合目前顯示結果的最大值</p>
+      <p class="hint">桌面：滑過長條看該年明細，點按長條即以該年篩選結果。觸控：輕點長條後再點「查看此年結果 →」。點按圖例則以該刊物篩選。</p>
+      <p class="hint" id="demo-status" hidden></p>
     </div>
   </div>
 
@@ -104,12 +105,38 @@
         .then(function (r) { return r.json(); })
         .then(function (data) { ALL = data; });
 
+      function setActive(preset) {
+        presets.querySelectorAll(".preset").forEach(function (b) {
+          b.classList.toggle("is-active", b.getAttribute("data-preset") === preset);
+        });
+      }
+
       presets.addEventListener("click", function (e) {
         var btn = e.target.closest(".preset");
         if (!btn || !ALL) return;
-        presets.querySelectorAll(".preset").forEach(function (b) { b.classList.remove("is-active"); });
-        btn.classList.add("is-active");
+        setActive(btn.getAttribute("data-preset"));
+        status.hidden = true;
         window.filmtvChart.render(chartEl, { items: FILTERS[btn.getAttribute("data-preset")]() });
+      });
+
+      // This is the BACKEND's job in production: listen for the chart's selection
+      // event, narrow the query, and re-render. Here we just filter the sample
+      // in-memory and show what would be requested.
+      var status = document.getElementById("demo-status");
+      document.addEventListener("filmtv:filter", function (e) {
+        if (!ALL) return;
+        var d = e.detail, items, msg;
+        if (d.year != null) {
+          items = ALL.items.filter(function (it) { return +it.year === d.year; });
+          msg = "已篩選：" + d.year + " 年（" + items.length + " 筆）";
+        } else {
+          items = ALL.items.filter(function (it) { return d.prefixes.indexOf(it.id.slice(0, 3)) >= 0; });
+          msg = "已篩選：" + d.label + "（" + items.length + " 筆）";
+        }
+        setActive(null);
+        status.hidden = false;
+        status.textContent = msg + " · 按「全部結果」重設";
+        window.filmtvChart.render(chartEl, { items: items });
       });
     })();
   </script>

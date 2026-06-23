@@ -7,7 +7,7 @@
  * matching journal name. Dependency-free, vanilla SVG.
  *
  *   • x axis  : publication year   • y axis : entry count
- *   • stacks  : publications (colour-coded), legend toggles each on/off
+ *   • stacks  : publications (colour-coded), labelled by the legend
  *   • y axis  : rescales to the max stacked total of what's displayed
  *   • hover   : per-year tooltip with the total + per-publication breakdown
  *
@@ -15,7 +15,17 @@
  *   window.filmtvChart.render(rootEl, { items })           // raw entries; chart aggregates
  *   window.filmtvChart.render(rootEl, { years, series })   // pre-aggregated (large result sets)
  *       series: [{ key, label, color?, counts:[ per-year ] }]
- *   window.filmtvChart.setView is not needed; redraw happens on resize + legend toggle.
+ *
+ * Ownership split (same as results.js): this file owns the VISUAL + the click
+ * affordance; the backend owns the SEARCH STATE. On a user selection the chart
+ * FIRES a bubbling event and does nothing else — the backend listens, mutates
+ * the query, re-fetches, and calls render() again:
+ *   • click a bar  (desktop) / tap a bar then "查看此年結果 →" (touch)
+ *       -> filmtv:filter  { detail: { year, publication:null } }
+ *   • click a legend item
+ *       -> filmtv:filter  { detail: { year:null, publication, label, prefixes } }
+ *   document.addEventListener("filmtv:filter", e =>
+ *     applySearchFilters(e.detail).then(data => filmtvChart.render(e.target, data)));
  *
  * A thin self-fetch of DATA_URL runs only as the MOCK driver; the backend
  * removes it and calls render() directly with the live result set.
@@ -50,12 +60,18 @@
     { key: "CEM", label: "電影雙周刊", prefixes: ["CEM", "CEI", "CEY", "CED", "CEF", "CEV", "CEH", "CEP", "CEO"] },
     { key: "CEB", label: "電影雙周刊出版書籍", prefixes: ["CEB"] }
   ];
-  var PREFIX_MAP = {}, GROUP_ORDER = {}, GROUP_LABEL = {};
+  var PREFIX_MAP = {}, GROUP_ORDER = {}, GROUP_LABEL = {}, GROUP_PREFIXES = {};
   PUBLICATIONS.forEach(function (p, i) {
     GROUP_ORDER[p.key] = i;
     GROUP_LABEL[p.key] = p.label;
+    GROUP_PREFIXES[p.key] = p.prefixes;
     p.prefixes.forEach(function (pre) { PREFIX_MAP[pre] = p.key; });
   });
+
+  // true on devices with a real hover+fine pointer (desktop): bar click commits
+  // directly. Touch devices tap a bar to pin the tooltip, then tap its button.
+  var HOVER = !!(window.matchMedia &&
+    window.matchMedia("(hover: hover) and (pointer: fine)").matches);
 
   // entry -> stack group key: first 3 id chars, mapped through the taxonomy.
   function publicationKey(item) {
@@ -82,13 +98,13 @@
     if (root.__filmtv) return;
     var st = {
       height: parseInt(root.getAttribute("data-height"), 10) || 360,
-      hidden: {},        // series keys hidden via legend toggle
       model: null,
+      tipIndex: null,    // year index the tooltip currently describes
       raf: 0
     };
     root.__filmtv = st;
     buildShell(root, st);
-    bindHover(root, st);
+    bindInteractions(root, st);
     bindLegend(root, st);
 
     // redraw on container resize (debounced to one frame)
@@ -141,7 +157,7 @@
     }
     var st = root.__filmtv || (initChart(root), root.__filmtv);
     st.model = buildModel(root, data || {});
-    st.hidden = {};
+    hideTip(st);
     renderLegend(root, st);
     draw(root);
   }
@@ -157,6 +173,7 @@
         return {
           key: s.key,
           label: s.label || s.key,
+          prefixes: s.prefixes || GROUP_PREFIXES[s.key] || [s.key],
           color: s.color || palette[i % palette.length],
           counts: ys.map(function (_, k) { return Number((s.counts || [])[k]) || 0; }),
           total: (s.counts || []).reduce(function (a, b) { return a + (Number(b) || 0); }, 0)
@@ -194,6 +211,7 @@
       return {
         key: g.key,
         label: GROUP_LABEL[g.key] || topLabel(g.labels) || g.key,
+        prefixes: GROUP_PREFIXES[g.key] || [g.key],
         counts: years.map(function (yy) { return g.counts[yy] || 0; }),
         total: g.total
       };
@@ -232,7 +250,7 @@
     var model = st.model;
     var years = model.years;
     var n = years.length;
-    var series = model.series.filter(function (s) { return !st.hidden[s.key]; });
+    var series = model.series;
 
     // per-year visible stacked totals -> dynamic y axis
     var totals = years.map(function (_, i) {
@@ -298,18 +316,44 @@
     st.geom = { X: X, Y: Y, band: band, totals: totals, series: series, years: years, plotH: plotH };
   }
 
-  /* ---------- hover tooltip ---------- */
-  function bindHover(root, st) {
-    st.canvas.addEventListener("mousemove", function (e) {
-      var hit = e.target.closest ? e.target.closest(".filmtv-chart-hit") : null;
-      if (!hit || !st.geom) return hideTip(st);
-      var i = parseInt(hit.getAttribute("data-yi"), 10);
-      showTip(root, st, i);
+  /* ---------- tooltip + selection (a bar commits a YEAR filter) ---------- */
+  function bindInteractions(root, st) {
+    var canvas = st.canvas;
+
+    // desktop: hover reveals the transient tooltip
+    if (HOVER) {
+      canvas.addEventListener("mousemove", function (e) {
+        var hit = closest(e.target, ".filmtv-chart-hit");
+        if (!hit || !st.geom) return hideTip(st);
+        showTip(root, st, +hit.getAttribute("data-yi"), false);
+      });
+      canvas.addEventListener("mouseleave", function () { hideTip(st); });
+    }
+
+    // click doubles as a tap on touch devices
+    canvas.addEventListener("click", function (e) {
+      if (closest(e.target, ".filmtv-chart-commit")) {       // the tooltip button
+        e.preventDefault();
+        if (st.tipIndex != null) commitYear(root, st, st.tipIndex);
+        return;
+      }
+      var hit = closest(e.target, ".filmtv-chart-hit");
+      if (!hit || !st.geom) return;
+      var i = +hit.getAttribute("data-yi");
+      if (HOVER) commitYear(root, st, i);   // desktop: one click commits
+      else showTip(root, st, i, true);      // touch: first tap pins the tooltip
     });
-    st.canvas.addEventListener("mouseleave", function () { hideTip(st); });
+
+    // touch: a tap anywhere outside the chart dismisses a pinned tooltip
+    if (!HOVER) {
+      document.addEventListener("click", function (e) {
+        if (!root.contains(e.target)) hideTip(st);
+      });
+    }
   }
 
-  function showTip(root, st, i) {
+  // build + position the tooltip; `pin` keeps it open and tappable (touch)
+  function showTip(root, st, i, pin) {
     var g = st.geom;
     var rows = [];
     for (var k = 0; k < g.series.length; k++) {
@@ -322,47 +366,78 @@
     st.tooltip.innerHTML =
       '<div class="filmtv-chart-tip-title">西元 ' + g.years[i] + ' 年</div>' +
       '<div class="filmtv-chart-tip-total">總數 ' + fmt(g.totals[i]) + UNIT + '</div>' +
-      (rows.length ? '<ul class="filmtv-chart-tip-list">' + rows.join("") + "</ul>" : "");
+      (rows.length ? '<ul class="filmtv-chart-tip-list">' + rows.join("") + "</ul>" : "") +
+      '<button type="button" class="filmtv-chart-commit">查看此年結果 →</button>';
 
-    // anchor above the bar, centred on the band, clamped to the canvas
-    var W = st.canvas.clientWidth;
-    var cx = g.X(i);
-    var cy = g.Y(g.totals[i]);
+    st.tipIndex = i;
     st.tooltip.classList.add("is-on");
+    st.tooltip.classList.toggle("is-pinned", !!pin);
     st.tooltip.setAttribute("aria-hidden", "false");
-    var tw = st.tooltip.offsetWidth;
-    var left = Math.max(tw / 2 + 2, Math.min(cx, W - tw / 2 - 2));
-    st.tooltip.style.left = left + "px";
-    st.tooltip.style.top = Math.max(8, cy - 10) + "px";
+
+    // centre on the band; sit above the bar, flipping below if there's no room
+    var W = st.canvas.clientWidth;
+    var cx = g.X(i), cy = g.Y(g.totals[i]);
+    var tw = st.tooltip.offsetWidth, th = st.tooltip.offsetHeight;
+    st.tooltip.style.left = Math.max(tw / 2 + 2, Math.min(cx, W - tw / 2 - 2)) + "px";
+    var below = (cy - 10 - th) < 4;
+    st.tooltip.classList.toggle("is-below", below);
+    st.tooltip.style.top = (below ? cy + 12 : cy - 10) + "px";
   }
 
   function hideTip(st) {
-    st.tooltip.classList.remove("is-on");
+    st.tooltip.classList.remove("is-on", "is-pinned", "is-below");
     st.tooltip.setAttribute("aria-hidden", "true");
+    st.tipIndex = null;
   }
 
-  /* ---------- legend (click toggles a publication on/off) ---------- */
+  // emit a year-filter selection for the backend to act on
+  function commitYear(root, st, i) {
+    emitFilter(root, { year: st.geom.years[i], publication: null, label: null, prefixes: null });
+    hideTip(st);
+  }
+
+  /* ---------- legend (click commits a PUBLICATION filter) ---------- */
   function bindLegend(root, st) {
     st.legend.addEventListener("click", function (e) {
-      var btn = e.target.closest ? e.target.closest("[data-key]") : null;
+      var btn = closest(e.target, "[data-key]");
       if (!btn) return;
       var key = btn.getAttribute("data-key");
-      if (st.hidden[key]) delete st.hidden[key]; else st.hidden[key] = true;
-      btn.classList.toggle("is-off", !!st.hidden[key]);
-      btn.setAttribute("aria-pressed", st.hidden[key] ? "false" : "true");
-      draw(root); // recomputes the y axis from what's still visible
+      var s = findSeries(st, key);
+      emitFilter(root, {
+        year: null,
+        publication: key,
+        label: s ? s.label : key,
+        prefixes: s ? s.prefixes : [key]
+      });
     });
   }
 
   function renderLegend(root, st) {
     var html = st.model.series.map(function (s) {
       return '<button type="button" class="filmtv-chart-legend-item" role="listitem" data-key="' +
-        esc(s.key) + '" aria-pressed="true">' +
+        esc(s.key) + '" aria-label="' + esc("篩選：" + s.label) + '">' +
         '<span class="filmtv-chart-legend-swatch" style="background:' + s.color + '"></span>' +
         '<span class="filmtv-chart-legend-label">' + esc(s.label) + '</span>' +
         '<span class="filmtv-chart-legend-count">' + fmt(s.total) + '</span></button>';
     }).join("");
     st.legend.innerHTML = html;
+  }
+
+  function findSeries(st, key) {
+    var ss = st.model ? st.model.series : [];
+    for (var i = 0; i < ss.length; i++) if (ss[i].key === key) return ss[i];
+    return null;
+  }
+
+  // dispatch the search-filter selection (bubbles to document for the backend)
+  function emitFilter(root, detail) {
+    var ev;
+    try { ev = new CustomEvent("filmtv:filter", { detail: detail, bubbles: true }); }
+    catch (err) {
+      ev = document.createEvent("CustomEvent");
+      ev.initCustomEvent("filmtv:filter", true, false, detail);
+    }
+    root.dispatchEvent(ev);
   }
 
   /* ---------- scales / helpers ---------- */
@@ -432,6 +507,7 @@
     else document.addEventListener("DOMContentLoaded", fn);
   }
   function el(tag, cls) { var e = document.createElement(tag); e.className = cls; return e; }
+  function closest(target, sel) { return target && target.closest ? target.closest(sel) : null; }
   function fmt(n) {
     var num = Number(n);
     return isFinite(num) ? num.toLocaleString("en-US") : String(n);
