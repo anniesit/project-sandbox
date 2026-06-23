@@ -28,28 +28,28 @@
   --filmtv-chart-color-8: #5c6b34;
 
   /* semantic UI colours */
-  --filmtv-chart-ink: #1c1a18;                  /* primary text */
-  --filmtv-chart-muted: #6b6661;                /* axis / secondary text */
+  --filmtv-chart-ink: #1F3606;                 /* primary text */
+  --filmtv-chart-muted: #4e7622;                /* axis / secondary text */
   --filmtv-chart-grid: rgba(28, 26, 24, 0.10);  /* gridlines */
   --filmtv-chart-band: rgba(138, 28, 43, 0.06); /* hovered column / legend wash */
   --filmtv-chart-surface: #ffffff;              /* tooltip background */
-  --filmtv-chart-border: rgba(28, 26, 24, 0.14);
+  --filmtv-chart-border: #E2EDD4;
   --filmtv-chart-shadow: rgba(0, 0, 0, 0.16);
-  --filmtv-chart-accent: var(--primary--accent, #8a1c2b); /* commit button + focus ring */
+  --filmtv-chart-accent: var(--primary--accent, #638f34); /* commit button + focus ring */
   --filmtv-chart-on-accent: #ffffff;            /* text on the accent */
 }
 
-/* dark mode — only the semantic tokens change */
+/* dark mode — only the semantic tokens change 
 @media (prefers-color-scheme: dark) {
   .filmtv-chart {
     --filmtv-chart-ink: #ece8e3;
     --filmtv-chart-muted: #a39c93;
     --filmtv-chart-grid: rgba(236, 232, 227, 0.12);
     --filmtv-chart-band: rgba(214, 165, 49, 0.12);
-    --filmtv-chart-surface: #211f1d;
+    --filmtv-chart-surface: #2e4812;
     --filmtv-chart-border: rgba(236, 232, 227, 0.18);
     --filmtv-chart-shadow: rgba(0, 0, 0, 0.45);
-    --filmtv-chart-accent: var(--primary--accent, #b5455a);
+    --filmtv-chart-accent: var(--primary--accent, #638f34);
   }
 }
 html.u-mode-dark .filmtv-chart {
@@ -57,11 +57,11 @@ html.u-mode-dark .filmtv-chart {
   --filmtv-chart-muted: #a39c93;
   --filmtv-chart-grid: rgba(236, 232, 227, 0.12);
   --filmtv-chart-band: rgba(214, 165, 49, 0.12);
-  --filmtv-chart-surface: #211f1d;
+  --filmtv-chart-surface: #2e4812;
   --filmtv-chart-border: rgba(236, 232, 227, 0.18);
   --filmtv-chart-shadow: rgba(0, 0, 0, 0.45);
-  --filmtv-chart-accent: var(--primary--accent, #b5455a);
-}
+  --filmtv-chart-accent: var(--primary--accent, #638f34);
+}*/
 
 /* --- 1b. where each token is applied --- */
 .filmtv-chart { color: var(--filmtv-chart-ink); }
@@ -98,7 +98,7 @@ html.u-mode-dark .filmtv-chart {
 .filmtv-chart {
   display: block;
   width: 100%;
-  font-family: var(--_typography---fonts--primary-font, var(--primary-font, system-ui, sans-serif));
+  font-family: 'GenRyuMin2 TC', 'Songti TC', 'Noto Serif TC', 'PMingLiU', serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -123,7 +123,8 @@ html.u-mode-dark .filmtv-chart {
   max-width: 16rem;
   padding: 0.5rem 0.625rem;
   transform: translate(-50%, -100%);     /* sits above the bar */
-  border: 1px solid;                      /* colour in PART 1 */
+  border-width: 1px;
+  border-style: solid;                    /* colour in PART 1 */
   border-radius: 6px;
   pointer-events: none;
   opacity: 0;
@@ -134,13 +135,15 @@ html.u-mode-dark .filmtv-chart {
 .filmtv-chart-tooltip.is-pinned { pointer-events: auto; }          /* touch: tappable */
 .filmtv-chart-tooltip.is-below { transform: translate(-50%, 0); }  /* flipped under the bar */
 
-.filmtv-chart-tip-title { font-weight: 600; font-size: 0.875rem; line-height: 1.2; }
-.filmtv-chart-tip-total { margin-top: 0.05rem; font-size: 0.8125rem; }
+.filmtv-chart-tip-head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; }
+.filmtv-chart-tip-year { font-weight: 600; font-size: 0.875rem; line-height: 1.2; }
+.filmtv-chart-tip-total { font-size: 0.8125rem; }
 .filmtv-chart-tip-list {
   list-style: none;
   margin: 0.4rem 0 0;
   padding: 0.4rem 0 0;
-  border-top: 1px solid;                  /* colour in PART 1 */
+  border-top-width: 1px;
+  border-top-style: solid;                /* colour in PART 1 */
   display: grid;
   gap: 0.2rem;
 }

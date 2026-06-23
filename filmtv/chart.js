@@ -364,8 +364,10 @@
         esc(g.series[k].label) + '</span><span class="filmtv-chart-tip-num">' + fmt(v) + '</span></li>');
     }
     st.tooltip.innerHTML =
-      '<div class="filmtv-chart-tip-title">西元 ' + g.years[i] + ' 年</div>' +
-      '<div class="filmtv-chart-tip-total">總數 ' + fmt(g.totals[i]) + UNIT + '</div>' +
+      '<div class="filmtv-chart-tip-head">' +
+        '<span class="filmtv-chart-tip-year">' + g.years[i] + ' 年</span>' +
+        '<span class="filmtv-chart-tip-total">總數 ' + fmt(g.totals[i]) + UNIT + '</span>' +
+      '</div>' +
       (rows.length ? '<ul class="filmtv-chart-tip-list">' + rows.join("") + "</ul>" : "") +
       '<button type="button" class="filmtv-chart-commit">查看此年結果 →</button>';
 
