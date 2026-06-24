@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>影視刊物資料庫 · 相關關鍵字</title>
+  <link rel="stylesheet" href="cooccur.css" />
+  <link rel="stylesheet" href="https://hkbuproject-sandbox.vercel.app/filmtv/font/genryumin-tc/genryumin-tc.css" />
+  <style>
+    /* ---- demo page chrome only — the chart owns its styles in cooccur.css ----
+       In production this lives on a Webflow page; the modal below maps to the
+       design-system modal component and the search bar already exists. */
+    :root { --demo-green: #2e4812; --demo-accent: #638f34; }
+    body {
+      margin: 0;
+      padding: 2.5rem clamp(1rem, 4vw, 3rem);
+      background: #dfe9cf;
+      color: #1F3606;
+      font-family: 'GenRyuMin2 TC', 'Songti TC', 'Noto Serif TC', 'PMingLiU', serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 1000px; margin: 0 auto; }
+    .page-head { margin-bottom: 1.25rem; }
+    .page-head h1 { margin: 0 0 0.25rem; font-size: 1.4rem; }
+    .page-head p { margin: 0; color: #4e7622; font-size: 0.9rem; }
+
+    /* mock search bar (stands in for the real 條目檢索 row) */
+    .searchbar {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem;
+      background: #fff; border: 1px solid rgba(31, 54, 6, 0.15);
+      border-radius: 10px; padding: 0.9rem 1rem;
+    }
+    .searchbar input {
+      flex: 1 1 16rem; min-width: 0; font: inherit; font-size: 0.95rem;
+      padding: 0.55rem 0.7rem; border: 1px solid rgba(31, 54, 6, 0.25); border-radius: 7px;
+    }
+    .search-btn {
+      font: inherit; font-size: 0.95rem; padding: 0.55rem 1.1rem; border-radius: 7px;
+      border: 1px solid var(--demo-green); cursor: pointer; white-space: nowrap;
+    }
+    .search-btn.primary { background: var(--demo-green); color: #fff; border-color: var(--demo-green); }
+    .search-btn.ghost { background: #fff; color: var(--demo-green); }
+    .search-btn.ghost:hover { background: #eef4e3; }
+
+    /* current search terms (the BACKEND would own these — shown to demo the round-trip) */
+    .terms { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.9rem; min-height: 1.6rem; align-items: center; }
+    .terms .lead { color: #4e7622; font-size: 0.85rem; }
+    .term {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      background: #eef4e3; border: 1px solid rgba(31, 54, 6, 0.18);
+      border-radius: 999px; padding: 0.2rem 0.6rem; font-size: 0.85rem;
+    }
+    .term.is-x { background: var(--demo-green); color: #fff; border-color: var(--demo-green); }
+    .hint { margin-top: 1rem; font-size: 0.8rem; color: #6f8a4d; }
+
+    /* ---- modal: same structure the design-system modal component generates ----
+       <dialog class="modal"> + adjacent trigger <button> + a close button with
+       data-modal="close". On Webflow, all.js wires these automatically; here a
+       tiny inline shim does the same so the page previews standalone. */
+    dialog.modal {
+      width: min(1100px, 94vw);
+      max-width: 94vw;
+      border: 0; border-radius: 14px; padding: 0;
+      background: #fff; color: #1F3606;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
+    }
+    dialog.modal::backdrop { background: rgba(20, 30, 8, 0.55); }
+    body:has(dialog[open]) { overflow: hidden; }
+    .modal-inner { padding: 1.25rem clamp(1rem, 3vw, 1.75rem) 1.5rem; }
+    .modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+    .modal-title { margin: 0; font-size: 1.05rem; line-height: 1.4; font-weight: 600; }
+    .modal-title b { color: var(--demo-accent); }
+    .modal-close {
+      flex: 0 0 auto; width: 2rem; height: 2rem; border-radius: 50%;
+      border: 1px solid rgba(31, 54, 6, 0.2); background: #fff; cursor: pointer;
+      font-size: 1.1rem; line-height: 1; color: #1F3606;
+    }
+    .modal-close:hover { background: #eef4e3; }
+    .modal-foot { margin-top: 0.75rem; font-size: 0.8rem; color: #6f8a4d; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="page-head">
+      <h1>影視刊物資料庫 · 條目檢索</h1>
+      <p>搜尋關鍵字後，可開啟「相關關鍵字」圖表，查看與該關鍵字最常一同出現的人名／機構。</p>
+    </header>
+
+    <!-- mock search row -->
+    <div class="searchbar">
+      <input type="text" value="楚原" aria-label="搜尋關鍵字" />
+      <button class="search-btn primary" type="button">搜尋</button>
+
+      <!-- MAST modal trigger pattern: the <dialog> immediately precedes its
+           trigger <button>. Clicking the button opens the dialog. -->
+      <span style="display:contents">
+        <dialog class="modal" id="cooccur-modal">
+          <div class="modal-inner">
+            <div class="modal-head">
+              <h2 class="modal-title">與「<b>楚原</b>」共同被提及的 10 個最常見關鍵字（按年份）</h2>
+              <button type="button" class="modal-close" data-modal="close" aria-label="關閉">&times;</button>
+            </div>
+
+            <!-- cooccur.js mounts here. data-height optional (default 480). -->
+            <div data-cooccur data-height="480" data-src="sample-data/cooccur-sample.json"></div>
+
+            <p class="modal-foot">滑過任一格（含空白年份）查看該關鍵字當年的篇數；點按左側關鍵字即可加入搜尋（最多 5 個）。</p>
+          </div>
+        </dialog>
+        <button class="search-btn ghost" type="button">查看相關關鍵字</button>
+      </span>
+    </div>
+
+    <!-- current search terms — the BACKEND owns this in production. Here it just
+         mirrors the chart's add/remove events to demonstrate the contract. -->
+    <div class="terms" id="terms">
+      <span class="lead">目前搜尋：</span>
+      <span class="term is-x">楚原</span>
+    </div>
+
+    <p class="hint">此頁為示範：搜尋關鍵字與「目前搜尋」狀態由後端負責；圖表只負責呈現並在點按時發出事件。</p>
+  </div>
+
+  <script src="cooccur.js"></script>
+  <script>
+    /* ---- inline modal shim (Webflow's all.js does this for real) ---- */
+    (function () {
+      document.addEventListener("click", function (e) {
+        var t = e.target;
+        if (t.closest("dialog + button")) {                 // trigger: open
+          var dlg = t.closest("dialog + button").previousElementSibling;
+          if (dlg && dlg.tagName === "DIALOG") dlg.showModal();
+        } else if (t.closest('dialog button[data-modal="close"]')) {  // close button
+          var d = t.closest("dialog"); if (d) d.close();
+        }
+      });
+      document.querySelectorAll("dialog.modal").forEach(function (d) {
+        d.addEventListener("click", function (e) { if (e.target === d) d.close(); }); // click backdrop
+      });
+    })();
+
+    /* ---- demo backend: react to the chart's keyword events ----
+       In production: add/remove the term, re-run the search, then call
+       filmtvCooccur.render(rootEl, newData) with an updated `selected` list. */
+    (function () {
+      var MAX = 5;
+      var terms = document.getElementById("terms");
+      var X = "楚原";                 // the searched keyword (always present)
+      var picked = [];                // co-occurring keywords added to the search
+
+      function repaint() {
+        terms.innerHTML = '<span class="lead">目前搜尋：</span><span class="term is-x">' + X + "</span>" +
+          picked.map(function (k) { return '<span class="term">' + k + "</span>"; }).join("");
+      }
+      document.addEventListener("filmtv:addKeyword", function (e) {
+        var k = e.detail.label;
+        if (picked.indexOf(k) < 0 && picked.length < MAX) picked.push(k);
+        repaint();
+      });
+      document.addEventListener("filmtv:removeKeyword", function (e) {
+        picked = picked.filter(function (k) { return k !== e.detail.label; });
+        repaint();
+      });
+    })();
+  </script>
+</body>
+</html>

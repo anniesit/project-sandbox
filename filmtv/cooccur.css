@@ -1,0 +1,199 @@
+/* ============================================================
+ * cooccur.css — keyword CO-OCCURRENCE bubble chart for the film/TV
+ * publication archive. Pairs with cooccur.js.
+ *
+ * Shows the 10 keywords most often mentioned in the same article as a
+ * searched keyword X. x = article year, y = the 10 keywords (one row each,
+ * sorted by total article count desc). Bubble area encodes the per-year count.
+ *
+ * Same conventions as chart.css: ALL colour lives in PART 1 (tokens + where
+ * each token is applied); PART 2 is structure/layout only. To re-theme, touch
+ * only PART 1. Per-keyword bubble colours are the --filmtv-cooccur-color-N
+ * tokens; cooccur.js reads them and writes them onto the SVG + legend inline.
+ * ============================================================ */
+
+/* ============================================================
+ * PART 1 — COLOUR  (edit everything colour-related here)
+ * ============================================================ */
+
+/* --- 1a. tokens --- */
+.filmtv-cooccur {
+  /* categorical palette — one colour per keyword row, in row order (desc by
+     total). 10 hues kept distinct enough to tell overlapping rows apart. */
+  --filmtv-cooccur-color-1:  #534AB7;
+  --filmtv-cooccur-color-2:  #D4537E;
+  --filmtv-cooccur-color-3:  #1D9E75;
+  --filmtv-cooccur-color-4:  #D85A30;
+  --filmtv-cooccur-color-5:  #4E7622;
+  --filmtv-cooccur-color-6:  #378ADD;
+  --filmtv-cooccur-color-7:  #BA7517;
+  --filmtv-cooccur-color-8:  #6E6B63;
+  --filmtv-cooccur-color-9:  #A32D2D;
+  --filmtv-cooccur-color-10: #2E8C8C;
+
+  /* semantic UI colours */
+  --filmtv-cooccur-ink:      #1F3606;                  /* primary text */
+  --filmtv-cooccur-muted:    #4e7622;                  /* axis / count text */
+  --filmtv-cooccur-grid:     rgba(28, 26, 24, 0.10);   /* row baselines */
+  --filmtv-cooccur-band:     rgba(138, 28, 43, 0.07);  /* hovered grid cell */
+  --filmtv-cooccur-surface:  #ffffff;                  /* tooltip background */
+  --filmtv-cooccur-border:   #E2EDD4;                  /* tooltip / divider */
+  --filmtv-cooccur-shadow:   rgba(0, 0, 0, 0.16);
+  --filmtv-cooccur-accent:   var(--primary--accent, #638f34); /* selected + focus ring */
+  --filmtv-cooccur-on-accent:#ffffff;                  /* text on the accent */
+}
+
+/* --- 1b. where each token is applied --- */
+.filmtv-cooccur { color: var(--filmtv-cooccur-ink); }
+
+.filmtv-cooccur-baseline { stroke: var(--filmtv-cooccur-grid); }
+.filmtv-cooccur-xlabel   { fill: var(--filmtv-cooccur-muted); }
+
+.filmtv-cooccur-hit        { fill: transparent; }
+.filmtv-cooccur-hit:hover  { fill: var(--filmtv-cooccur-band); }
+
+.filmtv-cooccur-legend-count { color: var(--filmtv-cooccur-muted); }
+
+.filmtv-cooccur-legend-item:hover         { background: var(--filmtv-cooccur-band); }
+.filmtv-cooccur-legend-item:focus-visible { outline: 2px solid var(--filmtv-cooccur-accent); }
+.filmtv-cooccur-legend-item.is-selected {
+  background: var(--filmtv-cooccur-accent);
+  color: var(--filmtv-cooccur-on-accent);
+}
+.filmtv-cooccur-legend-item.is-selected .filmtv-cooccur-legend-count { color: inherit; }
+
+.filmtv-cooccur-tooltip {
+  background: var(--filmtv-cooccur-surface);
+  border-color: var(--filmtv-cooccur-border);
+  box-shadow: 0 6px 20px var(--filmtv-cooccur-shadow);
+}
+.filmtv-cooccur-tip-year,
+.filmtv-cooccur-tip-count { color: var(--filmtv-cooccur-muted); }
+
+.filmtv-cooccur-note {
+  background: var(--filmtv-cooccur-surface);
+  border-color: var(--filmtv-cooccur-border);
+  box-shadow: 0 6px 20px var(--filmtv-cooccur-shadow);
+}
+
+/* ============================================================
+ * PART 2 — STRUCTURE / LAYOUT  (no colours below this line)
+ * ============================================================ */
+
+.filmtv-cooccur,
+.filmtv-cooccur * { box-sizing: border-box; }   /* legend height must include its padding so its rows match the SVG rows */
+
+.filmtv-cooccur {
+  display: block;
+  width: 100%;
+  font-family: 'GenRyuMin2 TC', 'Songti TC', 'Noto Serif TC', 'PMingLiU', serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* legend (left, = the y axis) + plot (right) share one height so their rows
+   line up. cooccur.js writes the row-band insets as the two pad vars. */
+.filmtv-cooccur-body {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+/* ---------- legend / y-axis keyword labels ---------- */
+.filmtv-cooccur-legend {
+  flex: 0 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  /* match the SVG plot's top/bottom insets so each button centres on its row */
+  padding-top: var(--filmtv-cooccur-pad-top, 10px);
+  padding-bottom: var(--filmtv-cooccur-pad-bottom, 30px);
+}
+.filmtv-cooccur-legend-item {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;   /* text aligned right, toward the plot */
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0 0.5rem;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  font: inherit;
+  font-size: 0.9rem;
+  line-height: 1.25;
+  color: inherit;
+  text-align: right;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.filmtv-cooccur-legend-item:focus-visible { outline-offset: 1px; }
+.filmtv-cooccur-legend-label { font-weight: 500; }
+.filmtv-cooccur-legend-count { font-size: 0.82em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+/* colour dot ties each label to its row's bubbles; sits on the plot side */
+.filmtv-cooccur-legend-dot {
+  flex: 0 0 auto;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+}
+
+/* ---------- plot ---------- */
+.filmtv-cooccur-canvas { position: relative; flex: 1 1 auto; min-width: 0; }
+.filmtv-cooccur-svg,
+.filmtv-cooccur-svg-el { display: block; width: 100%; }
+
+.filmtv-cooccur-baseline { stroke-width: 1; shape-rendering: crispEdges; }
+.filmtv-cooccur-xlabel   { font-size: 11px; }
+.filmtv-cooccur-bubble   { pointer-events: none; }   /* hits live on the cells */
+.filmtv-cooccur-hit      { cursor: default; }
+
+/* ---------- tooltip (transient, hover) ---------- */
+.filmtv-cooccur-tooltip {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 5;
+  min-width: 7rem;
+  max-width: 16rem;
+  padding: 0.45rem 0.6rem;
+  transform: translate(-50%, -100%);    /* sits above the cell */
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 6px;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.1s ease;
+}
+.filmtv-cooccur-tooltip.is-on { opacity: 1; visibility: visible; }
+.filmtv-cooccur-tooltip.is-below { transform: translate(-50%, 0); }
+.filmtv-cooccur-tip-head { display: flex; align-items: baseline; gap: 0.5rem; }
+.filmtv-cooccur-tip-kw   { font-weight: 600; font-size: 0.9rem; line-height: 1.25; }
+.filmtv-cooccur-tip-year { font-size: 0.8rem; }
+.filmtv-cooccur-tip-count { margin-top: 0.15rem; font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+
+/* ---------- "max reached" notice (transient) ---------- */
+.filmtv-cooccur-note {
+  position: absolute;
+  left: 50%;
+  bottom: 0.5rem;
+  transform: translateX(-50%);
+  z-index: 6;
+  padding: 0.4rem 0.7rem;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.filmtv-cooccur-note.is-on { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .filmtv-cooccur-tooltip,
+  .filmtv-cooccur-note { transition: none; }
+}
