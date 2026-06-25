@@ -77,6 +77,10 @@
     }
     .modal-close:hover { background: #eef4e3; }
     .modal-foot { margin-top: 0.75rem; font-size: 0.8rem; color: #6f8a4d; }
+    .modal-alert {
+      margin: 0.75rem 0 0; padding: 0.5rem 0.75rem; border-radius: 8px;
+      background: #fbeaea; border: 1px solid #e3b7b7; color: #8a1c2b; font-size: 0.85rem;
+    }
   </style>
 </head>
 <body>
@@ -88,7 +92,7 @@
 
     <!-- mock search row -->
     <div class="searchbar">
-      <input type="text" value="楚原" aria-label="搜尋關鍵字" />
+      <input type="text" id="search-input" value="楚原" aria-label="搜尋關鍵字" />
       <button class="search-btn primary" type="button">搜尋</button>
 
       <!-- MAST modal trigger pattern: the <dialog> immediately precedes its
@@ -104,7 +108,8 @@
             <!-- cooccur.js mounts here. data-height optional (default 480). -->
             <div data-cooccur data-height="480" data-src="sample-data/cooccur-sample.json"></div>
 
-            <p class="modal-foot">滑過任一格（含空白年份）查看該關鍵字當年的篇數；點按左側關鍵字即可加入搜尋（最多 5 個）。</p>
+            <p class="modal-alert" id="cooccur-alert" role="alert" hidden></p>
+            <p class="modal-foot">滑過任一格（含空白年份）查看該關鍵字當年的篇數；點按關鍵字即加入搜尋並重新檢索。</p>
           </div>
         </dialog>
         <button class="search-btn ghost" type="button">查看相關關鍵字</button>
@@ -139,27 +144,39 @@
       });
     })();
 
-    /* ---- demo backend: react to the chart's keyword events ----
-       In production: add/remove the term, re-run the search, then call
-       filmtvCooccur.render(rootEl, newData) with an updated `selected` list. */
+    /* ---- demo "backend": everything the chart does NOT do ----
+       The chart only fires filmtv:addKeyword on click. The backend owns the
+       rest: add the term, reflect it in the search input, close the modal,
+       re-run the search — and enforce the max of 5 (show the limit message
+       only when the search already holds 5 keywords). */
     (function () {
       var MAX = 5;
-      var terms = document.getElementById("terms");
-      var X = "楚原";                 // the searched keyword (always present)
+      var X = "楚原";                 // the searched keyword (counts toward the 5)
       var picked = [];                // co-occurring keywords added to the search
+      var input = document.getElementById("search-input");
+      var terms = document.getElementById("terms");
+      var alertEl = document.getElementById("cooccur-alert");
+      var modal = document.getElementById("cooccur-modal");
 
       function repaint() {
         terms.innerHTML = '<span class="lead">目前搜尋：</span><span class="term is-x">' + X + "</span>" +
           picked.map(function (k) { return '<span class="term">' + k + "</span>"; }).join("");
+        input.value = [X].concat(picked).join("　");   // reflected in the input box
       }
+      repaint();
+
       document.addEventListener("filmtv:addKeyword", function (e) {
         var k = e.detail.label;
-        if (picked.indexOf(k) < 0 && picked.length < MAX) picked.push(k);
-        repaint();
-      });
-      document.addEventListener("filmtv:removeKeyword", function (e) {
-        picked = picked.filter(function (k) { return k !== e.detail.label; });
-        repaint();
+        if (picked.indexOf(k) >= 0) { modal.close(); return; }   // already searched
+        if (1 + picked.length >= MAX) {                          // 5 keywords already → limit message
+          alertEl.hidden = false;
+          alertEl.textContent = "已達 " + MAX + " 個關鍵字上限，請先移除其他關鍵字再加入。";
+          return;                                                // keep modal open, don't add
+        }
+        picked.push(k);
+        repaint();                 // (here the real backend would re-run the search)
+        alertEl.hidden = true;
+        modal.close();             // one click: add + close
       });
     })();
   </script>

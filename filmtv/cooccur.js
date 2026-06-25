@@ -9,35 +9,38 @@
  *              article count DESC (biggest at top)
  *   • bubble : area encodes that keyword's count in that year
  *   • legend : the y-axis labels themselves — right-aligned "keyword（共N篇）"
- *              buttons; clicking one adds the keyword to the search
+ *              buttons; clicking one ADDS the keyword to the search
  *
- * HOVER / CLICK ARE GRID-CELL BASED, NOT BUBBLE BASED. Each (year × keyword)
- * cell is a transparent hit target; the bubbles have pointer-events:none. So
- * overlapping bubbles never create dead zones or ambiguous targets — the cursor
- * always resolves to exactly one cell.
+ * LAYOUT: each keyword is one ROW = [label button] + [bubble strip] in a 2-col
+ * grid (see cooccur.css). At <=767px the grid collapses to one column, so each
+ * left-aligned label stacks on top of its own strip. A shared year axis sits
+ * at the bottom.
+ *
+ * HOVER IS GRID-CELL BASED, NOT BUBBLE BASED. Each (year × keyword) cell is a
+ * transparent hit target; bubbles have pointer-events:none, so overlapping
+ * bubbles never create dead zones — the cursor always resolves to one cell.
+ *
+ * BUBBLE SIZE is absolute: r = sqrt(count) * MULT, with a floor at the legend
+ * dot's radius (so count=1 reads as a real dot) and a cap at ~half the strip
+ * height (so big counts can't overflow into neighbouring rows). It does NOT
+ * depend on viewport width, so bubbles keep their size as the modal narrows.
  *
  * Integration API (global), mirrors window.filmtvChart:
  *   window.filmtvCooccur.render(rootEl, data)
  *   window.filmtvCooccur.redraw(rootEl?)        // re-measure + redraw (e.g. on modal open)
  *
  * data shape (pre-aggregated — the backend computes the co-occurrence):
- *   {
- *     keyword : "楚原",                 // the searched term X (for the title/aria)
- *     years   : [1955, ... 1997],       // x domain, ascending
- *     series  : [ { key, label, total, counts:[ per-year ] }, ... ],  // any order
- *     selected: ["井莉", ...]            // OPTIONAL: keys already in the search bar
- *   }                                    //  (authoritative selected state, if known)
- * cooccur.js sorts series by total desc, keeps the top 10, and colours them by
- * row. `key` is a stable id (may differ from the display `label`).
+ *   { keyword:"楚原", years:[1955,…,1997],
+ *     series:[ { key, label, total, counts:[…per year…] }, … ] }   // any order
+ * cooccur.js sorts series by total desc, keeps the top 10, colours them by row.
  *
- * Ownership split (same as chart.js): this file owns the VISUAL + the click
- * affordance; the BACKEND owns the SEARCH STATE. Clicking a keyword FIRES a
- * bubbling event and nothing else — the backend listens, adds/removes the term
- * (enforcing the max of 5 keywords per search), and re-renders with `selected`:
- *   • add a keyword     -> filmtv:addKeyword     { detail: { key, label, total } }
- *   • remove a keyword  -> filmtv:removeKeyword   { detail: { key, label } }
- *   document.addEventListener("filmtv:addKeyword", e =>
- *     addTermToSearch(e.detail.key).then(data => filmtvCooccur.render(rootEl, data)));
+ * CLICK → SEARCH (ownership split, see chart.js): the chart only makes the
+ * legend clickable and FIRES one bubbling event per click; it keeps NO search
+ * state of its own. The backend listens, adds the term, closes the modal,
+ * reflects it in the search input and re-runs the search — and owns the max-5
+ * rule (show the limit message only when the search already holds 5 keywords):
+ *   • click a keyword -> filmtv:addKeyword { detail: { key, label, total } }
+ *   document.addEventListener("filmtv:addKeyword", e => addTermAndSearch(e.detail.key));
  *
  * A thin self-fetch of DATA_URL runs only as the MOCK driver; the backend
  * removes it and calls render() with the live result set.
@@ -45,7 +48,7 @@
  * data-* contract:
  *   [data-cooccur]   chart root (one per instance)
  *   [data-src]       optional JSON url override for the mock driver
- *   [data-height]    optional plot height in px (default 480)
+ *   [data-height]    optional total plot height in px (default 480)
  * ============================================================ */
 (function () {
   "use strict";
@@ -60,14 +63,14 @@
   /* >>> MOCK DATA URL <<< backend replaces this (or removes the self-fetch). */
   var DATA_URL = new URL("./sample-data/cooccur-sample.json", SELF).href;
 
-  var TOP_N = 10;            // keyword rows shown
-  var MAX_KEYWORDS = 5;      // UI guard only — the backend is the source of truth
-  var UNIT = " 篇";          // article-count unit, matches the archive UI
+  var TOP_N = 10;       // keyword rows shown
+  var UNIT = " 篇";     // article-count unit, matches the archive UI
+  var AXIS_H = 26;      // year-axis height (px), kept in sync with cooccur.css
 
-  // plot insets (px). top/bottom are mirrored as legend padding so the rows of
-  // the HTML legend line up with the SVG rows. left is a small gutter (the
-  // labels live outside the SVG); bottom leaves room for the year axis.
-  var GEOM = { top: 10, right: 18, bottom: 28, left: 6 };
+  // ---- bubble sizing (absolute; viewport-width independent) ----
+  var MULT = 3;         // r = sqrt(count) * MULT  (your mock's "Multiplier 3, Floor 0")
+  var MIN_R = 4;        // smallest bubble radius (px) = legend colour-dot radius (dot is 8px ⌀)
+  var PAD_X = 4;        // horizontal inset inside a strip so edge bubbles aren't clipped
 
   /* Fallback categorical palette (CSS vars --filmtv-cooccur-color-N override). */
   var PALETTE = [
@@ -90,8 +93,6 @@
     var st = {
       height: parseInt(root.getAttribute("data-height"), 10) || 480,
       model: null,
-      selected: {},     // key -> true (local mirror; backend may overwrite via render)
-      noteTimer: 0,
       raf: 0
     };
     root.__cooccur = st;
@@ -99,18 +100,17 @@
     bindHover(root, st);
     bindLegend(root, st);
 
-    // redraw on container resize (debounced to one frame)
     if (typeof ResizeObserver === "function") {
       new ResizeObserver(function () {
         if (st.raf) return;
         st.raf = requestAnimationFrame(function () { st.raf = 0; draw(root); });
-      }).observe(st.canvas);
+      }).observe(st.rows);
     } else {
       window.addEventListener("resize", function () { draw(root); });
     }
 
-    // if the chart sits inside a <dialog> (the design-system modal), the canvas
-    // has zero size until the dialog opens — redraw the moment it does.
+    // inside a <dialog> (the design-system modal) the strips are 0-size until it
+    // opens — redraw the moment it does.
     var dlg = root.closest && root.closest("dialog");
     if (dlg && typeof MutationObserver === "function") {
       new MutationObserver(function () {
@@ -122,34 +122,19 @@
     return st;
   }
 
-  // Build the inner DOM once: legend column (left) + canvas with SVG + tooltip.
+  // Build the persistent shell once: the rows grid + a tooltip.
   function buildShell(root, st) {
     root.classList.add("filmtv-cooccur");
-    // expose the row-band insets so the CSS legend padding can match the SVG
-    root.style.setProperty("--filmtv-cooccur-pad-top", GEOM.top + "px");
-    root.style.setProperty("--filmtv-cooccur-pad-bottom", GEOM.bottom + "px");
+    // strip height derives from data-height: (total - axis) / rows
+    var rowH = Math.max(20, Math.round((st.height - AXIS_H) / TOP_N));
+    root.style.setProperty("--filmtv-cooccur-row-h", rowH + "px");
 
-    var body = el("div", "filmtv-cooccur-body");
-    var legend = el("div", "filmtv-cooccur-legend");
-    legend.setAttribute("role", "list");
-    var canvas = el("div", "filmtv-cooccur-canvas");
-    canvas.style.height = st.height + "px";
-    legend.style.height = st.height + "px";
-    var svgHost = el("div", "filmtv-cooccur-svg");
+    var rows = el("div", "filmtv-cooccur-rows");
     var tooltip = el("div", "filmtv-cooccur-tooltip");
     tooltip.setAttribute("aria-hidden", "true");
-    var note = el("div", "filmtv-cooccur-note");
-    note.setAttribute("aria-hidden", "true");
-
-    canvas.appendChild(svgHost);
-    canvas.appendChild(tooltip);
-    canvas.appendChild(note);
-    body.appendChild(legend);
-    body.appendChild(canvas);
-    root.appendChild(body);
-
-    st.body = body; st.legend = legend; st.canvas = canvas;
-    st.svgHost = svgHost; st.tooltip = tooltip; st.note = note;
+    root.appendChild(rows);
+    root.appendChild(tooltip);
+    st.root = root; st.rows = rows; st.tooltip = tooltip;
   }
 
   function mockFetch(root, st) {
@@ -169,13 +154,8 @@
     }
     var st = root.__cooccur || initChart(root);
     st.model = buildModel(root, data || {});
-    // authoritative selected state from the backend, when provided
-    if (Array.isArray(data && data.selected)) {
-      st.selected = {};
-      data.selected.forEach(function (k) { st.selected[k] = true; });
-    }
     hideTip(st);
-    renderLegend(root, st);
+    renderRows(root, st);
     draw(root);
   }
 
@@ -197,101 +177,106 @@
 
     series.forEach(function (s, i) { s.color = palette[i % palette.length]; });
 
-    var maxCount = 0;
-    series.forEach(function (s) {
-      for (var i = 0; i < s.counts.length; i++) if (s.counts[i] > maxCount) maxCount = s.counts[i];
-    });
-
-    return { keyword: data.keyword || "", years: years, series: series, maxCount: maxCount || 1 };
+    return { keyword: data.keyword || "", years: years, series: series };
   }
 
-  /* ---------- draw (SVG) ---------- */
+  /* ---------- build the per-row DOM (label + empty strip), once per render ---------- */
+  function renderRows(root, st) {
+    var m = st.model, html = "";
+    m.series.forEach(function (s, ki) {
+      html +=
+        '<button type="button" class="filmtv-cooccur-legend-item" data-key="' + esc(s.key) +
+          '" aria-label="' + esc("加入搜尋：" + s.label + "（共" + fmt(s.total) + "篇）") + '">' +
+          '<span class="filmtv-cooccur-legend-label">' + esc(s.label) + '</span>' +
+          '<span class="filmtv-cooccur-legend-count">（共' + fmt(s.total) + '篇）</span>' +
+          '<span class="filmtv-cooccur-legend-dot" style="background:' + s.color + '"></span>' +
+        '</button>' +
+        '<div class="filmtv-cooccur-strip" data-ki="' + ki + '"></div>';
+    });
+    html += '<div class="filmtv-cooccur-axis-spacer"></div><div class="filmtv-cooccur-axis-plot"></div>';
+    st.rows.innerHTML = html;
+  }
+
+  /* ---------- draw: fill each strip's SVG from its measured size ---------- */
   function draw(root) {
     var st = root.__cooccur;
     if (!st || !st.model) return;
-    var W = st.canvas.clientWidth || 0;
-    var H = st.height;
-    if (W < 2) return;   // hidden (e.g. modal not open yet) — redrawn on open
+    var m = st.model, years = m.years, ny = years.length;
+    if (!ny || !m.series.length) return;
 
-    var m = st.model, years = m.years, series = m.series;
-    var ny = years.length, nk = series.length;
-    if (!ny || !nk) { st.svgHost.innerHTML = ""; return; }
+    var strips = st.rows.querySelectorAll(".filmtv-cooccur-strip");
+    if (!strips.length) return;
+    var W = strips[0].clientWidth || 0;
+    if (W < 2) return;   // hidden (modal not open yet) — redrawn on open
 
-    var plotW = Math.max(1, W - GEOM.left - GEOM.right);
-    var plotH = Math.max(1, H - GEOM.top - GEOM.bottom);
-    var band = plotW / ny;             // width of one year column
-    var rowH = plotH / nk;             // height of one keyword row
+    var plotW = Math.max(1, W - PAD_X * 2);
+    var band = plotW / ny;
+    function X(yi) { return PAD_X + (yi + 0.5) * band; }
 
-    function X(yi) { return GEOM.left + (yi + 0.5) * band; }
-    function rowMid(ki) { return GEOM.top + (ki + 0.5) * rowH; }
+    for (var ki = 0; ki < strips.length; ki++) {
+      var strip = strips[ki];
+      var H = strip.clientHeight || 0;
+      var cy = H / 2;
+      var capR = Math.max(MIN_R, H * 0.46);          // never taller than the row
+      var row = m.series[ki];
+      var s = ['<svg class="filmtv-cooccur-svg-el" width="' + W + '" height="' + H +
+        '" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' +
+        esc(row.label + "：" + ariaRow(m, ki)) + '">'];
 
-    // bubble area ∝ count. Largest count fills most of a row; capped so it never
-    // dwarfs the band. Tiny but non-zero counts keep a visible minimum dot.
-    var maxR = Math.max(3, Math.min(rowH * 0.46, band * 0.95));
-    function R(v) { return v > 0 ? Math.max(2.5, Math.sqrt(v / m.maxCount) * maxR) : 0; }
+      // row baseline
+      s.push('<line class="filmtv-cooccur-baseline" x1="0" y1="' + round(H - 0.5) +
+        '" x2="' + W + '" y2="' + round(H - 0.5) + '"/>');
 
-    var s = [];
-    s.push('<svg class="filmtv-cooccur-svg-el" width="' + W + '" height="' + H +
-      '" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' +
-      esc(ariaSummary(m)) + '">');
-
-    // row baselines (one per keyword) — faint, like the reference chart
-    for (var ki = 0; ki < nk; ki++) {
-      var by = round(rowMid(ki) + rowH / 2);
-      s.push('<line class="filmtv-cooccur-baseline" x1="' + GEOM.left + '" y1="' + by +
-        '" x2="' + round(W - GEOM.right) + '" y2="' + by + '"/>');
-    }
-
-    // bubbles (pointer-events:none so the hit cells below receive the cursor)
-    for (ki = 0; ki < nk; ki++) {
-      var row = series[ki], cy = round(rowMid(ki));
+      // bubbles
       for (var yi = 0; yi < ny; yi++) {
         var v = row.counts[yi];
         if (v <= 0) continue;
-        s.push('<circle class="filmtv-cooccur-bubble" cx="' + round(X(yi)) + '" cy="' + cy +
-          '" r="' + R(v).toFixed(1) + '" fill="' + row.color + '"/>');
+        var r = Math.min(capR, Math.max(MIN_R, Math.sqrt(v) * MULT));
+        s.push('<circle class="filmtv-cooccur-bubble" cx="' + round(X(yi)) + '" cy="' + round(cy) +
+          '" r="' + r.toFixed(1) + '" fill="' + row.color + '"/>');
       }
-    }
 
-    // year axis labels at decade/5-year marks (thinned to fit the width)
-    var step = labelStep(years, plotW);
-    for (yi = 0; yi < ny; yi++) {
-      if (years[yi] % step !== 0) continue;
-      s.push('<text class="filmtv-cooccur-xlabel" x="' + round(X(yi)) + '" y="' + (H - 9) +
-        '" text-anchor="middle">' + years[yi] + '</text>');
-    }
-
-    // transparent hit cell per (year × keyword) — the interaction surface
-    for (ki = 0; ki < nk; ki++) {
-      var ry = round(GEOM.top + ki * rowH);
+      // transparent hit cell per year
       for (yi = 0; yi < ny; yi++) {
         s.push('<rect class="filmtv-cooccur-hit" data-ki="' + ki + '" data-yi="' + yi +
-          '" x="' + round(GEOM.left + yi * band) + '" y="' + ry +
-          '" width="' + Math.ceil(band) + '" height="' + Math.ceil(rowH) + '"/>');
+          '" x="' + round(PAD_X + yi * band) + '" y="0" width="' + Math.ceil(band) +
+          '" height="' + H + '"/>');
       }
+      s.push("</svg>");
+      strip.innerHTML = s.join("");
     }
 
-    s.push("</svg>");
-    st.svgHost.innerHTML = s.join("");
-    st.geom = { X: X, rowMid: rowMid, band: band, rowH: rowH };
+    // shared year axis
+    var axis = st.rows.querySelector(".filmtv-cooccur-axis-plot");
+    if (axis) {
+      var aw = axis.clientWidth || W, ah = axis.clientHeight || AXIS_H;
+      var apW = Math.max(1, aw - PAD_X * 2), aband = apW / ny;
+      var step = labelStep(years, apW);
+      var a = ['<svg class="filmtv-cooccur-svg-el" width="' + aw + '" height="' + ah +
+        '" viewBox="0 0 ' + aw + ' ' + ah + '">'];
+      for (var xi = 0; xi < ny; xi++) {
+        if (years[xi] % step !== 0) continue;
+        a.push('<text class="filmtv-cooccur-xlabel" x="' + round(PAD_X + (xi + 0.5) * aband) +
+          '" y="15" text-anchor="middle">' + years[xi] + '</text>');
+      }
+      a.push("</svg>");
+      axis.innerHTML = a.join("");
+    }
   }
 
   /* ---------- hover: tooltip keyed to the GRID CELL ---------- */
   function bindHover(root, st) {
-    var canvas = st.canvas;
     if (HOVER) {
-      canvas.addEventListener("mousemove", function (e) {
+      st.rows.addEventListener("mousemove", function (e) {
         var hit = closest(e.target, ".filmtv-cooccur-hit");
-        if (!hit || !st.geom) return hideTip(st);
-        showTip(root, st, +hit.getAttribute("data-ki"), +hit.getAttribute("data-yi"));
+        if (!hit) return hideTip(st);
+        showTip(root, st, hit);
       });
-      canvas.addEventListener("mouseleave", function () { hideTip(st); });
+      st.rows.addEventListener("mouseleave", function () { hideTip(st); });
     } else {
-      // touch: tap a cell to reveal its tooltip; tap elsewhere to dismiss
-      canvas.addEventListener("click", function (e) {
+      st.rows.addEventListener("click", function (e) {
         var hit = closest(e.target, ".filmtv-cooccur-hit");
-        if (!hit || !st.geom) return;
-        showTip(root, st, +hit.getAttribute("data-ki"), +hit.getAttribute("data-yi"));
+        if (hit) showTip(root, st, hit);
       });
       document.addEventListener("click", function (e) {
         if (!root.contains(e.target)) hideTip(st);
@@ -299,7 +284,8 @@
     }
   }
 
-  function showTip(root, st, ki, yi) {
+  function showTip(root, st, hit) {
+    var ki = +hit.getAttribute("data-ki"), yi = +hit.getAttribute("data-yi");
     var m = st.model, row = m.series[ki];
     if (!row) return hideTip(st);
     var v = row.counts[yi] || 0, year = m.years[yi];
@@ -313,14 +299,15 @@
     st.tooltip.classList.add("is-on");
     st.tooltip.setAttribute("aria-hidden", "false");
 
-    // centre over the cell, above it, flipping below near the top edge
-    var W = st.canvas.clientWidth;
-    var cx = st.geom.X(yi), cy = st.geom.rowMid(ki);
+    // place above the hovered cell's centre, in root-relative coords
+    var hr = hit.getBoundingClientRect(), rr = root.getBoundingClientRect();
+    var cx = hr.left - rr.left + hr.width / 2;
+    var cyMid = hr.top - rr.top + hr.height / 2;
     var tw = st.tooltip.offsetWidth, th = st.tooltip.offsetHeight;
-    st.tooltip.style.left = Math.max(tw / 2 + 2, Math.min(cx, W - tw / 2 - 2)) + "px";
-    var below = (cy - 12 - th) < 4;
+    st.tooltip.style.left = Math.max(tw / 2 + 2, Math.min(cx, rr.width - tw / 2 - 2)) + "px";
+    var below = (cyMid - 12 - th) < 0;
     st.tooltip.classList.toggle("is-below", below);
-    st.tooltip.style.top = (below ? cy + 12 : cy - 12) + "px";
+    st.tooltip.style.top = (below ? cyMid + 12 : cyMid - 12) + "px";
   }
 
   function hideTip(st) {
@@ -328,70 +315,26 @@
     st.tooltip.setAttribute("aria-hidden", "true");
   }
 
-  /* ---------- legend (= y-axis labels): click adds the keyword ---------- */
+  /* ---------- legend click: fire ONE add-keyword event, nothing else ----------
+     The backend owns everything after this: it adds the term, closes the modal,
+     reflects the keyword in the search input, re-runs the search, and enforces
+     the max of 5 keywords (showing the limit message only when 5 already exist). */
   function bindLegend(root, st) {
-    st.legend.addEventListener("click", function (e) {
+    st.rows.addEventListener("click", function (e) {
       var btn = closest(e.target, "[data-key]");
       if (!btn) return;
-      var key = btn.getAttribute("data-key");
-      var s = findSeries(st, key);
-      var label = s ? s.label : key;
-
-      if (st.selected[key]) {                       // already in the search -> remove
-        delete st.selected[key];
-        setSelected(btn, false);
-        emit(root, "filmtv:removeKeyword", { key: key, label: label });
-        return;
-      }
-      if (countSelected(st) >= MAX_KEYWORDS) {       // UI guard; backend also enforces
-        showNote(st, "最多可選 " + MAX_KEYWORDS + " 個關鍵字");
-        return;
-      }
-      st.selected[key] = true;                       // add to the search
-      setSelected(btn, true);
-      emit(root, "filmtv:addKeyword", { key: key, label: label, total: s ? s.total : null });
+      var s = findSeries(st, btn.getAttribute("data-key"));
+      if (!s) return;
+      emit(root, "filmtv:addKeyword", { key: s.key, label: s.label, total: s.total });
     });
   }
 
-  function renderLegend(root, st) {
-    var html = st.model.series.map(function (s) {
-      var on = !!st.selected[s.key];
-      return '<button type="button" class="filmtv-cooccur-legend-item' + (on ? " is-selected" : "") +
-        '" role="listitem" data-key="' + esc(s.key) + '" aria-pressed="' + on +
-        '" aria-label="' + esc((on ? "從搜尋移除：" : "加入搜尋：") + s.label + "（共" + fmt(s.total) + "篇）") + '">' +
-        '<span class="filmtv-cooccur-legend-label">' + esc(s.label) + '</span>' +
-        '<span class="filmtv-cooccur-legend-count">（共' + fmt(s.total) + '篇）</span>' +
-        '<span class="filmtv-cooccur-legend-dot" style="background:' + s.color + '"></span>' +
-        '</button>';
-    }).join("");
-    st.legend.innerHTML = html;
-  }
-
-  function setSelected(btn, on) {
-    btn.classList.toggle("is-selected", on);
-    btn.setAttribute("aria-pressed", String(on));
-    var s = btn.getAttribute("data-key");
-    var label = btn.querySelector(".filmtv-cooccur-legend-label");
-    var count = btn.querySelector(".filmtv-cooccur-legend-count");
-    btn.setAttribute("aria-label",
-      (on ? "從搜尋移除：" : "加入搜尋：") + (label ? label.textContent : s) + (count ? count.textContent : ""));
-  }
-
-  function showNote(st, msg) {
-    st.note.textContent = msg;
-    st.note.classList.add("is-on");
-    clearTimeout(st.noteTimer);
-    st.noteTimer = setTimeout(function () { st.note.classList.remove("is-on"); }, 1800);
-  }
-
-  function countSelected(st) { return Object.keys(st.selected).length; }
   function findSeries(st, key) {
     var ss = st.model ? st.model.series : [];
     for (var i = 0; i < ss.length; i++) if (ss[i].key === key) return ss[i];
     return null;
   }
 
-  // dispatch a keyword selection (bubbles to document for the backend)
   function emit(root, name, detail) {
     var ev;
     try { ev = new CustomEvent(name, { detail: detail, bubbles: true }); }
@@ -403,7 +346,6 @@
   }
 
   /* ---------- helpers ---------- */
-  // pick 5 / 10 / 20-year label spacing so x labels don't collide
   function labelStep(years, plotW) {
     if (!years.length) return 10;
     var span = years[years.length - 1] - years[0] || 1;
@@ -423,11 +365,9 @@
     return out.length ? out : PALETTE.slice();
   }
 
-  function ariaSummary(m) {
-    if (!m.years.length) return "Keyword co-occurrence bubble chart, no data.";
-    return "Bubble chart: the " + m.series.length + " keywords most often mentioned with “" +
-      m.keyword + "”, by year " + m.years[0] + " to " + m.years[m.years.length - 1] +
-      ". Bubble size is the article count.";
+  function ariaRow(m, ki) {
+    var row = m.series[ki];
+    return "共 " + fmt(row.total) + " 篇，" + m.years[0] + " 至 " + m.years[m.years.length - 1] + " 年。";
   }
 
   function ready(fn) {

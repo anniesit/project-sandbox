@@ -6,10 +6,14 @@
  * searched keyword X. x = article year, y = the 10 keywords (one row each,
  * sorted by total article count desc). Bubble area encodes the per-year count.
  *
- * Same conventions as chart.css: ALL colour lives in PART 1 (tokens + where
- * each token is applied); PART 2 is structure/layout only. To re-theme, touch
- * only PART 1. Per-keyword bubble colours are the --filmtv-cooccur-color-N
- * tokens; cooccur.js reads them and writes them onto the SVG + legend inline.
+ * Layout: each keyword is one ROW = [label button] + [bubble strip], laid out
+ * in a 2-column grid so all rows share the same columns (labels align, strips
+ * align). At <=767px (mobile landscape) the grid collapses to ONE column, so
+ * each left-aligned label stacks on top of its own strip. A shared year axis
+ * sits at the bottom.
+ *
+ * Same convention as chart.css: ALL colour lives in PART 1; PART 2 is structure
+ * only. Per-keyword bubble colours are the --filmtv-cooccur-color-N tokens.
  * ============================================================ */
 
 /* ============================================================
@@ -18,8 +22,7 @@
 
 /* --- 1a. tokens --- */
 .filmtv-cooccur {
-  /* categorical palette — one colour per keyword row, in row order (desc by
-     total). 10 hues kept distinct enough to tell overlapping rows apart. */
+  /* categorical palette — one colour per keyword row, in row order (desc by total) */
   --filmtv-cooccur-color-1:  #534AB7;
   --filmtv-cooccur-color-2:  #D4537E;
   --filmtv-cooccur-color-3:  #1D9E75;
@@ -39,8 +42,7 @@
   --filmtv-cooccur-surface:  #ffffff;                  /* tooltip background */
   --filmtv-cooccur-border:   #E2EDD4;                  /* tooltip / divider */
   --filmtv-cooccur-shadow:   rgba(0, 0, 0, 0.16);
-  --filmtv-cooccur-accent:   var(--primary--accent, #638f34); /* selected + focus ring */
-  --filmtv-cooccur-on-accent:#ffffff;                  /* text on the accent */
+  --filmtv-cooccur-accent:   var(--primary--accent, #638f34); /* focus ring */
 }
 
 /* --- 1b. where each token is applied --- */
@@ -53,14 +55,8 @@
 .filmtv-cooccur-hit:hover  { fill: var(--filmtv-cooccur-band); }
 
 .filmtv-cooccur-legend-count { color: var(--filmtv-cooccur-muted); }
-
 .filmtv-cooccur-legend-item:hover         { background: var(--filmtv-cooccur-band); }
 .filmtv-cooccur-legend-item:focus-visible { outline: 2px solid var(--filmtv-cooccur-accent); }
-.filmtv-cooccur-legend-item.is-selected {
-  background: var(--filmtv-cooccur-accent);
-  color: var(--filmtv-cooccur-on-accent);
-}
-.filmtv-cooccur-legend-item.is-selected .filmtv-cooccur-legend-count { color: inherit; }
 
 .filmtv-cooccur-tooltip {
   background: var(--filmtv-cooccur-surface);
@@ -70,53 +66,42 @@
 .filmtv-cooccur-tip-year,
 .filmtv-cooccur-tip-count { color: var(--filmtv-cooccur-muted); }
 
-.filmtv-cooccur-note {
-  background: var(--filmtv-cooccur-surface);
-  border-color: var(--filmtv-cooccur-border);
-  box-shadow: 0 6px 20px var(--filmtv-cooccur-shadow);
-}
-
 /* ============================================================
  * PART 2 — STRUCTURE / LAYOUT  (no colours below this line)
  * ============================================================ */
 
 .filmtv-cooccur,
-.filmtv-cooccur * { box-sizing: border-box; }   /* legend height must include its padding so its rows match the SVG rows */
+.filmtv-cooccur * { box-sizing: border-box; }
 
 .filmtv-cooccur {
+  --filmtv-cooccur-row-h: 44px;          /* desktop strip height; cooccur.js overrides from data-height */
+  --filmtv-cooccur-row-h-mobile: 40px;   /* strip height when stacked */
+  --filmtv-cooccur-axis-h: 26px;
+  position: relative;                     /* tooltip anchors here */
   display: block;
   width: 100%;
   font-family: 'GenRyuMin2 TC', 'Songti TC', 'Noto Serif TC', 'PMingLiU', serif;
   -webkit-font-smoothing: antialiased;
 }
 
-/* legend (left, = the y axis) + plot (right) share one height so their rows
-   line up. cooccur.js writes the row-band insets as the two pad vars. */
-.filmtv-cooccur-body {
-  display: flex;
+/* rows grid: col 1 = the widest label (shared across all rows), col 2 = strips.
+   buttons and strips are direct grid items, flowing label,strip,label,strip… */
+.filmtv-cooccur-rows {
+  display: grid;
+  grid-template-columns: auto 1fr;
   align-items: stretch;
-  gap: 0.5rem;
-  width: 100%;
+  column-gap: 0.6rem;
 }
 
-/* ---------- legend / y-axis keyword labels ---------- */
-.filmtv-cooccur-legend {
-  flex: 0 1 auto;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  /* match the SVG plot's top/bottom insets so each button centres on its row */
-  padding-top: var(--filmtv-cooccur-pad-top, 10px);
-  padding-bottom: var(--filmtv-cooccur-pad-bottom, 30px);
-}
+/* ---------- legend / keyword labels (= the y axis) ---------- */
 .filmtv-cooccur-legend-item {
-  flex: 1 1 0;
-  min-height: 0;
+  grid-column: 1;
   display: flex;
   align-items: center;
-  justify-content: flex-end;   /* text aligned right, toward the plot */
+  justify-content: flex-end;          /* right-aligned, toward the plot */
   gap: 0.4rem;
-  width: 100%;
+  height: 100%;
+  min-width: 0;
   padding: 0 0.5rem;
   border: 0;
   border-radius: 5px;
@@ -127,28 +112,38 @@
   color: inherit;
   text-align: right;
   cursor: pointer;
-  transition: background 0.12s ease, color 0.12s ease;
+  transition: background 0.12s ease;
 }
 .filmtv-cooccur-legend-item:focus-visible { outline-offset: 1px; }
 .filmtv-cooccur-legend-label { font-weight: 500; }
 .filmtv-cooccur-legend-count { font-size: 0.82em; font-variant-numeric: tabular-nums; white-space: nowrap; }
-/* colour dot ties each label to its row's bubbles; sits on the plot side */
-.filmtv-cooccur-legend-dot {
+.filmtv-cooccur-legend-dot {            /* ties each label to its row's bubbles; ⌀ matches the count=1 bubble */
   flex: 0 0 auto;
-  width: 0.5rem;
-  height: 0.5rem;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
 }
 
-/* ---------- plot ---------- */
-.filmtv-cooccur-canvas { position: relative; flex: 1 1 auto; min-width: 0; }
-.filmtv-cooccur-svg,
-.filmtv-cooccur-svg-el { display: block; width: 100%; }
-
+/* ---------- bubble strips ---------- */
+.filmtv-cooccur-strip {
+  grid-column: 2;
+  height: var(--filmtv-cooccur-row-h);
+  min-width: 0;
+}
+.filmtv-cooccur-strip > svg,
+.filmtv-cooccur-svg-el { display: block; width: 100%; height: 100%; overflow: visible; }
 .filmtv-cooccur-baseline { stroke-width: 1; shape-rendering: crispEdges; }
-.filmtv-cooccur-xlabel   { font-size: 11px; }
 .filmtv-cooccur-bubble   { pointer-events: none; }   /* hits live on the cells */
-.filmtv-cooccur-hit      { cursor: default; }
+.filmtv-cooccur-hit      { cursor: pointer; }
+
+/* ---------- year axis (shared, bottom) ---------- */
+.filmtv-cooccur-axis-spacer { grid-column: 1; }
+.filmtv-cooccur-axis-plot {
+  grid-column: 2;
+  height: var(--filmtv-cooccur-axis-h);
+  min-width: 0;
+}
+.filmtv-cooccur-xlabel { font-size: 11px; }
 
 /* ---------- tooltip (transient, hover) ---------- */
 .filmtv-cooccur-tooltip {
@@ -175,25 +170,25 @@
 .filmtv-cooccur-tip-year { font-size: 0.8rem; }
 .filmtv-cooccur-tip-count { margin-top: 0.15rem; font-size: 0.85rem; font-variant-numeric: tabular-nums; }
 
-/* ---------- "max reached" notice (transient) ---------- */
-.filmtv-cooccur-note {
-  position: absolute;
-  left: 50%;
-  bottom: 0.5rem;
-  transform: translateX(-50%);
-  z-index: 6;
-  padding: 0.4rem 0.7rem;
-  border-width: 1px;
-  border-style: solid;
-  border-radius: 999px;
-  font-size: 0.8rem;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.15s ease;
+/* ============================================================
+ * MOBILE LANDSCAPE & BELOW (<=767px): stack each label on top of its strip
+ * ============================================================ */
+@media (max-width: 767px) {
+  .filmtv-cooccur-rows { grid-template-columns: 1fr; column-gap: 0; }
+  /* drop the explicit column placement so items flow into the single column */
+  .filmtv-cooccur-legend-item,
+  .filmtv-cooccur-strip,
+  .filmtv-cooccur-axis-plot { grid-column: auto; }
+  .filmtv-cooccur-legend-item {
+    justify-content: flex-start;        /* left-aligned */
+    text-align: left;
+    height: auto;
+    padding: 0.3rem 0.1rem 0.15rem;
+  }
+  .filmtv-cooccur-strip { height: var(--filmtv-cooccur-row-h-mobile); margin-bottom: 0.4rem; }
+  .filmtv-cooccur-axis-spacer { display: none; }   /* axis spans full width */
 }
-.filmtv-cooccur-note.is-on { opacity: 1; }
 
 @media (prefers-reduced-motion: reduce) {
-  .filmtv-cooccur-tooltip,
-  .filmtv-cooccur-note { transition: none; }
+  .filmtv-cooccur-tooltip { transition: none; }
 }
