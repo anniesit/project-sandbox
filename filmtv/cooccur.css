@@ -262,6 +262,7 @@
     grid-column: auto;
   }
   .filmtv-cooccur-legend-item {
+    justify-self: start; /* shrink to the label's width — only the label is clickable, not the whole row */
     justify-content: flex-start; /* left-aligned */
     text-align: left;
     height: auto;
