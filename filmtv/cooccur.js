@@ -50,8 +50,6 @@
  *   [data-src]       optional JSON url override for the mock driver
  *   [data-height]    optional total plot height in px (default 480)
  * ============================================================ */
-console.log("=== OVERRIDE ACTIVE ===");
-
 (function () {
   "use strict";
 
@@ -300,16 +298,22 @@ console.log("=== OVERRIDE ACTIVE ===");
 
   /* ---------- hover: tooltip keyed to the GRID CELL ---------- */
   function bindHover(root, st) {
-    if (HOVER) {
-      st.rows.addEventListener("mousemove", function (e) {
-        var hit = closest(e.target, ".filmtv-cooccur-hit");
-        if (!hit) return hideTip(st);
-        showTip(root, st, hit);
-      });
-      st.rows.addEventListener("mouseleave", function () {
-        hideTip(st);
-      });
-    } else {
+    // Hover (mouse) is bound UNCONDITIONALLY so a real mouse always gets the
+    // tooltip — even when the browser reports a coarse pointer (hybrid laptops,
+    // or devtools device-emulation while testing the mobile layout), which used
+    // to disable it.
+    st.rows.addEventListener("mousemove", function (e) {
+      var hit = closest(e.target, ".filmtv-cooccur-hit");
+      if (!hit) return hideTip(st);
+      showTip(root, st, hit);
+    });
+    st.rows.addEventListener("mouseleave", function () {
+      hideTip(st);
+    });
+
+    // Touch (no hover): also let a tap on a cell reveal its tooltip, and a tap
+    // outside dismiss it.
+    if (!HOVER) {
       st.rows.addEventListener("click", function (e) {
         var hit = closest(e.target, ".filmtv-cooccur-hit");
         if (hit) showTip(root, st, hit);
