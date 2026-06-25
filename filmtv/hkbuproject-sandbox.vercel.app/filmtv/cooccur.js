@@ -20,9 +20,9 @@
  * transparent hit target; bubbles have pointer-events:none, so overlapping
  * bubbles never create dead zones — the cursor always resolves to one cell.
  *
- * BUBBLE SIZE is absolute: r = R_AT_1 * count^GROWTH (area ∝ count at GROWTH
- * = 0.5). R_AT_1 sets the 1-article dot; there is NO cap, so large bubbles grow
- * with the count and may overflow / overlap neighbouring rows. Size does NOT
+ * BUBBLE SIZE is absolute: r = sqrt(count) * MULT, with a floor at the legend
+ * dot's radius (so count=1 reads as a real dot) and a cap at ~half the strip
+ * height (so big counts can't overflow into neighbouring rows). It does NOT
  * depend on viewport width, so bubbles keep their size as the modal narrows.
  *
  * Integration API (global), mirrors window.filmtvChart:
@@ -50,8 +50,6 @@
  *   [data-src]       optional JSON url override for the mock driver
  *   [data-height]    optional total plot height in px (default 480)
  * ============================================================ */
-console.log("=== OVERRIDE ACTIVE ===");
-
 (function () {
   "use strict";
 
@@ -69,10 +67,9 @@ console.log("=== OVERRIDE ACTIVE ===");
   var UNIT = " 篇"; // article-count unit, matches the archive UI
   var AXIS_H = 26; // year-axis height (px), kept in sync with cooccur.css
 
-  // ---- bubble sizing (absolute; viewport-width independent; NO cap) ----
-  // radius = R_AT_1 * count^GROWTH
-  var R_AT_1 = 2; // radius (px) of a 1-article bubble. 4 == the 8px legend dot; LOWER this to shrink the small dots.
-  var GROWTH = 0.75; // how fast bubbles grow with count. 0.5 = area ∝ count (recommended). Raise toward 1 to make big counts much bigger.
+  // ---- bubble sizing (absolute; viewport-width independent) ----
+  var MULT = 10; // r = sqrt(count) * MULT  (your mock's "Multiplier 3, Floor 0")
+  var MIN_R = 1; // smallest bubble radius (px) = legend colour-dot radius (dot is 8px ⌀)
   var PAD_X = 4; // horizontal inset inside a strip so edge bubbles aren't clipped
 
   /* Fallback categorical palette (CSS vars --filmtv-cooccur-color-N override). */
@@ -258,6 +255,7 @@ console.log("=== OVERRIDE ACTIVE ===");
       var strip = strips[ki];
       var H = strip.clientHeight || 0;
       var cy = H / 2;
+      var capR = Math.max(MIN_R, H * 0.46); // never taller than the row
       var row = m.series[ki];
       var s = ['<svg class="filmtv-cooccur-svg-el" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="' + esc(row.label + "：" + ariaRow(m, ki)) + '">'];
 
@@ -268,8 +266,8 @@ console.log("=== OVERRIDE ACTIVE ===");
       for (var yi = 0; yi < ny; yi++) {
         var v = row.counts[yi];
         if (v <= 0) continue;
-        var r = R_AT_1 * Math.pow(v, GROWTH); // no cap — big bubbles overflow/overlap freely
-        s.push('<circle class="filmtv-cooccur-bubble" cx="' + round(X(yi)) + '" cy="' + round(cy) + '" r="' + r.toFixed(1) + '" fill="' + row.color + '" stroke="' + row.color + '"/>');
+        var r = Math.min(capR, Math.max(MIN_R, Math.sqrt(v) * MULT));
+        s.push('<circle class="filmtv-cooccur-bubble" cx="' + round(X(yi)) + '" cy="' + round(cy) + '" r="' + r.toFixed(1) + '" fill="' + row.color + '"/>');
       }
 
       // transparent hit cell per year
