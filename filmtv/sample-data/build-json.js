@@ -5,10 +5,10 @@
  *
  * Reads the CSV in this folder and writes the JSON results.js consumes.
  * Re-run this whenever the CSV changes. The CSV may hold MULTIPLE
- * publications (one isPost per book); the book view groups by isPost.
+ * publications (one BookNumber per book); the book view groups by bookNumber.
  *
  * Field mapping (CSV column -> JSON key) follows the data-* contract.
- * Thumbnails live at  <THUMB_BASE>/<isPost>/<file>.
+ * Thumbnails live at  <THUMB_BASE>/<bookNumber>/<file>.
  * ============================================================ */
 var fs = require("fs");
 var path = require("path");
@@ -20,8 +20,8 @@ var OUT = path.join(__dirname, "2922.json");
 var COUNTS = { articles: 10390, books: 1935 };
 
 // Per-publication thumbnail config (sample only; a real backend returns image
-// URLs directly). base = storage path up to (not including) the <isPost>/ folder.
-//   coverOnly true  -> every article shows the issue cover (<isPost>_001.jpg)
+// URLs directly). base = storage path up to (not including) the <bookNumber>/ folder.
+//   coverOnly true  -> every article shows the issue cover (<bookNumber>_001.jpg)
 //             false -> per-article image from the CSV "image" column
 var PUB_CONFIG = {
   "2922": { base: "https://storage.lib.hkbu.edu.hk/filmpamphlet/Thumbnail/", coverOnly: false },
@@ -55,11 +55,11 @@ function clean(v) {
   return s === "" || s === "NULL" ? null : s;
 }
 
-function thumb(isPost, image) {
-  if (!isPost) return null;
-  var cfg = PUB_CONFIG[isPost] || DEFAULT_CONFIG;
-  var folder = cfg.base + isPost + "/";
-  if (cfg.coverOnly) return folder + isPost + "_001.jpg"; // issue cover for all articles
+function thumb(bookNumber, image) {
+  if (!bookNumber) return null;
+  var cfg = PUB_CONFIG[bookNumber] || DEFAULT_CONFIG;
+  var folder = cfg.base + bookNumber + "/";
+  if (cfg.coverOnly) return folder + bookNumber + "_001.jpg"; // issue cover for all articles
   var file = clean(image);
   if (!file) return null;
   file = file.split("---")[0].trim();            // first image of a "a---b" pair
@@ -73,12 +73,12 @@ var col = {};
 header.forEach(function (h, i) { col[h.trim()] = i; });
 
 var items = rows
-  .filter(function (r) { return r.length > 1 && clean(r[col["BookNumber"]]); })
+  .filter(function (r) { return r.length > 1 && clean(r[col["id"]]); })
   .map(function (r) {
-    var isPost = clean(r[col["isPost"]]);
+    var bookNumber = clean(r[col["BookNumber"]]);
     return {
-      id: clean(r[col["BookNumber"]]),
-      isPost: isPost,
+      id: clean(r[col["id"]]),
+      bookNumber: bookNumber,
       journal: clean(r[col["journal_zht"]]),
       journalIssue: clean(r[col["journalIssue"]]),
       datePublished: clean(r[col["datePublished"]]),
@@ -88,7 +88,7 @@ var items = rows
       author: clean(r[col["author_zht"]]),
       page: clean(r[col["pageStart"]]),
       type: clean(r[col["ArticleType"]]),
-      image: thumb(isPost, r[col["image"]]),
+      image: thumb(bookNumber, r[col["image"]]),
       href: "#"
     };
   });
@@ -97,8 +97,8 @@ var out = { counts: COUNTS, imageBase: "", items: items };
 fs.writeFileSync(OUT, JSON.stringify(out, null, 2) + "\n", "utf8");
 
 // summary
-var byPost = {};
-items.forEach(function (it) { byPost[it.isPost] = (byPost[it.isPost] || 0) + 1; });
+var byBook = {};
+items.forEach(function (it) { byBook[it.bookNumber] = (byBook[it.bookNumber] || 0) + 1; });
 console.log("wrote " + items.length + " items to " + path.basename(OUT));
-console.log("books (isPost):", byPost);
+console.log("books (bookNumber):", byBook);
 console.log("sample image:", items[0].image);

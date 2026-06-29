@@ -11,7 +11,7 @@
  * Integration API (global):
  *   window.filmtvResults.render(rootEl, { items, counts, imageBase })
  *     rootEl  : the [data-results] element (or omit to render all)
- *     items   : array for the CURRENT page (book view groups them by isPost)
+ *     items   : array for the CURRENT page (book view groups them by bookNumber)
  *     counts  : { articles, books } for the toggle (optional; else computed)
  *     imageBase: optional prefix when items carry filenames (else full URLs)
  *   window.filmtvResults.setView(rootEl, "article" | "book")
@@ -86,6 +86,11 @@
   };
   var TYPE_VARIANT_CLASSES = ["is-film", "is-cultural", "is-comm", "is-other"];
 
+  // A book row's nested article list collapses beyond this many articles, with a
+  // "顯示其餘 N 篇 / 收起" toggle. Purely visual — all articles are already in the
+  // payload; nothing is re-fetched.
+  var BOOK_ARTICLES_VISIBLE = 20;
+
   /* ---------- bootstrap ---------- */
   ready(function () {
     injectViewCss();
@@ -105,7 +110,16 @@
     st.id = "filmtv-results-css";
     st.textContent =
       '[data-results][data-view="article"] [data-view-panel="book"],' +
-      '[data-results][data-view="book"] [data-view-panel="article"]{display:none !important}';
+      '[data-results][data-view="book"] [data-view-panel="article"]{display:none !important}' +
+      // Collapsible overflow of a book row's article list. The grid-template-rows
+      // 0fr->1fr trick animates an arbitrary number of rows with no JS measuring
+      // and no inline styles (just a class toggle). Restyle .book-article-toggle
+      // in Webflow; these rules are only the structural animation.
+      '.book-article-more{display:grid;grid-template-rows:0fr;transition:grid-template-rows .28s ease}' +
+      '.book-article-more.is-open{grid-template-rows:1fr}' +
+      '.book-article-more>*{min-height:0;overflow:hidden}' +
+      '.book-article-toggle{cursor:pointer}' +
+      '@media (prefers-reduced-motion:reduce){.book-article-more{transition:none}}';
     (document.head || document.documentElement).appendChild(st);
   }
 
@@ -191,7 +205,7 @@
       var bTpl = tplSource(bTplEl), bHost = bTplEl.parentNode;
       hideTemplate(bTplEl);
       removeClones(bHost);
-      var groups = groupBy(items, "isPost");
+      var groups = groupBy(items, "bookNumber");
       var bf = document.createDocumentFragment();
       for (var g = 0; g < groups.length; g++) bf.appendChild(buildBookRow(bTpl, groups[g], imageBase));
       bHost.appendChild(bf);
@@ -202,7 +216,7 @@
   function setCounts(root, data, items) {
     var c = data.counts || {};
     var aCount = c.articles != null ? c.articles : items.length;
-    var bCount = c.books != null ? c.books : groupBy(items, "isPost").length;
+    var bCount = c.books != null ? c.books : groupBy(items, "bookNumber").length;
     setAll(root, '[data-count="article"]', formatNum(aCount));
     setAll(root, '[data-count="book"]', formatNum(bCount));
   }
@@ -244,11 +258,50 @@
     var liTpl = article0.closest("li") || article0;
     var liHost = liTpl.parentNode;
     while (liHost.firstChild) liHost.removeChild(liHost.firstChild);
-    for (var i = 0; i < articles.length; i++) {
+
+    var capped = articles.length > BOOK_ARTICLES_VISIBLE;
+    var visible = capped ? BOOK_ARTICLES_VISIBLE : articles.length;
+    for (var i = 0; i < visible; i++) {
       var li = liTpl.cloneNode(true);
       fillBookArticle(li, articles[i]);
       liHost.appendChild(li);
     }
+    if (capped) addCollapsedArticles(liHost, liTpl, articles.slice(visible));
+  }
+
+  // Render the articles past the visible cap inside an animatable wrapper, plus a
+  // text toggle. The wrapper is a sibling placed AFTER the visible list so the
+  // markup stays valid — the overflow items live in their own list of the same
+  // class (inheriting the Webflow list styling). Everything sits inside the book
+  // row clone, so it's discarded automatically on the next render.
+  function addCollapsedArticles(liHost, liTpl, extra) {
+    var wrap = document.createElement("div");
+    wrap.className = "book-article-more";
+    var inner = document.createElement(liHost.tagName);
+    inner.className = liHost.className;
+    for (var i = 0; i < extra.length; i++) {
+      var li = liTpl.cloneNode(true);
+      fillBookArticle(li, extra[i]);
+      inner.appendChild(li);
+    }
+    wrap.appendChild(inner);
+
+    var moreLabel = "顯示其餘 " + extra.length + " 篇";
+    var lessLabel = "收起";
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "book-article-toggle";
+    btn.setAttribute("aria-expanded", "false");
+    btn.textContent = moreLabel;
+    btn.addEventListener("click", function () {
+      var open = wrap.classList.toggle("is-open");
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+      btn.textContent = open ? lessLabel : moreLabel;
+    });
+
+    var parent = liHost.parentNode;
+    parent.insertBefore(wrap, liHost.nextSibling);
+    parent.insertBefore(btn, wrap.nextSibling);
   }
 
   // "section ｜ title" + type tag. both empty -> "無標題"; only one -> show it

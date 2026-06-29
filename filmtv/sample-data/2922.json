@@ -7,7 +7,7 @@
   "items": [
     {
       "id": "FMP-120504",
-      "isPost": "2922",
+      "bookNumber": "2922",
       "journal": "多情河歌集",
       "journalIssue": null,
       "datePublished": "1957-01-01",
@@ -22,7 +22,7 @@
     },
     {
       "id": "FMP-120505",
-      "isPost": "2922",
+      "bookNumber": "2922",
       "journal": "多情河歌集",
       "journalIssue": null,
       "datePublished": "1957-01-01",
@@ -37,7 +37,7 @@
     },
     {
       "id": "FMP-120506",
-      "isPost": "2922",
+      "bookNumber": "2922",
       "journal": "多情河歌集",
       "journalIssue": null,
       "datePublished": "1957-01-01",
@@ -52,7 +52,7 @@
     },
     {
       "id": "FMP-120507",
-      "isPost": "2922",
+      "bookNumber": "2922",
       "journal": "多情河歌集",
       "journalIssue": null,
       "datePublished": "1957-01-01",
@@ -67,7 +67,7 @@
     },
     {
       "id": "FMP-120508",
-      "isPost": "2922",
+      "bookNumber": "2922",
       "journal": "多情河歌集",
       "journalIssue": null,
       "datePublished": "1957-01-01",
@@ -82,7 +82,7 @@
     },
     {
       "id": "FMP-120509",
-      "isPost": "2922",
+      "bookNumber": "2922",
       "journal": "多情河歌集",
       "journalIssue": null,
       "datePublished": "1957-01-01",
@@ -97,7 +97,7 @@
     },
     {
       "id": "FMP-120510",
-      "isPost": "2922",
+      "bookNumber": "2922",
       "journal": "多情河歌集",
       "journalIssue": null,
       "datePublished": "1957-01-01",
@@ -112,7 +112,7 @@
     },
     {
       "id": "FMP-120511",
-      "isPost": "2922",
+      "bookNumber": "2922",
       "journal": "多情河歌集",
       "journalIssue": null,
       "datePublished": "1957-01-01",
@@ -127,7 +127,7 @@
     },
     {
       "id": "FMP-120512",
-      "isPost": "2922",
+      "bookNumber": "2922",
       "journal": "多情河歌集",
       "journalIssue": null,
       "datePublished": "1957-01-01",
@@ -142,7 +142,7 @@
     },
     {
       "id": "FMP-120513",
-      "isPost": "2922",
+      "bookNumber": "2922",
       "journal": "多情河歌集",
       "journalIssue": null,
       "datePublished": "1957-01-01",
@@ -157,7 +157,7 @@
     },
     {
       "id": "FMP-120514",
-      "isPost": "2922",
+      "bookNumber": "2922",
       "journal": "多情河歌集",
       "journalIssue": null,
       "datePublished": "1957-01-01",
@@ -172,7 +172,7 @@
     },
     {
       "id": "FMP-120515",
-      "isPost": "2922",
+      "bookNumber": "2922",
       "journal": "多情河歌集",
       "journalIssue": null,
       "datePublished": "1957-01-01",
@@ -187,7 +187,7 @@
     },
     {
       "id": "FMP-120516",
-      "isPost": "2922",
+      "bookNumber": "2922",
       "journal": "多情河歌集",
       "journalIssue": null,
       "datePublished": "1957-01-01",
@@ -202,7 +202,7 @@
     },
     {
       "id": "FMP-120517",
-      "isPost": "2922",
+      "bookNumber": "2922",
       "journal": "多情河歌集",
       "journalIssue": null,
       "datePublished": "1957-01-01",
@@ -217,7 +217,7 @@
     },
     {
       "id": "FMP-120518",
-      "isPost": "2922",
+      "bookNumber": "2922",
       "journal": "多情河歌集",
       "journalIssue": null,
       "datePublished": "1957-01-01",
@@ -232,7 +232,7 @@
     },
     {
       "id": "TVW-523311",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -247,7 +247,7 @@
     },
     {
       "id": "TVW-523302",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -262,7 +262,7 @@
     },
     {
       "id": "TVW-523303",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -277,7 +277,7 @@
     },
     {
       "id": "TVW-523304",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -292,7 +292,7 @@
     },
     {
       "id": "TVW-523305",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -307,7 +307,7 @@
     },
     {
       "id": "TVW-523306",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -322,7 +322,7 @@
     },
     {
       "id": "TVW-523307",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -337,7 +337,7 @@
     },
     {
       "id": "TVW-523308",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -352,7 +352,7 @@
     },
     {
       "id": "TVW-523309",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -367,7 +367,7 @@
     },
     {
       "id": "TVW-523310",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -382,7 +382,7 @@
     },
     {
       "id": "TVW-523301",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -397,7 +397,7 @@
     },
     {
       "id": "TVW-523312",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -412,7 +412,7 @@
     },
     {
       "id": "TVW-523313",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -427,7 +427,7 @@
     },
     {
       "id": "TVW-523314",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -442,7 +442,7 @@
     },
     {
       "id": "TVW-523315",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -457,7 +457,7 @@
     },
     {
       "id": "TVW-523316",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -472,7 +472,7 @@
     },
     {
       "id": "TVW-523317",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -487,7 +487,7 @@
     },
     {
       "id": "TVW-523318",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -502,7 +502,7 @@
     },
     {
       "id": "TVW-523319",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -517,7 +517,7 @@
     },
     {
       "id": "TVW-523292",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -532,7 +532,7 @@
     },
     {
       "id": "TVW-523283",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -547,7 +547,7 @@
     },
     {
       "id": "TVW-523284",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -562,7 +562,7 @@
     },
     {
       "id": "TVW-523285",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -577,7 +577,7 @@
     },
     {
       "id": "TVW-523286",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -592,7 +592,7 @@
     },
     {
       "id": "TVW-523287",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -607,7 +607,7 @@
     },
     {
       "id": "TVW-523288",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -622,7 +622,7 @@
     },
     {
       "id": "TVW-523289",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -637,7 +637,7 @@
     },
     {
       "id": "TVW-523290",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -652,7 +652,7 @@
     },
     {
       "id": "TVW-523291",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -667,7 +667,7 @@
     },
     {
       "id": "TVW-523282",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -682,7 +682,7 @@
     },
     {
       "id": "TVW-523293",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -697,7 +697,7 @@
     },
     {
       "id": "TVW-523294",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -712,7 +712,7 @@
     },
     {
       "id": "TVW-523295",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -727,7 +727,7 @@
     },
     {
       "id": "TVW-523296",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -742,7 +742,7 @@
     },
     {
       "id": "TVW-523297",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -757,7 +757,7 @@
     },
     {
       "id": "TVW-523298",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -772,7 +772,7 @@
     },
     {
       "id": "TVW-523299",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -787,7 +787,7 @@
     },
     {
       "id": "TVW-523300",
-      "isPost": "25",
+      "bookNumber": "25",
       "journal": "香港電視",
       "journalIssue": "25",
       "datePublished": "1968-05-01",
@@ -802,7 +802,7 @@
     },
     {
       "id": "TVW-352700",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -817,7 +817,7 @@
     },
     {
       "id": "TVW-352701",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -832,7 +832,7 @@
     },
     {
       "id": "TVW-352702",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -847,7 +847,7 @@
     },
     {
       "id": "TVW-352703",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -862,7 +862,7 @@
     },
     {
       "id": "TVW-352704",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -877,7 +877,7 @@
     },
     {
       "id": "TVW-352705",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -892,7 +892,7 @@
     },
     {
       "id": "TVW-352706",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -907,7 +907,7 @@
     },
     {
       "id": "TVW-352707",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -922,7 +922,7 @@
     },
     {
       "id": "TVW-352708",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -937,7 +937,7 @@
     },
     {
       "id": "TVW-352709",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -952,7 +952,7 @@
     },
     {
       "id": "TVW-352710",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -967,7 +967,7 @@
     },
     {
       "id": "TVW-352711",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -982,7 +982,7 @@
     },
     {
       "id": "TVW-352712",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -997,7 +997,7 @@
     },
     {
       "id": "TVW-352713",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1012,7 +1012,7 @@
     },
     {
       "id": "TVW-352714",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1027,7 +1027,7 @@
     },
     {
       "id": "TVW-352715",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1042,7 +1042,7 @@
     },
     {
       "id": "TVW-352716",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1057,7 +1057,7 @@
     },
     {
       "id": "TVW-352717",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1072,7 +1072,7 @@
     },
     {
       "id": "TVW-352718",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1087,7 +1087,7 @@
     },
     {
       "id": "TVW-352719",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1102,7 +1102,7 @@
     },
     {
       "id": "TVW-352720",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1117,7 +1117,7 @@
     },
     {
       "id": "TVW-352721",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1132,7 +1132,7 @@
     },
     {
       "id": "TVW-352722",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1147,7 +1147,7 @@
     },
     {
       "id": "TVW-352723",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1162,7 +1162,7 @@
     },
     {
       "id": "TVW-352724",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1177,7 +1177,7 @@
     },
     {
       "id": "TVW-352725",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1192,7 +1192,7 @@
     },
     {
       "id": "TVW-352726",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1207,7 +1207,7 @@
     },
     {
       "id": "TVW-352727",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1222,7 +1222,7 @@
     },
     {
       "id": "TVW-352728",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1237,7 +1237,7 @@
     },
     {
       "id": "TVW-352729",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1252,7 +1252,7 @@
     },
     {
       "id": "TVW-352730",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1267,7 +1267,7 @@
     },
     {
       "id": "TVW-352731",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1282,7 +1282,7 @@
     },
     {
       "id": "TVW-352732",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1297,7 +1297,7 @@
     },
     {
       "id": "TVW-352733",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1312,7 +1312,7 @@
     },
     {
       "id": "TVW-352734",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1327,7 +1327,7 @@
     },
     {
       "id": "TVW-352735",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1342,7 +1342,7 @@
     },
     {
       "id": "TVW-352736",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1357,7 +1357,7 @@
     },
     {
       "id": "TVW-352737",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1372,7 +1372,7 @@
     },
     {
       "id": "TVW-352738",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1387,7 +1387,7 @@
     },
     {
       "id": "TVW-352739",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1402,7 +1402,7 @@
     },
     {
       "id": "TVW-352740",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1417,7 +1417,7 @@
     },
     {
       "id": "TVW-352741",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1432,7 +1432,7 @@
     },
     {
       "id": "TVW-352742",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1447,7 +1447,7 @@
     },
     {
       "id": "TVW-352743",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1462,7 +1462,7 @@
     },
     {
       "id": "TVW-352744",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1477,7 +1477,7 @@
     },
     {
       "id": "TVW-352745",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1492,7 +1492,7 @@
     },
     {
       "id": "TVW-352746",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1507,7 +1507,7 @@
     },
     {
       "id": "TVW-352747",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1522,7 +1522,7 @@
     },
     {
       "id": "TVW-352748",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1537,7 +1537,7 @@
     },
     {
       "id": "TVW-352749",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1552,7 +1552,7 @@
     },
     {
       "id": "TVW-352750",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1567,7 +1567,7 @@
     },
     {
       "id": "TVW-352751",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1582,7 +1582,7 @@
     },
     {
       "id": "TVW-352752",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1597,7 +1597,7 @@
     },
     {
       "id": "TVW-352753",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1612,7 +1612,7 @@
     },
     {
       "id": "TVW-352754",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1627,7 +1627,7 @@
     },
     {
       "id": "TVW-352755",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1642,7 +1642,7 @@
     },
     {
       "id": "TVW-352756",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1657,7 +1657,7 @@
     },
     {
       "id": "TVW-352757",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1672,7 +1672,7 @@
     },
     {
       "id": "TVW-352758",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1687,7 +1687,7 @@
     },
     {
       "id": "TVW-352759",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1702,7 +1702,7 @@
     },
     {
       "id": "TVW-352760",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1717,7 +1717,7 @@
     },
     {
       "id": "TVW-352761",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1732,7 +1732,7 @@
     },
     {
       "id": "TVW-352762",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1747,7 +1747,7 @@
     },
     {
       "id": "TVW-352763",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1762,7 +1762,7 @@
     },
     {
       "id": "TVW-352764",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1777,7 +1777,7 @@
     },
     {
       "id": "TVW-352765",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1792,7 +1792,7 @@
     },
     {
       "id": "TVW-352766",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1807,7 +1807,7 @@
     },
     {
       "id": "TVW-352767",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1822,7 +1822,7 @@
     },
     {
       "id": "TVW-352768",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1837,7 +1837,7 @@
     },
     {
       "id": "TVW-352769",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1852,7 +1852,7 @@
     },
     {
       "id": "TVW-352770",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1867,7 +1867,7 @@
     },
     {
       "id": "TVW-352771",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1882,7 +1882,7 @@
     },
     {
       "id": "TVW-352772",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1897,7 +1897,7 @@
     },
     {
       "id": "TVW-352773",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1912,7 +1912,7 @@
     },
     {
       "id": "TVW-352774",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1927,7 +1927,7 @@
     },
     {
       "id": "TVW-352775",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1942,7 +1942,7 @@
     },
     {
       "id": "TVW-352776",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1957,7 +1957,7 @@
     },
     {
       "id": "TVW-352777",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1972,7 +1972,7 @@
     },
     {
       "id": "TVW-352778",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -1987,7 +1987,7 @@
     },
     {
       "id": "TVW-352779",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2002,7 +2002,7 @@
     },
     {
       "id": "TVW-352780",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2017,7 +2017,7 @@
     },
     {
       "id": "TVW-352781",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2032,7 +2032,7 @@
     },
     {
       "id": "TVW-352782",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2047,7 +2047,7 @@
     },
     {
       "id": "TVW-352783",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2062,7 +2062,7 @@
     },
     {
       "id": "TVW-352784",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2077,7 +2077,7 @@
     },
     {
       "id": "TVW-352785",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2092,7 +2092,7 @@
     },
     {
       "id": "TVW-352786",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2107,7 +2107,7 @@
     },
     {
       "id": "TVW-352787",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2122,7 +2122,7 @@
     },
     {
       "id": "TVW-352788",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2137,7 +2137,7 @@
     },
     {
       "id": "TVW-352789",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2152,7 +2152,7 @@
     },
     {
       "id": "TVW-352790",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2167,7 +2167,7 @@
     },
     {
       "id": "TVW-352791",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2182,7 +2182,7 @@
     },
     {
       "id": "TVW-352792",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2197,7 +2197,7 @@
     },
     {
       "id": "TVW-352793",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2212,7 +2212,7 @@
     },
     {
       "id": "TVW-352794",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2227,7 +2227,7 @@
     },
     {
       "id": "TVW-352795",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2242,7 +2242,7 @@
     },
     {
       "id": "TVW-352796",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2257,7 +2257,7 @@
     },
     {
       "id": "TVW-352797",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2272,7 +2272,7 @@
     },
     {
       "id": "TVW-352798",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2287,7 +2287,7 @@
     },
     {
       "id": "TVW-352799",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2302,7 +2302,7 @@
     },
     {
       "id": "TVW-352800",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2317,7 +2317,7 @@
     },
     {
       "id": "TVW-352801",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2332,7 +2332,7 @@
     },
     {
       "id": "TVW-352802",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2347,7 +2347,7 @@
     },
     {
       "id": "TVW-352803",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2362,7 +2362,7 @@
     },
     {
       "id": "TVW-352804",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2377,7 +2377,7 @@
     },
     {
       "id": "TVW-352805",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2392,7 +2392,7 @@
     },
     {
       "id": "TVW-352806",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2407,7 +2407,7 @@
     },
     {
       "id": "TVW-352807",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2422,7 +2422,7 @@
     },
     {
       "id": "TVW-352808",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2437,7 +2437,7 @@
     },
     {
       "id": "TVW-352809",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2452,7 +2452,7 @@
     },
     {
       "id": "TVW-352810",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2467,7 +2467,7 @@
     },
     {
       "id": "TVW-352811",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2482,7 +2482,7 @@
     },
     {
       "id": "TVW-352812",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2497,7 +2497,7 @@
     },
     {
       "id": "TVW-352813",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2512,7 +2512,7 @@
     },
     {
       "id": "TVW-352814",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2527,7 +2527,7 @@
     },
     {
       "id": "TVW-352815",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2542,7 +2542,7 @@
     },
     {
       "id": "TVW-352816",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2557,7 +2557,7 @@
     },
     {
       "id": "TVW-352817",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2572,7 +2572,7 @@
     },
     {
       "id": "TVW-352818",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2587,7 +2587,7 @@
     },
     {
       "id": "TVW-352819",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2602,7 +2602,7 @@
     },
     {
       "id": "TVW-352820",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2617,7 +2617,7 @@
     },
     {
       "id": "TVW-352821",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2632,7 +2632,7 @@
     },
     {
       "id": "TVW-352822",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2647,7 +2647,7 @@
     },
     {
       "id": "TVW-352823",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2662,7 +2662,7 @@
     },
     {
       "id": "TVW-352824",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2677,7 +2677,7 @@
     },
     {
       "id": "TVW-352825",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2692,7 +2692,7 @@
     },
     {
       "id": "TVW-352826",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2707,7 +2707,7 @@
     },
     {
       "id": "TVW-352827",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2722,7 +2722,7 @@
     },
     {
       "id": "TVW-352828",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2737,7 +2737,7 @@
     },
     {
       "id": "TVW-352829",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2752,7 +2752,7 @@
     },
     {
       "id": "TVW-352830",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",
@@ -2767,7 +2767,7 @@
     },
     {
       "id": "TVW-352831",
-      "isPost": "956",
+      "bookNumber": "956",
       "journal": "香港電視",
       "journalIssue": "956",
       "datePublished": "1986-02-27",

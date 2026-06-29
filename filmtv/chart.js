@@ -86,7 +86,14 @@
   ];
 
   var GEOM = { top: 14, right: 14, bottom: 30, left: 46 };
-  var UNIT = " 筆"; // entry-count unit, matches the archive UI
+  // Count unit switches with the result view (mirrors results.js article<->book):
+  //   article view -> entries (篇)   book view -> books (本)
+  var UNIT_ARTICLE = " 篇";
+  var UNIT_BOOK = " 本";
+  function unitFor(view) { return view === "book" ? UNIT_BOOK : UNIT_ARTICLE; }
+  // active per-year counts for a series, by view ("book" -> distinct books)
+  function countsFor(s, view) { return (view === "book" ? s.bookCounts : s.counts) || []; }
+  function totalFor(s, view) { return view === "book" ? s.bookTotal : s.total; }
 
   /* ---------- bootstrap ---------- */
   ready(function () {
@@ -99,6 +106,9 @@
     var st = {
       height: parseInt(root.getAttribute("data-height"), 10) || 360,
       model: null,
+      // active result view: "article" (count 篇) or "book" (count distinct books).
+      // Adopt whatever the results panel is currently showing, else default article.
+      view: currentView(),
       tipIndex: null,    // year index the tooltip currently describes
       raf: 0
     };
@@ -106,6 +116,7 @@
     buildShell(root, st);
     bindInteractions(root, st);
     bindLegend(root, st);
+    bindViewSync(root, st);
 
     // redraw on container resize (debounced to one frame)
     if (typeof ResizeObserver === "function") {
@@ -148,6 +159,29 @@
       .catch(function (err) { console.error("[chart] mock load failed (" + url + "):", err); });
   }
 
+  /* ---------- view sync (article <-> book, mirrors results.js) ---------- */
+  // The results toggle owns the view; the chart only reflects it. results.js sets
+  // [data-results][data-view] and fires a bubbling "filmtv:viewchange". The chart
+  // keeps BOTH count arrays in its model, so switching never re-fetches or rebuilds
+  // — it just re-picks counts/unit and redraws.
+  function currentView() {
+    var r = document.querySelector("[data-results][data-view]");
+    var v = r && r.getAttribute("data-view");
+    return v === "book" ? "book" : "article";
+  }
+  function bindViewSync(root, st) {
+    document.addEventListener("filmtv:viewchange", function (e) {
+      var view = e && e.detail && e.detail.view;
+      if (view !== "article" && view !== "book") return;
+      if (view === st.view) return;
+      st.view = view;
+      if (!st.model) return;
+      hideTip(st);
+      renderLegend(root, st);
+      draw(root);
+    });
+  }
+
   /* ---------- public render (backend calls this) ---------- */
   function render(root, data) {
     if (!root) {
@@ -170,13 +204,18 @@
     if (Array.isArray(data.years) && Array.isArray(data.series)) {
       var ys = data.years.map(Number);
       var series = data.series.map(function (s, i) {
+        // bookCounts is supplied by the backend in parallel to counts; if absent
+        // (older payload) the book view degrades to the entry counts.
+        var bc = s.bookCounts || s.counts || [];
         return {
           key: s.key,
           label: s.label || s.key,
           prefixes: s.prefixes || GROUP_PREFIXES[s.key] || [s.key],
           color: s.color || palette[i % palette.length],
           counts: ys.map(function (_, k) { return Number((s.counts || [])[k]) || 0; }),
-          total: (s.counts || []).reduce(function (a, b) { return a + (Number(b) || 0); }, 0)
+          bookCounts: ys.map(function (_, k) { return Number(bc[k]) || 0; }),
+          total: (s.counts || []).reduce(function (a, b) { return a + (Number(b) || 0); }, 0),
+          bookTotal: bc.reduce(function (a, b) { return a + (Number(b) || 0); }, 0)
         };
       });
       return finalizeModel(ys, series, palette);
@@ -185,7 +224,7 @@
     // raw entries: aggregate into per-year, per-publication counts.
     var items = Array.isArray(data.items) ? data.items : [];
     var minY = Infinity, maxY = -Infinity;
-    var groups = {}; // key -> { key, label, counts:{year->n}, total, labels:{} }
+    var groups = {}; // key -> { key, counts:{year->n}, total, books:{year->{bookNumber:1}}, labels:{} }
 
     for (var i = 0; i < items.length; i++) {
       var it = items[i];
@@ -194,9 +233,15 @@
       if (year < minY) minY = year;
       if (year > maxY) maxY = year;
       var key = publicationKey(it) || "—";
-      var g = groups[key] || (groups[key] = { key: key, counts: {}, total: 0, labels: {} });
+      var g = groups[key] || (groups[key] = { key: key, counts: {}, total: 0, books: {}, labels: {} });
       g.counts[year] = (g.counts[year] || 0) + 1;
       g.total++;
+      // book count = distinct bookNumber per year (a book sits in exactly one
+      // year+publication, so per-year distinct counts sum to the series book total)
+      if (it.bookNumber != null && it.bookNumber !== "") {
+        var bset = g.books[year] || (g.books[year] = {});
+        bset[it.bookNumber] = 1;
+      }
       // remember the most common journal name as the legend label
       var jr = it.journal || "";
       if (jr) g.labels[jr] = (g.labels[jr] || 0) + 1;
@@ -208,12 +253,17 @@
 
     var built = Object.keys(groups).map(function (k) {
       var g = groups[k];
+      var bookCounts = years.map(function (yy) {
+        return g.books[yy] ? Object.keys(g.books[yy]).length : 0;
+      });
       return {
         key: g.key,
         label: GROUP_LABEL[g.key] || topLabel(g.labels) || g.key,
         prefixes: GROUP_PREFIXES[g.key] || [g.key],
         counts: years.map(function (yy) { return g.counts[yy] || 0; }),
-        total: g.total
+        bookCounts: bookCounts,
+        total: g.total,
+        bookTotal: bookCounts.reduce(function (a, b) { return a + b; }, 0)
       };
     });
     // taxonomy order first (stable stack + colour), then any unlisted by size
@@ -251,10 +301,11 @@
     var years = model.years;
     var n = years.length;
     var series = model.series;
+    var view = st.view;
 
-    // per-year visible stacked totals -> dynamic y axis
+    // per-year visible stacked totals -> dynamic y axis (uses the active view's counts)
     var totals = years.map(function (_, i) {
-      return series.reduce(function (a, s) { return a + (s.counts[i] || 0); }, 0);
+      return series.reduce(function (a, s) { return a + (countsFor(s, view)[i] || 0); }, 0);
     });
     var axis = niceAxis(Math.max.apply(null, totals.concat(1)));
     var yMax = axis.max;
@@ -270,7 +321,7 @@
     var s = [];
     s.push('<svg class="filmtv-chart-svg-el" width="' + W + '" height="' + H +
       '" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' +
-      esc(ariaSummary(years, series, totals)) + '">');
+      esc(ariaSummary(years, series, totals, view)) + '">');
 
     // y gridlines + labels
     for (var t = 0; t <= yMax + 0.0001; t += axis.step) {
@@ -285,7 +336,7 @@
     for (var i = 0; i < n; i++) {
       var cum = 0;
       for (var k = 0; k < series.length; k++) {
-        var v = series[k].counts[i] || 0;
+        var v = countsFor(series[k], view)[i] || 0;
         if (v <= 0) continue;
         var y1 = Y(cum + v), y0 = Y(cum);
         s.push('<rect class="filmtv-chart-bar" x="' + (X(i) - barW / 2) + '" y="' + y1 +
@@ -313,7 +364,7 @@
     st.svgHost.innerHTML = s.join("");
 
     // stash geometry for the hover handler
-    st.geom = { X: X, Y: Y, band: band, totals: totals, series: series, years: years, plotH: plotH };
+    st.geom = { X: X, Y: Y, band: band, totals: totals, series: series, years: years, plotH: plotH, view: view };
   }
 
   /* ---------- tooltip + selection (a bar commits a YEAR filter) ---------- */
@@ -355,9 +406,10 @@
   // build + position the tooltip; `pin` keeps it open and tappable (touch)
   function showTip(root, st, i, pin) {
     var g = st.geom;
+    var view = g.view;
     var rows = [];
     for (var k = 0; k < g.series.length; k++) {
-      var v = g.series[k].counts[i] || 0;
+      var v = countsFor(g.series[k], view)[i] || 0;
       if (v <= 0) continue;
       rows.push('<li class="filmtv-chart-tip-row"><span class="filmtv-chart-tip-swatch" style="background:' +
         g.series[k].color + '"></span><span class="filmtv-chart-tip-name">' +
@@ -366,7 +418,7 @@
     st.tooltip.innerHTML =
       '<div class="filmtv-chart-tip-head">' +
         '<span class="filmtv-chart-tip-year">' + g.years[i] + ' 年</span>' +
-        '<span class="filmtv-chart-tip-total">總數 ' + fmt(g.totals[i]) + UNIT + '</span>' +
+        '<span class="filmtv-chart-tip-total">總數 ' + fmt(g.totals[i]) + unitFor(view) + '</span>' +
       '</div>' +
       (rows.length ? '<ul class="filmtv-chart-tip-list">' + rows.join("") + "</ul>" : "") +
       '<button type="button" class="filmtv-chart-commit">查看此年結果 →</button>';
@@ -415,12 +467,13 @@
   }
 
   function renderLegend(root, st) {
+    var view = st.view;
     var html = st.model.series.map(function (s) {
       return '<button type="button" class="filmtv-chart-legend-item" role="listitem" data-key="' +
         esc(s.key) + '" aria-label="' + esc("篩選：" + s.label) + '">' +
         '<span class="filmtv-chart-legend-swatch" style="background:' + s.color + '"></span>' +
         '<span class="filmtv-chart-legend-label">' + esc(s.label) + '</span>' +
-        '<span class="filmtv-chart-legend-count">' + fmt(s.total) + '</span></button>';
+        '<span class="filmtv-chart-legend-count">' + fmt(totalFor(s, view)) + '</span></button>';
     }).join("");
     st.legend.innerHTML = html;
   }
@@ -495,12 +548,14 @@
     return best;
   }
 
-  function ariaSummary(years, series, totals) {
+  function ariaSummary(years, series, totals, view) {
     if (!years.length) return "Stacked bar chart, no data.";
     var grand = totals.reduce(function (a, b) { return a + b; }, 0);
-    return "Stacked bar chart of entry count by year, " + years[0] + " to " +
+    var noun = view === "book" ? "book" : "entry";
+    var plural = view === "book" ? "books" : "entries";
+    return "Stacked bar chart of " + noun + " count by year, " + years[0] + " to " +
       years[years.length - 1] + ", " + series.length + " publications, " +
-      fmt(grand) + " entries total.";
+      fmt(grand) + " " + (grand === 1 ? noun : plural) + " total.";
   }
 
   /* ---------- tiny utils ---------- */

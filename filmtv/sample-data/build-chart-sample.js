@@ -84,7 +84,7 @@ var MONTHS = ["01", "03", "05", "07", "09", "11"];
 
 var items = [];
 var serial = {}; // per-prefix running id number
-var book = 1000; // running isPost (book) id
+var book = 1000; // running bookNumber (book) id
 
 function nextId(prefix) {
   serial[prefix] = (serial[prefix] || 0) + 1;
@@ -95,7 +95,7 @@ function emit(prefix, journal, year, n) {
     if (i % 12 === 0) book++;
     items.push({
       id: nextId(prefix),
-      isPost: String(book),
+      bookNumber: String(book),
       journal: journal,
       year: String(year),
       datePublished: year + "-" + MONTHS[Math.floor(rand() * MONTHS.length)] + "-01",

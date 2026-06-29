@@ -75,6 +75,14 @@
         <button class="preset" data-preset="tv">香港電視</button>
       </div>
 
+      <!-- demo view toggle: mirrors the results.js article<->book switch. In
+           production results.js fires filmtv:viewchange; here we fire it directly
+           so the chart flips between 篇 (entry) and 本 (book) counts. -->
+      <div class="presets" id="views">
+        <button class="preset is-active" data-view="article">文章統計（篇）</button>
+        <button class="preset" data-view="book">書刊統計（本）</button>
+      </div>
+
       <!-- chart.js mounts here. data-height is optional (default 360). -->
       <div data-chart data-height="360" data-src="sample-data/chart-sample.json"></div>
 
@@ -120,6 +128,19 @@
         window.filmtvChart.render(chartEl, { items: FILTERS[btn.getAttribute("data-preset")]() });
       });
 
+      // view toggle: fire the same event results.js fires; the chart re-picks
+      // its count array (篇 <-> 本) and redraws with no re-fetch.
+      var views = document.getElementById("views");
+      views.addEventListener("click", function (e) {
+        var btn = e.target.closest(".preset");
+        if (!btn) return;
+        var view = btn.getAttribute("data-view");
+        views.querySelectorAll(".preset").forEach(function (b) {
+          b.classList.toggle("is-active", b.getAttribute("data-view") === view);
+        });
+        document.dispatchEvent(new CustomEvent("filmtv:viewchange", { detail: { view: view }, bubbles: true }));
+      });
+
       // This is the BACKEND's job in production: listen for the chart's selection
       // event, narrow the query, and re-render. Here we just filter the sample
       // in-memory and show what would be requested.
@@ -129,10 +150,10 @@
         var d = e.detail, items, msg;
         if (d.year != null) {
           items = ALL.items.filter(function (it) { return +it.year === d.year; });
-          msg = "已篩選：" + d.year + " 年（" + items.length + " 筆）";
+          msg = "已篩選：" + d.year + " 年（" + items.length + " 篇）";
         } else {
           items = ALL.items.filter(function (it) { return d.prefixes.indexOf(it.id.slice(0, 3)) >= 0; });
-          msg = "已篩選：" + d.label + "（" + items.length + " 筆）";
+          msg = "已篩選：" + d.label + "（" + items.length + " 篇）";
         }
         setActive(null);
         status.hidden = false;
