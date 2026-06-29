@@ -113,13 +113,18 @@
       '[data-results][data-view="book"] [data-view-panel="article"]{display:none !important}' +
       // Collapsible overflow of a book row's article list. The grid-template-rows
       // 0fr->1fr trick animates an arbitrary number of rows with no JS measuring
-      // and no inline styles (just a class toggle). Restyle .book-article-toggle
-      // in Webflow; these rules are only the structural animation.
+      // and no inline styles (just a class toggle). These rules are STRUCTURAL
+      // only — the .book-article-toggle button's look is owned in Webflow custom
+      // CSS (it's JS-created so Webflow won't auto-emit styles for it).
       '.book-article-more{display:grid;grid-template-rows:0fr;transition:grid-template-rows .28s ease}' +
       '.book-article-more.is-open{grid-template-rows:1fr}' +
       '.book-article-more>*{min-height:0;overflow:hidden}' +
-      '.book-article-toggle{cursor:pointer}' +
-      '@media (prefers-reduced-motion:reduce){.book-article-more{transition:none}}';
+      // The authored toggle's icon flips 180deg when the list is open. Scoped to
+      // .book-article-list-wrap so other .text-link buttons site-wide are untouched.
+      '.book-article-list-wrap .text-link .icon-color{transition:transform .2s ease}' +
+      '.book-article-list-wrap .text-link.is-open .icon-color{transform:rotate(180deg)}' +
+      '@media (prefers-reduced-motion:reduce){.book-article-more{transition:none}' +
+      '.book-article-list-wrap .text-link .icon-color{transition:none}}';
     (document.head || document.documentElement).appendChild(st);
   }
 
@@ -259,6 +264,11 @@
     var liHost = liTpl.parentNode;
     while (liHost.firstChild) liHost.removeChild(liHost.firstChild);
 
+    // The "顯示其餘 N 篇 / 收起" toggle is AUTHORED in Webflow as a .text-link
+    // button inside .book-article-list-wrap (with its own icon). We find, fill,
+    // wire and show/hide it — we never create it. Styling + icon stay in the Designer.
+    var toggle = findBookToggle(liHost);
+
     var capped = articles.length > BOOK_ARTICLES_VISIBLE;
     var visible = capped ? BOOK_ARTICLES_VISIBLE : articles.length;
     for (var i = 0; i < visible; i++) {
@@ -266,14 +276,27 @@
       fillBookArticle(li, articles[i]);
       liHost.appendChild(li);
     }
-    if (capped) addCollapsedArticles(liHost, liTpl, articles.slice(visible));
+    if (capped) {
+      var more = addCollapsedArticles(liHost, liTpl, articles.slice(visible));
+      if (!toggle) toggle = fallbackToggle(more); // safety net if none authored
+      wireBookToggle(toggle, more, articles.length - visible);
+    } else if (toggle) {
+      toggle.setAttribute("u-d", "none"); // nothing to collapse -> hide the toggle
+    }
   }
 
-  // Render the articles past the visible cap inside an animatable wrapper, plus a
-  // text toggle. The wrapper is a sibling placed AFTER the visible list so the
-  // markup stays valid — the overflow items live in their own list of the same
-  // class (inheriting the Webflow list styling). Everything sits inside the book
-  // row clone, so it's discarded automatically on the next render.
+  // Find the authored toggle: the .text-link (or [data-book-toggle]) directly
+  // inside .book-article-list-wrap. Article rows use .book-row-article, so this
+  // never matches an article link.
+  function findBookToggle(liHost) {
+    var wrap = liHost.parentNode;
+    if (!wrap) return null;
+    return wrap.querySelector(":scope > [data-book-toggle], :scope > .text-link") || null;
+  }
+
+  // Move the articles past the visible cap into an animatable wrapper placed
+  // AFTER the visible list (and before the authored toggle). The overflow items
+  // live in their own list of the same class, inheriting the Webflow styling.
   function addCollapsedArticles(liHost, liTpl, extra) {
     var wrap = document.createElement("div");
     wrap.className = "book-article-more";
@@ -285,23 +308,63 @@
       inner.appendChild(li);
     }
     wrap.appendChild(inner);
+    liHost.parentNode.insertBefore(wrap, liHost.nextSibling);
+    return wrap;
+  }
 
-    var moreLabel = "顯示其餘 " + extra.length + " 篇";
+  // Wire the authored toggle to the overflow wrapper: set the count label (keeping
+  // the icon), toggle .is-open on both wrapper (height) and button (icon rotation),
+  // and track aria-expanded.
+  function wireBookToggle(btn, more, remaining) {
+    if (!btn) return;
+    btn.removeAttribute("u-d");
+    btn.classList.remove("is-open");
+    btn.setAttribute("aria-expanded", "false");
+    if (more) more.classList.remove("is-open");
+    var moreLabel = "顯示其餘 " + remaining + " 篇";
     var lessLabel = "收起";
+    setToggleLabel(btn, moreLabel);
+    btn.addEventListener("click", function () {
+      var open = more ? more.classList.toggle("is-open") : !btn.classList.contains("is-open");
+      btn.classList.toggle("is-open", open);
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+      setToggleLabel(btn, open ? lessLabel : moreLabel);
+      if (!open) scrollToBookStart(btn); // 收起 -> return to the book's first article
+    });
+  }
+
+  // On collapse, bring the book's first article back into view (only when it has
+  // scrolled above the viewport — collapsing a fully-visible book stays put).
+  function scrollToBookStart(btn) {
+    var row = btn.closest(".book-row") || btn.closest(".book-article-list-wrap");
+    var target = (row && row.querySelector(".book-article-list .book-row-article")) || row;
+    if (!target || target.getBoundingClientRect().top >= 0) return;
+    var reduce = window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    target.scrollIntoView({ block: "start", behavior: reduce ? "auto" : "smooth" });
+  }
+
+  // Write the toggle's text WITHOUT clobbering its icon: target the label element
+  // (the child that isn't the icon), else the first non-empty text node.
+  function setToggleLabel(btn, text) {
+    var label = btn.querySelector(":scope > div:not(.icon-color)") ||
+      btn.querySelector("div:not(.icon-color)");
+    if (label) { label.textContent = text; return; }
+    for (var i = 0; i < btn.childNodes.length; i++) {
+      var n = btn.childNodes[i];
+      if (n.nodeType === 3 && n.textContent.trim()) { n.textContent = text; return; }
+    }
+    btn.appendChild(document.createTextNode(text));
+  }
+
+  // Only used if no toggle was authored in Webflow (misconfiguration guard) so a
+  // capped list is never stuck collapsed.
+  function fallbackToggle(more) {
     var btn = document.createElement("button");
     btn.type = "button";
     btn.className = "book-article-toggle";
-    btn.setAttribute("aria-expanded", "false");
-    btn.textContent = moreLabel;
-    btn.addEventListener("click", function () {
-      var open = wrap.classList.toggle("is-open");
-      btn.setAttribute("aria-expanded", open ? "true" : "false");
-      btn.textContent = open ? lessLabel : moreLabel;
-    });
-
-    var parent = liHost.parentNode;
-    parent.insertBefore(wrap, liHost.nextSibling);
-    parent.insertBefore(btn, wrap.nextSibling);
+    more.parentNode.insertBefore(btn, more.nextSibling);
+    return btn;
   }
 
   // "section ｜ title" + type tag. both empty -> "無標題"; only one -> show it
