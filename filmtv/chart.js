@@ -211,7 +211,9 @@
           key: s.key,
           label: s.label || s.key,
           prefixes: s.prefixes || GROUP_PREFIXES[s.key] || [s.key],
-          color: s.color || palette[i % palette.length],
+          // fixed colour by taxonomy index (like the raw path) so a series keeps
+          // its colour even when the result set filters down to a subset
+          color: s.color || palette[(s.key in GROUP_ORDER ? GROUP_ORDER[s.key] : i) % palette.length],
           counts: ys.map(function (_, k) { return Number((s.counts || [])[k]) || 0; }),
           bookCounts: ys.map(function (_, k) { return Number(bc[k]) || 0; }),
           total: (s.counts || []).reduce(function (a, b) { return a + (Number(b) || 0); }, 0),

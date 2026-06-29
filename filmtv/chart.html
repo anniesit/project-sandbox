@@ -99,15 +99,43 @@
     (function () {
       var chartEl = document.querySelector("[data-chart]");
       var presets = document.getElementById("presets");
+      var views = document.getElementById("views");
+      var status = document.getElementById("demo-status");
       var ALL = null;
+      var view = "article"; // current 篇/本 view, for the filter-status unit
 
-      var CE = ["CEM", "CEI", "CEY", "CED", "CEF", "CEV", "CEH", "CEP", "CEO"];
+      // The sample is PRE-AGGREGATED ({ years, series:[{counts, bookCounts}] }) —
+      // the shape the backend sends for large result sets. These helpers slice it
+      // the way a backend would narrow a query.
+      function sliceYears(data, keepYear) {
+        var idx = [];
+        data.years.forEach(function (y, i) { if (keepYear(y)) idx.push(i); });
+        return {
+          years: idx.map(function (i) { return data.years[i]; }),
+          series: data.series.map(function (s) {
+            return {
+              key: s.key, label: s.label, prefixes: s.prefixes,
+              counts: idx.map(function (i) { return s.counts[i]; }),
+              bookCounts: idx.map(function (i) { return s.bookCounts[i]; })
+            };
+          })
+        };
+      }
+      function onlySeries(data, keys) {
+        return { years: data.years, series: data.series.filter(function (s) { return keys.indexOf(s.key) >= 0; }) };
+      }
+      function total(data, field) {
+        return data.series.reduce(function (a, s) {
+          return a + s[field].reduce(function (x, n) { return x + (n || 0); }, 0);
+        }, 0);
+      }
+
       var FILTERS = {
-        all: function () { return ALL.items; },
-        early: function () { return ALL.items.filter(function (it) { return +it.year <= 1958; }); },
-        late: function () { return ALL.items.filter(function (it) { return +it.year >= 1979; }); },
-        mag: function () { return ALL.items.filter(function (it) { return CE.indexOf(it.id.slice(0, 3)) >= 0; }); },
-        tv: function () { return ALL.items.filter(function (it) { return it.id.slice(0, 3) === "TVW"; }); }
+        all:   function () { return ALL; },
+        early: function () { return sliceYears(ALL, function (y) { return y <= 1958; }); },
+        late:  function () { return sliceYears(ALL, function (y) { return y >= 1979; }); },
+        mag:   function () { return onlySeries(ALL, ["CEM"]); },
+        tv:    function () { return onlySeries(ALL, ["TVW"]); }
       };
 
       fetch("sample-data/chart-sample.json")
@@ -125,40 +153,38 @@
         if (!btn || !ALL) return;
         setActive(btn.getAttribute("data-preset"));
         status.hidden = true;
-        window.filmtvChart.render(chartEl, { items: FILTERS[btn.getAttribute("data-preset")]() });
+        window.filmtvChart.render(chartEl, FILTERS[btn.getAttribute("data-preset")]());
       });
 
       // view toggle: fire the same event results.js fires; the chart re-picks
       // its count array (篇 <-> 本) and redraws with no re-fetch.
-      var views = document.getElementById("views");
       views.addEventListener("click", function (e) {
         var btn = e.target.closest(".preset");
         if (!btn) return;
-        var view = btn.getAttribute("data-view");
+        view = btn.getAttribute("data-view");
         views.querySelectorAll(".preset").forEach(function (b) {
           b.classList.toggle("is-active", b.getAttribute("data-view") === view);
         });
         document.dispatchEvent(new CustomEvent("filmtv:viewchange", { detail: { view: view }, bubbles: true }));
       });
 
-      // This is the BACKEND's job in production: listen for the chart's selection
-      // event, narrow the query, and re-render. Here we just filter the sample
-      // in-memory and show what would be requested.
-      var status = document.getElementById("demo-status");
+      // BACKEND's job in production: listen for the chart's selection event, narrow
+      // the query, re-render. Here we slice the pre-aggregated sample in-memory.
       document.addEventListener("filmtv:filter", function (e) {
         if (!ALL) return;
-        var d = e.detail, items, msg;
+        var d = e.detail, sub, scope;
         if (d.year != null) {
-          items = ALL.items.filter(function (it) { return +it.year === d.year; });
-          msg = "已篩選：" + d.year + " 年（" + items.length + " 篇）";
+          sub = sliceYears(ALL, function (y) { return y === d.year; });
+          scope = d.year + " 年";
         } else {
-          items = ALL.items.filter(function (it) { return d.prefixes.indexOf(it.id.slice(0, 3)) >= 0; });
-          msg = "已篩選：" + d.label + "（" + items.length + " 篇）";
+          sub = onlySeries(ALL, [d.publication]);
+          scope = d.label;
         }
+        var n = total(sub, view === "book" ? "bookCounts" : "counts");
         setActive(null);
         status.hidden = false;
-        status.textContent = msg + " · 按「全部結果」重設";
-        window.filmtvChart.render(chartEl, { items: items });
+        status.textContent = "已篩選：" + scope + "（" + n.toLocaleString() + (view === "book" ? " 本" : " 篇") + "）· 按「全部結果」重設";
+        window.filmtvChart.render(chartEl, sub);
       });
     })();
   </script>
