@@ -84,6 +84,12 @@ filmtvResults.setView(rootEl, "article" | "book");
 }
 ```
 
+**Access tag (id-prefix driven):** each card/book-row thumbnail has a Webflow
+`.access-tag` authored **hidden** (`u-d="none"`). `results.js` reveals it when the
+entry's 3-char id prefix is listed in `ACCESS_TAG_PREFIXES` (currently `["TVW"]`).
+A book shares one prefix across its articles, so the book-row uses its first item.
+To cover more publications, add prefixes to that constant — no backend change.
+
 **Pagination:** call `render()` once **per page**. A page turn must NOT re-render
 the chart (see chart notes). The result list paginates; the chart does not.
 

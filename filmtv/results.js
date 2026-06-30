@@ -36,6 +36,8 @@
  *   [data-field=title]         empty -> "無標題" (book article: only if section also empty)
  *   [data-field=section|author|page]  value only; empty -> hide its row + label
  *   [data-field=article-type]  ARTICLE_TYPES[code] -> label + colour variant; empty -> hide
+ *   .access-tag                in the thumbnail; authored hidden (u-d=none). Shown
+ *                              when id's 3-char prefix is in ACCESS_TAG_PREFIXES.
  *   .book-article-list > .book-row-article  (nested article template = first one)
  *   [data-view-toggle] / [data-view-btn] / [data-count] / [data-view-panel]
  * ============================================================ */
