@@ -45,6 +45,12 @@
  * A thin self-fetch of DATA_URL runs only as the MOCK driver; the backend
  * removes it and calls render() with the live result set.
  *
+ * GROW ANIMATION: on each render() the bubbles grow from 0 (~200ms), staggered
+ * left→right within a row and row-by-row top→bottom (~50ms/row). It runs on the
+ * first SIZED draw — e.g. when the modal opens (strips are 0-size until then);
+ * resize/redraw passes are static. Tunables: ANIM_ROW_DELAY / ANIM_COL_STEP /
+ * ANIM_DUR near the top of this file. See HANDOFF.md.
+ *
  * data-* contract:
  *   [data-cooccur]   chart root (one per instance)
  *   [data-src]       optional JSON url override for the mock driver

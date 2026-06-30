@@ -30,6 +30,21 @@
  * A thin self-fetch of DATA_URL runs only as the MOCK driver; the backend
  * removes it and calls render() directly with the live result set.
  *
+ * X-AXIS RANGE: the chart draws exactly the `years` it is given (raw `items`
+ * auto-fit to the min/max year present). PROJECT RULE — keep a STABLE axis: pass
+ * the full archive span (e.g. 1926–1997) for every result set, INCLUDING
+ * publication/keyword filters. Only a YEAR-RANGE filter narrows the axis, and
+ * then to the user's INPUT range (contiguous, zero-filled) — NOT the result
+ * span. Send pre-aggregated { years, series } so empty edge years stay visible.
+ *
+ * GROW ANIMATION: bars grow from 0 (~200ms) on every render() and on the
+ * article/book toggle; resize redraws are static. Integration notes:
+ *   • pagination must re-render the RESULTS list only — never call this chart's
+ *     render() on a page turn (the chart has no page concept) or bars re-grow.
+ *   • the toggle is handled here via filmtv:viewchange; don't ALSO call render()
+ *     on toggle or the grow double-fires.
+ * See HANDOFF.md for the full integration contract.
+ *
  * data-* contract:
  *   [data-chart]            chart root (one per instance)
  *   [data-src]             optional JSON url override for the mock driver
