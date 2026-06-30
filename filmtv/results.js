@@ -17,7 +17,12 @@
  *   window.filmtvResults.setView(rootEl, "article" | "book")
  *
  * A thin self-fetch of DATA_URL runs only as the MOCK driver; the backend
- * can remove it and call render() directly.
+ * can remove it and call render() directly. See HANDOFF.md for the full
+ * three-file integration contract (results + chart + cooccur).
+ *
+ * PAGINATION: call THIS render() once per page of results. A page turn must NOT
+ * re-render the chart (filmtvChart) — the chart shows the whole result set and
+ * would re-animate. The chart is (re)rendered per search/filter, not per page.
  *
  * - Dependency-free, multi-instance safe. Never writes inline element styles.
  *   (It injects ONE <style> rule at runtime for view-panel visibility — see
@@ -90,6 +95,10 @@
   // "顯示其餘 N 篇 / 收起" toggle. Purely visual — all articles are already in the
   // payload; nothing is re-fetched.
   var BOOK_ARTICLES_VISIBLE = 20;
+
+  // Article ids whose first 3 chars are in this list get their (Webflow-authored,
+  // hidden) .access-tag shown on the card thumbnail. Add prefixes here to grow it.
+  var ACCESS_TAG_PREFIXES = ["TVW"];
 
   /* ---------- bootstrap ---------- */
   ready(function () {
@@ -232,6 +241,7 @@
     activate(card);
     if (item.href) card.setAttribute("href", item.href);
     setImg(card.querySelector('[data-field="thumbnail"]'), item.image, imageBase, item.title);
+    setAccessTag(card, item);
     setLeafField(card, "publication", articlePublication(item));
     setDate(card, item.datePublished);
     setTitle(card, item.title);
@@ -247,6 +257,7 @@
     var row = tpl.cloneNode(true);
     activate(row);
     setImg(row.querySelector('[data-field="cover"]'), first.image, imageBase, first.journal);
+    setAccessTag(row, first);
     setLeafField(row, "publication", bookTitle(first));
     setDate(row, first.datePublished);
     renderBookArticles(row, group.items);
@@ -483,6 +494,15 @@
     var src = "";
     if (file) src = /^https?:\/\//.test(file) ? file : (imageBase || "") + file;
     img.src = src || placeholder();
+  }
+  // The .access-tag lives in .result-card-thumbnail (sibling to the thumbnail img),
+  // authored hidden in Webflow. Reveal it only for ids whose 3-char prefix is listed.
+  function setAccessTag(card, item) {
+    var tag = card.querySelector(".access-tag");
+    if (!tag) return;
+    var prefix = String(item && item.id != null ? item.id : "").slice(0, 3);
+    if (ACCESS_TAG_PREFIXES.indexOf(prefix) !== -1) tag.removeAttribute("u-d");
+    else tag.setAttribute("u-d", "none");
   }
   function placeholder() {
     var svg =
