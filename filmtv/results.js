@@ -11,7 +11,8 @@
  * Integration API (global):
  *   window.filmtvResults.render(rootEl, { items, counts, imageBase })
  *     rootEl  : the [data-results] element (or omit to render all)
- *     items   : array for the CURRENT page (book view groups them by bookNumber)
+ *     items   : the SAME array drives both views — article cards AND book rows
+ *               (book view groups them by bookNumber). One render fills both.
  *     counts  : { articles, books } for the toggle (optional; else computed)
  *     imageBase: optional prefix when items carry filenames (else full URLs)
  *   window.filmtvResults.setView(rootEl, "article" | "book")
@@ -19,6 +20,11 @@
  * A thin self-fetch of DATA_URL runs only as the MOCK driver; the backend
  * can remove it and call render() directly. See HANDOFF.md for the full
  * three-file integration contract (results + chart + cooccur).
+ *
+ * VIEW TOGGLE: article and book views share ONE payload, so flipping the toggle
+ * does NOT paginate or re-fetch — both panels are pre-rendered and the toggle is
+ * a pure CSS panel swap. It still fires "filmtv:viewchange" so the chart switches
+ * its own article/book counts (the chart keeps both arrays; it does not re-fetch).
  *
  * PAGINATION: call THIS render() once per page of results. A page turn must NOT
  * re-render the chart (filmtvChart) — the chart shows the whole result set and
@@ -93,11 +99,6 @@
   };
   var TYPE_VARIANT_CLASSES = ["is-film", "is-cultural", "is-comm", "is-other"];
 
-  // A book row's nested article list collapses beyond this many articles, with a
-  // "顯示其餘 N 篇 / 收起" toggle. Purely visual — all articles are already in the
-  // payload; nothing is re-fetched.
-  var BOOK_ARTICLES_VISIBLE = 20;
-
   // Article ids whose first 3 chars are in this list get their (Webflow-authored,
   // hidden) .access-tag shown on the card thumbnail. Add prefixes here to grow it.
   var ACCESS_TAG_PREFIXES = ["TVW"];
@@ -121,21 +122,7 @@
     st.id = "filmtv-results-css";
     st.textContent =
       '[data-results][data-view="article"] [data-view-panel="book"],' +
-      '[data-results][data-view="book"] [data-view-panel="article"]{display:none !important}' +
-      // Collapsible overflow of a book row's article list. The grid-template-rows
-      // 0fr->1fr trick animates an arbitrary number of rows with no JS measuring
-      // and no inline styles (just a class toggle). These rules are STRUCTURAL
-      // only — the .book-article-toggle button's look is owned in Webflow custom
-      // CSS (it's JS-created so Webflow won't auto-emit styles for it).
-      '.book-article-more{display:grid;grid-template-rows:0fr;transition:grid-template-rows .28s ease}' +
-      '.book-article-more.is-open{grid-template-rows:1fr}' +
-      '.book-article-more>*{min-height:0;overflow:hidden}' +
-      // The authored toggle's icon flips 180deg when the list is open. Scoped to
-      // .book-article-list-wrap so other .text-link buttons site-wide are untouched.
-      '.book-article-list-wrap .text-link .icon-color{transition:transform .2s ease}' +
-      '.book-article-list-wrap .text-link.is-open .icon-color{transform:rotate(180deg)}' +
-      '@media (prefers-reduced-motion:reduce){.book-article-more{transition:none}' +
-      '.book-article-list-wrap .text-link .icon-color{transition:none}}';
+      '[data-results][data-view="book"] [data-view-panel="article"]{display:none !important}';
     (document.head || document.documentElement).appendChild(st);
   }
 
@@ -156,11 +143,10 @@
 
   /* ---------- view toggle (visual; no data) ---------- */
   // On a user toggle (and only on an actual change) we flip the panel AND fire
-  // a bubbling "filmtv:viewchange" event { detail: { view } }. Article and book
-  // views are separate queries with different entry limits, so the backend
-  // listens for this, fetches that view's first page, and calls render():
-  //   document.addEventListener("filmtv:viewchange", e =>
-  //     loadView(e.detail.view).then(data => filmtvResults.render(e.target, data)));
+  // a bubbling "filmtv:viewchange" event { detail: { view } }. Both views render
+  // from the SAME payload, so the backend does NOT re-fetch here — the flip is a
+  // pure CSS panel swap. The event survives only so the chart mirrors the view:
+  //   document.addEventListener("filmtv:viewchange", e => chart switches counts);
   function initToggle(root) {
     root.addEventListener("click", function (e) {
       var btn = e.target.closest ? e.target.closest("[data-view-btn]") : null;
@@ -268,6 +254,8 @@
 
   // Nested article list inside a book row (.book-article-list). The first
   // .book-row-article's <li> is the template; the rest (static demo) are dropped.
+  // Both views share one payload, so a book holds only the articles on this page —
+  // we render them ALL inline (no cap, no "顯示其餘 N 篇 / 收起" collapse).
   function renderBookArticles(row, articles) {
     var list = row.querySelector(".book-article-list");
     if (!list) return;
@@ -277,25 +265,17 @@
     var liHost = liTpl.parentNode;
     while (liHost.firstChild) liHost.removeChild(liHost.firstChild);
 
-    // The "顯示其餘 N 篇 / 收起" toggle is AUTHORED in Webflow as a .text-link
-    // button inside .book-article-list-wrap (with its own icon). We find, fill,
-    // wire and show/hide it — we never create it. Styling + icon stay in the Designer.
-    var toggle = findBookToggle(liHost);
-
-    var capped = articles.length > BOOK_ARTICLES_VISIBLE;
-    var visible = capped ? BOOK_ARTICLES_VISIBLE : articles.length;
-    for (var i = 0; i < visible; i++) {
+    for (var i = 0; i < articles.length; i++) {
       var li = liTpl.cloneNode(true);
       fillBookArticle(li, articles[i]);
       liHost.appendChild(li);
     }
-    if (capped) {
-      var more = addCollapsedArticles(liHost, liTpl, articles.slice(visible));
-      if (!toggle) toggle = fallbackToggle(more); // safety net if none authored
-      wireBookToggle(toggle, more, articles.length - visible);
-    } else if (toggle) {
-      toggle.setAttribute("u-d", "none"); // nothing to collapse -> hide the toggle
-    }
+
+    // The "顯示其餘 N 篇 / 收起" toggle is AUTHORED in Webflow as a .text-link
+    // button inside .book-article-list-wrap. There's no longer anything to
+    // collapse, so hide it if present (styling + icon stay in the Designer).
+    var toggle = findBookToggle(liHost);
+    if (toggle) toggle.setAttribute("u-d", "none");
   }
 
   // Find the authored toggle: the .text-link (or [data-book-toggle]) directly
@@ -305,79 +285,6 @@
     var wrap = liHost.parentNode;
     if (!wrap) return null;
     return wrap.querySelector(":scope > [data-book-toggle], :scope > .text-link") || null;
-  }
-
-  // Move the articles past the visible cap into an animatable wrapper placed
-  // AFTER the visible list (and before the authored toggle). The overflow items
-  // live in their own list of the same class, inheriting the Webflow styling.
-  function addCollapsedArticles(liHost, liTpl, extra) {
-    var wrap = document.createElement("div");
-    wrap.className = "book-article-more";
-    var inner = document.createElement(liHost.tagName);
-    inner.className = liHost.className;
-    for (var i = 0; i < extra.length; i++) {
-      var li = liTpl.cloneNode(true);
-      fillBookArticle(li, extra[i]);
-      inner.appendChild(li);
-    }
-    wrap.appendChild(inner);
-    liHost.parentNode.insertBefore(wrap, liHost.nextSibling);
-    return wrap;
-  }
-
-  // Wire the authored toggle to the overflow wrapper: set the count label (keeping
-  // the icon), toggle .is-open on both wrapper (height) and button (icon rotation),
-  // and track aria-expanded.
-  function wireBookToggle(btn, more, remaining) {
-    if (!btn) return;
-    btn.removeAttribute("u-d");
-    btn.classList.remove("is-open");
-    btn.setAttribute("aria-expanded", "false");
-    if (more) more.classList.remove("is-open");
-    var moreLabel = "顯示其餘 " + remaining + " 篇";
-    var lessLabel = "收起";
-    setToggleLabel(btn, moreLabel);
-    btn.addEventListener("click", function () {
-      var open = more ? more.classList.toggle("is-open") : !btn.classList.contains("is-open");
-      btn.classList.toggle("is-open", open);
-      btn.setAttribute("aria-expanded", open ? "true" : "false");
-      setToggleLabel(btn, open ? lessLabel : moreLabel);
-      if (!open) scrollToBookStart(btn); // 收起 -> return to the book's first article
-    });
-  }
-
-  // On collapse, bring the book's first article back into view (only when it has
-  // scrolled above the viewport — collapsing a fully-visible book stays put).
-  function scrollToBookStart(btn) {
-    var row = btn.closest(".book-row") || btn.closest(".book-article-list-wrap");
-    var target = (row && row.querySelector(".book-article-list .book-row-article")) || row;
-    if (!target || target.getBoundingClientRect().top >= 0) return;
-    var reduce = window.matchMedia &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    target.scrollIntoView({ block: "start", behavior: reduce ? "auto" : "smooth" });
-  }
-
-  // Write the toggle's text WITHOUT clobbering its icon: target the label element
-  // (the child that isn't the icon), else the first non-empty text node.
-  function setToggleLabel(btn, text) {
-    var label = btn.querySelector(":scope > div:not(.icon-color)") ||
-      btn.querySelector("div:not(.icon-color)");
-    if (label) { label.textContent = text; return; }
-    for (var i = 0; i < btn.childNodes.length; i++) {
-      var n = btn.childNodes[i];
-      if (n.nodeType === 3 && n.textContent.trim()) { n.textContent = text; return; }
-    }
-    btn.appendChild(document.createTextNode(text));
-  }
-
-  // Only used if no toggle was authored in Webflow (misconfiguration guard) so a
-  // capped list is never stuck collapsed.
-  function fallbackToggle(more) {
-    var btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "book-article-toggle";
-    more.parentNode.insertBefore(btn, more.nextSibling);
-    return btn;
   }
 
   // "section ｜ title" + type tag. both empty -> "無標題"; only one -> show it

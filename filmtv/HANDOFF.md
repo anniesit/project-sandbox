@@ -94,14 +94,11 @@ To cover more publications, add prefixes to that constant — no backend change.
 the chart (see chart notes). The result list paginates; the chart does not.
 
 **Emits** `filmtv:viewchange` `{ detail: { view } }` when the user flips the
-article/book toggle (only on an actual change). Article and book are separate
-queries with different limits, so the backend fetches that view's first page and
-re-renders:
-
-```js
-document.addEventListener("filmtv:viewchange", e =>
-  loadView(e.detail.view).then(data => filmtvResults.render(e.target, data)));
-```
+article/book toggle (only on an actual change). Article and book views share ONE
+payload — `render()` fills both panels at once — so the toggle is a pure CSS panel
+swap. Do **NOT** re-fetch or re-render results on this event. It fires only so the
+chart mirrors the view (see chart notes); a book row shows **all** its articles on
+the current page, with no in-book collapse.
 
 ---
 
@@ -221,7 +218,7 @@ document.addEventListener("filmtv:addKeyword", e => addTermAndSearch(e.detail.ke
 
 | Event | Fired by | Detail | Backend does |
 |---|---|---|---|
-| `filmtv:viewchange` | results.js | `{ view }` | fetch that view's page 1, re-render results |
+| `filmtv:viewchange` | results.js | `{ view }` | nothing for results (both panels already rendered); chart switches its own counts |
 | `filmtv:filter` | chart.js | `{ year, publication, label, prefixes }` | narrow query, re-fetch, re-render chart |
 | `filmtv:addKeyword` | cooccur.js | `{ key, label, total }` | add term, close modal, re-search (max 5) |
 
