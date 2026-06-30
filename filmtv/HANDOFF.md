@@ -93,12 +93,11 @@ To cover more publications, add prefixes to that constant — no backend change.
 **Pagination:** call `render()` once **per page**. A page turn must NOT re-render
 the chart (see chart notes). The result list paginates; the chart does not.
 
-**Emits** `filmtv:viewchange` `{ detail: { view } }` when the user flips the
-article/book toggle (only on an actual change). Article and book views share ONE
-payload — `render()` fills both panels at once — so the toggle is a pure CSS panel
-swap. Do **NOT** re-fetch or re-render results on this event. It fires only so the
-chart mirrors the view (see chart notes); a book row shows **all** its articles on
-the current page, with no in-book collapse.
+**View toggle (article/book):** both views share ONE payload — `render()` fills
+both panels at once — so flipping the toggle is a pure CSS panel swap (article
+cards ⇄ book rows). It does **NOT** re-fetch, re-render, or fire any event. A book
+row shows **all** its articles on the current page, with no in-book collapse. The
+chart is article-only and does not follow this toggle.
 
 ---
 
@@ -119,16 +118,15 @@ filmtvChart.render(rootEl, { items });                   // raw — chart aggreg
       "key": "FMP",                 // publication key (taxonomy in chart.js)
       "label": "電影小冊子",          // legend label
       "prefixes": ["FMP"],          // id prefixes that roll into this series
-      "counts":     [15, 0, 0, …],  // entries per year (article view)  — aligns to years[]
-      "bookCounts": [ 1, 0, 0, …]   // distinct books per year (book view) — aligns to years[]
+      "counts":     [15, 0, 0, …]   // entries per year — aligns to years[]
     }
   ],
   "counts": { … }                   // optional; not required by the chart
 }
 ```
 
-Each `counts` / `bookCounts` array is **index-aligned to `years`**. Provide both
-so the article/book toggle works without a re-fetch.
+Each `counts` array is **index-aligned to `years`**. The chart is article-only
+(counts 篇); it does not consume a book-count array.
 
 ### X-axis range — PROJECT RULE
 
@@ -147,12 +145,9 @@ send pre-aggregated `years` (raw `items` can't represent empty edge years).
 
 ### Grow animation
 
-Bars grow from 0 (~200ms) on **every `render()`** and on the **article/book
-toggle**; resize redraws are static. Two rules:
+Bars grow from 0 (~200ms) on **every `render()`**; resize redraws are static.
 - **Pagination:** never call `filmtvChart.render()` on a page turn, or the bars
   re-grow. The chart reflects the whole result set, not a page.
-- **Toggle:** handled internally via `filmtv:viewchange` — do **not** also call
-  `render()` on toggle, or the grow double-fires.
 
 ### Emits
 
@@ -165,7 +160,8 @@ document.addEventListener("filmtv:filter", e =>
   applySearchFilters(e.detail).then(data => filmtvChart.render(e.target, data)));
 ```
 
-Also listens to `filmtv:viewchange` (from `results.js`) to switch article/book.
+The chart is **article-only** — it counts entries (篇) and does not follow the
+results article/book toggle.
 
 ---
 
@@ -218,9 +214,11 @@ document.addEventListener("filmtv:addKeyword", e => addTermAndSearch(e.detail.ke
 
 | Event | Fired by | Detail | Backend does |
 |---|---|---|---|
-| `filmtv:viewchange` | results.js | `{ view }` | nothing for results (both panels already rendered); chart switches its own counts |
 | `filmtv:filter` | chart.js | `{ year, publication, label, prefixes }` | narrow query, re-fetch, re-render chart |
 | `filmtv:addKeyword` | cooccur.js | `{ key, label, total }` | add term, close modal, re-search (max 5) |
+
+The results article/book toggle fires **no event** — it's a pure CSS panel swap
+over one shared payload (see results.js notes).
 
 All events **bubble to `document`**.
 
@@ -229,8 +227,7 @@ All events **bubble to `document`**.
 - [ ] Remove `DATA_URL` + `mockFetch()` from `results.js`, `chart.js`, `cooccur.js`.
 - [ ] Reimplement the demo `<script>` drivers in `chart.html` / `cooccur.html` against the live fetch.
 - [ ] Call `filmtvResults.render()` **per page**; wire pagination to results only.
-- [ ] Call `filmtvChart.render()` **per search/filter** with pre-aggregated `{ years, series }`; pass the full archive `years` by default, the user's input range when year-filtered.
-- [ ] Provide both `counts` and `bookCounts` per chart series so the toggle needs no re-fetch.
-- [ ] Don't call `filmtvChart.render()` on page turns or on the toggle.
-- [ ] Listen for the three `filmtv:*` events and round-trip them.
+- [ ] Call `filmtvChart.render()` **per search/filter** with pre-aggregated `{ years, series }` (each series carries `counts` only); pass the full archive `years` by default, the user's input range when year-filtered.
+- [ ] Don't call `filmtvChart.render()` on page turns.
+- [ ] Listen for the two `filmtv:*` events (`filmtv:filter`, `filmtv:addKeyword`) and round-trip them.
 - [ ] Run the CDN export/republish step so production picks up the change.

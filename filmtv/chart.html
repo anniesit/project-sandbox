@@ -75,14 +75,6 @@
         <button class="preset" data-preset="tv">香港電視</button>
       </div>
 
-      <!-- demo view toggle: mirrors the results.js article<->book switch. In
-           production results.js fires filmtv:viewchange; here we fire it directly
-           so the chart flips between 篇 (entry) and 本 (book) counts. -->
-      <div class="presets" id="views">
-        <button class="preset is-active" data-view="article">文章統計（篇）</button>
-        <button class="preset" data-view="book">書刊統計（本）</button>
-      </div>
-
       <!-- chart.js mounts here. data-height is optional (default 360). -->
       <div data-chart data-height="360" data-src="sample-data/chart-sample.json"></div>
 
@@ -99,14 +91,12 @@
     (function () {
       var chartEl = document.querySelector("[data-chart]");
       var presets = document.getElementById("presets");
-      var views = document.getElementById("views");
       var status = document.getElementById("demo-status");
       var ALL = null;
-      var view = "article"; // current 篇/本 view, for the filter-status unit
 
-      // The sample is PRE-AGGREGATED ({ years, series:[{counts, bookCounts}] }) —
-      // the shape the backend sends for large result sets. These helpers slice it
-      // the way a backend would narrow a query.
+      // The sample is PRE-AGGREGATED ({ years, series:[{counts }] }) — the shape
+      // the backend sends for large result sets. These helpers slice it the way a
+      // backend would narrow a query.
       function sliceYears(data, keepYear) {
         var idx = [];
         data.years.forEach(function (y, i) { if (keepYear(y)) idx.push(i); });
@@ -115,8 +105,7 @@
           series: data.series.map(function (s) {
             return {
               key: s.key, label: s.label, prefixes: s.prefixes,
-              counts: idx.map(function (i) { return s.counts[i]; }),
-              bookCounts: idx.map(function (i) { return s.bookCounts[i]; })
+              counts: idx.map(function (i) { return s.counts[i]; })
             };
           })
         };
@@ -156,18 +145,6 @@
         window.filmtvChart.render(chartEl, FILTERS[btn.getAttribute("data-preset")]());
       });
 
-      // view toggle: fire the same event results.js fires; the chart re-picks
-      // its count array (篇 <-> 本) and redraws with no re-fetch.
-      views.addEventListener("click", function (e) {
-        var btn = e.target.closest(".preset");
-        if (!btn) return;
-        view = btn.getAttribute("data-view");
-        views.querySelectorAll(".preset").forEach(function (b) {
-          b.classList.toggle("is-active", b.getAttribute("data-view") === view);
-        });
-        document.dispatchEvent(new CustomEvent("filmtv:viewchange", { detail: { view: view }, bubbles: true }));
-      });
-
       // BACKEND's job in production: listen for the chart's selection event, narrow
       // the query, re-render. Here we slice the pre-aggregated sample in-memory.
       document.addEventListener("filmtv:filter", function (e) {
@@ -180,10 +157,10 @@
           sub = onlySeries(ALL, [d.publication]);
           scope = d.label;
         }
-        var n = total(sub, view === "book" ? "bookCounts" : "counts");
+        var n = total(sub, "counts");
         setActive(null);
         status.hidden = false;
-        status.textContent = "已篩選：" + scope + "（" + n.toLocaleString() + (view === "book" ? " 本" : " 篇") + "）· 按「全部結果」重設";
+        status.textContent = "已篩選：" + scope + "（" + n.toLocaleString() + " 篇" + "）· 按「全部結果」重設";
         window.filmtvChart.render(chartEl, sub);
       });
     })();

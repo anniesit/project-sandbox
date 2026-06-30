@@ -37,12 +37,13 @@
  * then to the user's INPUT range (contiguous, zero-filled) — NOT the result
  * span. Send pre-aggregated { years, series } so empty edge years stay visible.
  *
- * GROW ANIMATION: bars grow from 0 (~200ms) on every render() and on the
- * article/book toggle; resize redraws are static. Integration notes:
- *   • pagination must re-render the RESULTS list only — never call this chart's
- *     render() on a page turn (the chart has no page concept) or bars re-grow.
- *   • the toggle is handled here via filmtv:viewchange; don't ALSO call render()
- *     on toggle or the grow double-fires.
+ * GROW ANIMATION: bars grow from 0 (~200ms) on every render(); resize redraws
+ * are static. Integration note: pagination must re-render the RESULTS list only
+ * — never call this chart's render() on a page turn (the chart has no page
+ * concept) or the bars re-grow.
+ *
+ * COUNT UNIT: the chart always counts entries (篇). It does NOT follow the
+ * results article/book view toggle — that toggle only regroups the results list.
  * See HANDOFF.md for the full integration contract.
  *
  * data-* contract:
@@ -101,14 +102,9 @@
   ];
 
   var GEOM = { top: 14, right: 14, bottom: 30, left: 46 };
-  // Count unit switches with the result view (mirrors results.js article<->book):
-  //   article view -> entries (篇)   book view -> books (本)
+  // The chart always counts entries (篇). It is article-only — the results
+  // article/book toggle no longer drives it.
   var UNIT_ARTICLE = " 篇";
-  var UNIT_BOOK = " 本";
-  function unitFor(view) { return view === "book" ? UNIT_BOOK : UNIT_ARTICLE; }
-  // active per-year counts for a series, by view ("book" -> distinct books)
-  function countsFor(s, view) { return (view === "book" ? s.bookCounts : s.counts) || []; }
-  function totalFor(s, view) { return view === "book" ? s.bookTotal : s.total; }
 
   /* ---------- bootstrap ---------- */
   ready(function () {
@@ -121,11 +117,8 @@
     var st = {
       height: parseInt(root.getAttribute("data-height"), 10) || 360,
       model: null,
-      // active result view: "article" (count 篇) or "book" (count distinct books).
-      // Adopt whatever the results panel is currently showing, else default article.
-      view: currentView(),
       tipIndex: null,    // year index the tooltip currently describes
-      pendingAnim: true, // grow bars from 0 on the next real draw (load + toggle)
+      pendingAnim: true, // grow bars from 0 on the next real draw (load)
       renderSeq: 0,      // bumps per render; part of the draw signature
       lastSig: null,     // signature of the last committed draw (skip no-op redraws)
       raf: 0
@@ -134,7 +127,6 @@
     buildShell(root, st);
     bindInteractions(root, st);
     bindLegend(root, st);
-    bindViewSync(root, st);
 
     // redraw on container resize (debounced to one frame)
     if (typeof ResizeObserver === "function") {
@@ -177,30 +169,6 @@
       .catch(function (err) { console.error("[chart] mock load failed (" + url + "):", err); });
   }
 
-  /* ---------- view sync (article <-> book, mirrors results.js) ---------- */
-  // The results toggle owns the view; the chart only reflects it. results.js sets
-  // [data-results][data-view] and fires a bubbling "filmtv:viewchange". The chart
-  // keeps BOTH count arrays in its model, so switching never re-fetches or rebuilds
-  // — it just re-picks counts/unit and redraws.
-  function currentView() {
-    var r = document.querySelector("[data-results][data-view]");
-    var v = r && r.getAttribute("data-view");
-    return v === "book" ? "book" : "article";
-  }
-  function bindViewSync(root, st) {
-    document.addEventListener("filmtv:viewchange", function (e) {
-      var view = e && e.detail && e.detail.view;
-      if (view !== "article" && view !== "book") return;
-      if (view === st.view) return;
-      st.view = view;
-      if (!st.model) return;
-      hideTip(st);
-      renderLegend(root, st);
-      st.pendingAnim = true;   // re-grow bars on toggle
-      draw(root);
-    });
-  }
-
   /* ---------- public render (backend calls this) ---------- */
   function render(root, data) {
     if (!root) {
@@ -225,9 +193,6 @@
     if (Array.isArray(data.years) && Array.isArray(data.series)) {
       var ys = data.years.map(Number);
       var series = data.series.map(function (s, i) {
-        // bookCounts is supplied by the backend in parallel to counts; if absent
-        // (older payload) the book view degrades to the entry counts.
-        var bc = s.bookCounts || s.counts || [];
         return {
           key: s.key,
           label: s.label || s.key,
@@ -236,9 +201,7 @@
           // its colour even when the result set filters down to a subset
           color: s.color || palette[(s.key in GROUP_ORDER ? GROUP_ORDER[s.key] : i) % palette.length],
           counts: ys.map(function (_, k) { return Number((s.counts || [])[k]) || 0; }),
-          bookCounts: ys.map(function (_, k) { return Number(bc[k]) || 0; }),
-          total: (s.counts || []).reduce(function (a, b) { return a + (Number(b) || 0); }, 0),
-          bookTotal: bc.reduce(function (a, b) { return a + (Number(b) || 0); }, 0)
+          total: (s.counts || []).reduce(function (a, b) { return a + (Number(b) || 0); }, 0)
         };
       });
       return finalizeModel(ys, series, palette);
@@ -247,7 +210,7 @@
     // raw entries: aggregate into per-year, per-publication counts.
     var items = Array.isArray(data.items) ? data.items : [];
     var minY = Infinity, maxY = -Infinity;
-    var groups = {}; // key -> { key, counts:{year->n}, total, books:{year->{bookNumber:1}}, labels:{} }
+    var groups = {}; // key -> { key, counts:{year->n}, total, labels:{} }
 
     for (var i = 0; i < items.length; i++) {
       var it = items[i];
@@ -256,15 +219,9 @@
       if (year < minY) minY = year;
       if (year > maxY) maxY = year;
       var key = publicationKey(it) || "—";
-      var g = groups[key] || (groups[key] = { key: key, counts: {}, total: 0, books: {}, labels: {} });
+      var g = groups[key] || (groups[key] = { key: key, counts: {}, total: 0, labels: {} });
       g.counts[year] = (g.counts[year] || 0) + 1;
       g.total++;
-      // book count = distinct bookNumber per year (a book sits in exactly one
-      // year+publication, so per-year distinct counts sum to the series book total)
-      if (it.bookNumber != null && it.bookNumber !== "") {
-        var bset = g.books[year] || (g.books[year] = {});
-        bset[it.bookNumber] = 1;
-      }
       // remember the most common journal name as the legend label
       var jr = it.journal || "";
       if (jr) g.labels[jr] = (g.labels[jr] || 0) + 1;
@@ -276,17 +233,12 @@
 
     var built = Object.keys(groups).map(function (k) {
       var g = groups[k];
-      var bookCounts = years.map(function (yy) {
-        return g.books[yy] ? Object.keys(g.books[yy]).length : 0;
-      });
       return {
         key: g.key,
         label: GROUP_LABEL[g.key] || topLabel(g.labels) || g.key,
         prefixes: GROUP_PREFIXES[g.key] || [g.key],
         counts: years.map(function (yy) { return g.counts[yy] || 0; }),
-        bookCounts: bookCounts,
-        total: g.total,
-        bookTotal: bookCounts.reduce(function (a, b) { return a + b; }, 0)
+        total: g.total
       };
     });
     // taxonomy order first (stable stack + colour), then any unlisted by size
@@ -324,21 +276,20 @@
     var years = model.years;
     var n = years.length;
     var series = model.series;
-    var view = st.view;
 
-    // grow-from-0 only on a real (sized) draw triggered by load/toggle.
-    // Skip no-op redraws (same width/view/data) — notably the ResizeObserver's
+    // grow-from-0 only on a real (sized) draw triggered by load/render.
+    // Skip no-op redraws (same width/data) — notably the ResizeObserver's
     // initial fire, which would otherwise repaint the bars static and wipe the
     // just-started grow animation. pendingAnim always forces a draw.
     var animate = !!st.pendingAnim;
-    var sig = W + "|" + view + "|" + st.renderSeq;
+    var sig = W + "|" + st.renderSeq;
     if (!animate && sig === st.lastSig) return;
     st.pendingAnim = false;
     st.lastSig = sig;
 
-    // per-year visible stacked totals -> dynamic y axis (uses the active view's counts)
+    // per-year visible stacked totals -> dynamic y axis
     var totals = years.map(function (_, i) {
-      return series.reduce(function (a, s) { return a + (countsFor(s, view)[i] || 0); }, 0);
+      return series.reduce(function (a, s) { return a + (s.counts[i] || 0); }, 0);
     });
     var axis = niceAxis(Math.max.apply(null, totals.concat(1)));
     var yMax = axis.max;
@@ -354,7 +305,7 @@
     var s = [];
     s.push('<svg class="filmtv-chart-svg-el" width="' + W + '" height="' + H +
       '" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' +
-      esc(ariaSummary(years, series, totals, view)) + '">');
+      esc(ariaSummary(years, series, totals)) + '">');
 
     // y gridlines + labels
     for (var t = 0; t <= yMax + 0.0001; t += axis.step) {
@@ -371,7 +322,7 @@
       var cum = 0;
       var segs = [];
       for (var k = 0; k < series.length; k++) {
-        var v = countsFor(series[k], view)[i] || 0;
+        var v = series[k].counts[i] || 0;
         if (v <= 0) continue;
         var y1 = Y(cum + v), y0 = Y(cum);
         segs.push('<rect class="filmtv-chart-bar" x="' + (X(i) - barW / 2) + '" y="' + y1 +
@@ -403,7 +354,7 @@
     st.svgHost.innerHTML = s.join("");
 
     // stash geometry for the hover handler
-    st.geom = { X: X, Y: Y, band: band, totals: totals, series: series, years: years, plotH: plotH, view: view };
+    st.geom = { X: X, Y: Y, band: band, totals: totals, series: series, years: years, plotH: plotH };
   }
 
   /* ---------- tooltip + selection (a bar commits a YEAR filter) ---------- */
@@ -445,10 +396,9 @@
   // build + position the tooltip; `pin` keeps it open and tappable (touch)
   function showTip(root, st, i, pin) {
     var g = st.geom;
-    var view = g.view;
     var rows = [];
     for (var k = 0; k < g.series.length; k++) {
-      var v = countsFor(g.series[k], view)[i] || 0;
+      var v = g.series[k].counts[i] || 0;
       if (v <= 0) continue;
       rows.push('<li class="filmtv-chart-tip-row"><span class="filmtv-chart-tip-swatch" style="background:' +
         g.series[k].color + '"></span><span class="filmtv-chart-tip-name">' +
@@ -457,7 +407,7 @@
     st.tooltip.innerHTML =
       '<div class="filmtv-chart-tip-head">' +
         '<span class="filmtv-chart-tip-year">' + g.years[i] + ' 年</span>' +
-        '<span class="filmtv-chart-tip-total">總數 ' + fmt(g.totals[i]) + unitFor(view) + '</span>' +
+        '<span class="filmtv-chart-tip-total">總數 ' + fmt(g.totals[i]) + UNIT_ARTICLE + '</span>' +
       '</div>' +
       (rows.length ? '<ul class="filmtv-chart-tip-list">' + rows.join("") + "</ul>" : "") +
       '<button type="button" class="filmtv-chart-commit">查看此年結果 →</button>';
@@ -506,13 +456,12 @@
   }
 
   function renderLegend(root, st) {
-    var view = st.view;
     var html = st.model.series.map(function (s) {
       return '<button type="button" class="filmtv-chart-legend-item" role="listitem" data-key="' +
         esc(s.key) + '" aria-label="' + esc("篩選：" + s.label) + '">' +
         '<span class="filmtv-chart-legend-swatch" style="background:' + s.color + '"></span>' +
         '<span class="filmtv-chart-legend-label">' + esc(s.label) + '</span>' +
-        '<span class="filmtv-chart-legend-count">' + fmt(totalFor(s, view)) + '</span></button>';
+        '<span class="filmtv-chart-legend-count">' + fmt(s.total) + '</span></button>';
     }).join("");
     st.legend.innerHTML = html;
   }
@@ -587,14 +536,12 @@
     return best;
   }
 
-  function ariaSummary(years, series, totals, view) {
+  function ariaSummary(years, series, totals) {
     if (!years.length) return "Stacked bar chart, no data.";
     var grand = totals.reduce(function (a, b) { return a + b; }, 0);
-    var noun = view === "book" ? "book" : "entry";
-    var plural = view === "book" ? "books" : "entries";
-    return "Stacked bar chart of " + noun + " count by year, " + years[0] + " to " +
+    return "Stacked bar chart of entry count by year, " + years[0] + " to " +
       years[years.length - 1] + ", " + series.length + " publications, " +
-      fmt(grand) + " " + (grand === 1 ? noun : plural) + " total.";
+      fmt(grand) + " " + (grand === 1 ? "entry" : "entries") + " total.";
   }
 
   /* ---------- tiny utils ---------- */

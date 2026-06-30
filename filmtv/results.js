@@ -23,8 +23,8 @@
  *
  * VIEW TOGGLE: article and book views share ONE payload, so flipping the toggle
  * does NOT paginate or re-fetch — both panels are pre-rendered and the toggle is
- * a pure CSS panel swap. It still fires "filmtv:viewchange" so the chart switches
- * its own article/book counts (the chart keeps both arrays; it does not re-fetch).
+ * a pure CSS panel swap. It fires no event; the chart is article-only and does
+ * not follow this toggle.
  *
  * PAGINATION: call THIS render() once per page of results. A page turn must NOT
  * re-render the chart (filmtvChart) — the chart shows the whole result set and
@@ -142,33 +142,19 @@
   }
 
   /* ---------- view toggle (visual; no data) ---------- */
-  // On a user toggle (and only on an actual change) we flip the panel AND fire
-  // a bubbling "filmtv:viewchange" event { detail: { view } }. Both views render
-  // from the SAME payload, so the backend does NOT re-fetch here — the flip is a
-  // pure CSS panel swap. The event survives only so the chart mirrors the view:
-  //   document.addEventListener("filmtv:viewchange", e => chart switches counts);
+  // Both views render from the SAME payload, so flipping the toggle is a pure CSS
+  // panel swap (article cards <-> book rows): no re-fetch, no re-render, no event.
+  // The chart is article-only and does not follow this toggle.
   function initToggle(root) {
     root.addEventListener("click", function (e) {
       var btn = e.target.closest ? e.target.closest("[data-view-btn]") : null;
       if (!btn || !root.contains(btn)) return;
       e.preventDefault();
       var view = btn.getAttribute("data-view-btn");
-      if (view === root.getAttribute("data-view")) return; // no change -> no re-fetch
+      if (view === root.getAttribute("data-view")) return; // already showing it
       setView(root, view);
-      emitViewChange(root, view);
     });
-    setView(root, root.getAttribute("data-view") || "article"); // initial state: no event
-  }
-
-  function emitViewChange(root, view) {
-    var ev;
-    try {
-      ev = new CustomEvent("filmtv:viewchange", { detail: { view: view }, bubbles: true });
-    } catch (err) {
-      ev = document.createEvent("CustomEvent");
-      ev.initCustomEvent("filmtv:viewchange", true, false, { view: view });
-    }
-    root.dispatchEvent(ev);
+    setView(root, root.getAttribute("data-view") || "article"); // initial state
   }
 
   function setView(root, view) {
