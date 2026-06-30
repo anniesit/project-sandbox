@@ -186,6 +186,25 @@
 .filmtv-cooccur-bubble {
   pointer-events: none;
 } /* hits live on the cells */
+
+/* grow-in on load: each bubble scales from 0 about its own centre. cooccur.js
+   adds .is-grow plus a per-bubble animation-delay/-duration so the wave runs
+   left -> right within a row and top -> bottom across rows. Transform-only, so
+   it stays on the compositor; only added on the load draw (not resize). */
+.filmtv-cooccur-bubble.is-grow {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation-name: filmtv-cooccur-pop;
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
+}
+@keyframes filmtv-cooccur-pop {
+  from { transform: scale(0); }
+  to   { transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .filmtv-cooccur-bubble.is-grow { animation: none; }
+}
 .filmtv-cooccur-hit {
   cursor: pointer;
 }

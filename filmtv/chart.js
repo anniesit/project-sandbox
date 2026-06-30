@@ -110,6 +110,9 @@
       // Adopt whatever the results panel is currently showing, else default article.
       view: currentView(),
       tipIndex: null,    // year index the tooltip currently describes
+      pendingAnim: true, // grow bars from 0 on the next real draw (load + toggle)
+      renderSeq: 0,      // bumps per render; part of the draw signature
+      lastSig: null,     // signature of the last committed draw (skip no-op redraws)
       raf: 0
     };
     root.__filmtv = st;
@@ -178,6 +181,7 @@
       if (!st.model) return;
       hideTip(st);
       renderLegend(root, st);
+      st.pendingAnim = true;   // re-grow bars on toggle
       draw(root);
     });
   }
@@ -193,6 +197,8 @@
     st.model = buildModel(root, data || {});
     hideTip(st);
     renderLegend(root, st);
+    st.renderSeq++;
+    st.pendingAnim = true;   // grow bars from 0 on (re)render
     draw(root);
   }
 
@@ -305,6 +311,16 @@
     var series = model.series;
     var view = st.view;
 
+    // grow-from-0 only on a real (sized) draw triggered by load/toggle.
+    // Skip no-op redraws (same width/view/data) — notably the ResizeObserver's
+    // initial fire, which would otherwise repaint the bars static and wipe the
+    // just-started grow animation. pendingAnim always forces a draw.
+    var animate = !!st.pendingAnim;
+    var sig = W + "|" + view + "|" + st.renderSeq;
+    if (!animate && sig === st.lastSig) return;
+    st.pendingAnim = false;
+    st.lastSig = sig;
+
     // per-year visible stacked totals -> dynamic y axis (uses the active view's counts)
     var totals = years.map(function (_, i) {
       return series.reduce(function (a, s) { return a + (countsFor(s, view)[i] || 0); }, 0);
@@ -334,17 +350,23 @@
         '" text-anchor="end">' + fmt(t) + '</text>');
     }
 
-    // stacked bars
+    // stacked bars — each year's segments live in one <g> so the whole column
+    // can grow from the baseline as a unit (clean stacked grow, GPU transform).
     for (var i = 0; i < n; i++) {
       var cum = 0;
+      var segs = [];
       for (var k = 0; k < series.length; k++) {
         var v = countsFor(series[k], view)[i] || 0;
         if (v <= 0) continue;
         var y1 = Y(cum + v), y0 = Y(cum);
-        s.push('<rect class="filmtv-chart-bar" x="' + (X(i) - barW / 2) + '" y="' + y1 +
+        segs.push('<rect class="filmtv-chart-bar" x="' + (X(i) - barW / 2) + '" y="' + y1 +
           '" width="' + barW + '" height="' + Math.max(0, y0 - y1) +
           '" fill="' + series[k].color + '"/>');
         cum += v;
+      }
+      if (segs.length) {
+        s.push('<g class="filmtv-chart-barcol' + (animate ? " is-grow" : "") + '">' +
+          segs.join("") + '</g>');
       }
     }
 

@@ -73,6 +73,11 @@
   var GROWTH = 0.75; // how fast bubbles grow with count. 0.5 = area ∝ count (recommended). Raise toward 1 to make big counts much bigger.
   var PAD_X = 4; // horizontal inset inside a strip so edge bubbles aren't clipped
 
+  // ---- grow-in animation (load) ----
+  var ANIM_ROW_DELAY = 50; // ms each row starts after the one above it (top -> bottom)
+  var ANIM_COL_STEP = 18; // ms between bubbles within a row, left -> right
+  var ANIM_DUR = 200; // ms each bubble takes to grow from 0
+
   /* Fallback categorical palette (CSS vars --filmtv-cooccur-color-N override). */
   var PALETTE = ["#534AB7", "#D4537E", "#1D9E75", "#D85A30", "#4E7622", "#378ADD", "#BA7517", "#6E6B63", "#A32D2D", "#2E8C8C"];
 
@@ -90,6 +95,9 @@
     var st = {
       height: parseInt(root.getAttribute("data-height"), 10) || 480,
       model: null,
+      pendingAnim: true, // grow bubbles from 0 on the next real (sized) draw
+      renderSeq: 0,      // bumps per render; part of the draw signature
+      lastSig: null,     // signature of the last committed draw (skip no-op redraws)
       raf: 0,
     };
     root.__cooccur = st;
@@ -168,6 +176,8 @@
     }
     var st = root.__cooccur || initChart(root);
     st.model = buildModel(root, data || {});
+    st.renderSeq++;
+    st.pendingAnim = true; // grow bubbles from 0 once the strips have real size
     hideTip(st);
     renderRows(root, st);
     draw(root);
@@ -246,6 +256,16 @@
     var W = strips[0].clientWidth || 0;
     if (W < 2) return; // hidden (modal not open yet) — redrawn on open
 
+    // grow-from-0 only on the first sized draw after a render (load). Skip no-op
+    // redraws (same width/data) so the ResizeObserver / dialog MutationObserver
+    // re-fires on modal-open don't repaint the bubbles static and wipe the
+    // just-started grow animation. pendingAnim always forces a draw.
+    var animate = !!st.pendingAnim;
+    var sig = W + "|" + st.renderSeq;
+    if (!animate && sig === st.lastSig) return;
+    st.pendingAnim = false;
+    st.lastSig = sig;
+
     var plotW = Math.max(1, W - PAD_X * 2);
     var band = plotW / ny;
     function X(yi) {
@@ -262,12 +282,21 @@
       // row baseline
       s.push('<line class="filmtv-cooccur-baseline" x1="0" y1="' + round(H - 0.5) + '" x2="' + W + '" y2="' + round(H - 0.5) + '"/>');
 
-      // bubbles
+      // bubbles. On the load draw they grow from 0, staggered left -> right
+      // within the row (ANIM_COL_STEP) and row-by-row top -> bottom
+      // (ki * ANIM_ROW_DELAY). animation-delay is the only per-bubble extra;
+      // the grow itself is a transform, so it stays on the compositor.
+      var rowDelay = ki * ANIM_ROW_DELAY;
+      var col = 0;
       for (var yi = 0; yi < ny; yi++) {
         var v = row.counts[yi];
         if (v <= 0) continue;
         var r = R_AT_1 * Math.pow(v, GROWTH); // no cap — big bubbles overflow/overlap freely
-        s.push('<circle class="filmtv-cooccur-bubble" cx="' + round(X(yi)) + '" cy="' + round(cy) + '" r="' + r.toFixed(1) + '" fill="' + row.color + '" stroke="' + row.color + '"/>');
+        var grow = animate
+          ? ' is-grow" style="animation-duration:' + ANIM_DUR + "ms;animation-delay:" + (rowDelay + col * ANIM_COL_STEP) + "ms"
+          : "";
+        s.push('<circle class="filmtv-cooccur-bubble' + grow + '" cx="' + round(X(yi)) + '" cy="' + round(cy) + '" r="' + r.toFixed(1) + '" fill="' + row.color + '" stroke="' + row.color + '"/>');
+        col++;
       }
 
       // transparent hit cell per year

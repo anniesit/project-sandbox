@@ -113,6 +113,23 @@ html.u-mode-dark .filmtv-chart {
 .filmtv-chart-bar { shape-rendering: crispEdges; }
 .filmtv-chart-hit { cursor: pointer; }
 
+/* grow each stacked column from the baseline (~200ms) on load + view toggle.
+   Scales the whole <g> from its own bounding-box bottom; transform-only, so it
+   stays on the compositor and doesn't relayout. Added by chart.js as .is-grow
+   only on load/toggle draws — resize redraws omit it, so bars don't re-animate. */
+.filmtv-chart-barcol.is-grow {
+  transform-box: fill-box;
+  transform-origin: bottom;
+  animation: filmtv-chart-grow 0.2s ease-out both;
+}
+@keyframes filmtv-chart-grow {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .filmtv-chart-barcol.is-grow { animation: none; }
+}
+
 /* ---------- tooltip ---------- */
 .filmtv-chart-tooltip {
   position: absolute;
