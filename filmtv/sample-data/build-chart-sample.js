@@ -110,6 +110,67 @@ var out = { counts: { articles: totalArticles, books: totalBooks }, years: years
 var dest = path.join(__dirname, "chart-sample.json");
 fs.writeFileSync(dest, JSON.stringify(out));
 
+/* ============================================================
+ * chart-book-sample.json — the BOOK-VIEW demo dataset (chart.html)
+ *
+ * In book view the 電影雙周刊 family is NOT rolled up into one series — each of
+ * its 9 id prefixes is its own stacked series with its own legend entry/colour.
+ * (In article view they stay merged as one 電影雙周刊 — that's chart-sample.json.)
+ *
+ * CEM is the flagship magazine (reuses the CEM book figures above); the other 8
+ * prefixes are small companion lines (book counts synthesised; real sub-line names).
+ * Colours are NOT in this payload — they live in chart.css (--filmtv-chart-ce-<key>
+ * for the family; color-1..4 for the taxonomy) and are applied by chart.js. Same
+ * union years[]; the chart.html driver slices each publication to its own year span
+ * ("fit the axis to the publication").
+ * ============================================================ */
+function clampYr(t) { return t < 0 ? 0 : t > 1 ? 1 : t; }
+// small companion line: `base`→`peak` books/yr across [start,1997], deterministic
+function minorBooks(start, base, peak) {
+  return years.map(function (yr) {
+    if (yr < start) return 0;
+    return Math.max(0, Math.round(lerp(base, peak, clampYr((yr - start) / (1997 - start)))));
+  });
+}
+// 電影雙周刊 (City Entertainment) family — 9 id prefixes shown as SEPARATE series in
+// book view (in article view they stay merged as one 電影雙周刊). REAL sub-line names
+// (user-supplied, July 2026). CEM is the flagship magazine (reuses BOOKS.CEM figures
+// above); the other 8 are smaller companion lines with synthesised book counts
+// (start/base/peak tuned so the stack looks varied — swap for real figures when
+// known). COLOURS are NOT set here: they live in chart.css (--filmtv-chart-ce-<key>)
+// and are applied by chart.js, so this payload carries no colour at all.
+var CE_FAMILY = [
+  { key: "CEM", label: "正刊" },                                   // flagship
+  { key: "CEI", label: "片目及索引", start: 1983, base: 4, peak: 10 },
+  { key: "CEY", label: "電影電視黃頁", start: 1980, base: 1, peak: 1 },
+  { key: "CED", label: "DVD Magazine", start: 1995, base: 1, peak: 3 },
+  { key: "CEF", label: "Foreign Films Magazine", start: 1982, base: 1, peak: 4 },
+  { key: "CEV", label: "Home Videos Magazine", start: 1985, base: 1, peak: 3 },
+  { key: "CEH", label: "荷里活映畫", start: 1983, base: 2, peak: 5 },
+  { key: "CEP", label: "電影海報館", start: 1986, base: 1, peak: 3 },
+  { key: "CEO", label: "電影海報精選", start: 1988, base: 1, peak: 2 }
+];
+function seriesOf(k) { return series.filter(function (s) { return s.key === k; })[0]; }
+
+var ceFamily = CE_FAMILY.map(function (m) {
+  if (m.key === "CEM") {                          // flagship — reuse computed CEM figures
+    var base = seriesOf("CEM");
+    return { key: "CEM", label: m.label, prefixes: ["CEM"], counts: base.counts, bookCounts: base.bookCounts };
+  }
+  var bc = minorBooks(m.start, m.base, m.peak);
+  var ct = bc.map(function (n, yi) { return n ? Math.round(n * APB.CEM(years[yi])) : 0; });
+  return { key: m.key, label: m.label, prefixes: [m.key], counts: ct, bookCounts: bc };
+});
+
+// FMP/TVW/CEB keep their TAXONOMY colours (chart.css color-1/2/4 via chart.js
+// GROUP_ORDER); no colours in this payload — chart.css is the single source.
+var bookSeries = [seriesOf("FMP"), seriesOf("TVW")].concat(ceFamily).concat([seriesOf("CEB")]);
+
+var bookOut = { counts: { articles: totalArticles, books: totalBooks }, years: years, series: bookSeries };
+var bookDest = path.join(__dirname, "chart-book-sample.json");
+fs.writeFileSync(bookDest, JSON.stringify(bookOut));
+console.log("wrote " + bookDest + "  (" + bookSeries.length + " series: 電影雙周刊 split into " + ceFamily.length + ")");
+
 console.log("wrote " + dest);
 console.log("years " + years[0] + "–" + years[years.length - 1] +
   "  articles " + totalArticles.toLocaleString() + "  books " + totalBooks.toLocaleString() +

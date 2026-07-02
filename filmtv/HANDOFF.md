@@ -9,7 +9,7 @@ project-specific decisions that aren't obvious from the code.
 | File | Owns | Public API |
 |---|---|---|
 | `results.js` | Result list + article/book view toggle | `filmtvResults.render`, `filmtvResults.setView` |
-| `chart.js` | Stacked bar chart (entries by year) | `filmtvChart.render` |
+| `chart.js` | Stacked bar chart (entries or books by year) | `filmtvChart.render`, `filmtvChart.setView` |
 | `cooccur.js` | Keyword co-occurrence bubble chart (in a modal) | `filmtvCooccur.render`, `filmtvCooccur.redraw` |
 
 ## Ownership split (read this first)
@@ -20,12 +20,12 @@ max-5-keyword rule. On a user action a component **fires a bubbling event and
 does nothing else** — the backend listens, mutates the query, re-fetches, and
 calls `render()` again. Components keep no search state of their own.
 
-## Deploy / CDN (important)
+## Deploy (important)
 
-The live Webflow page loads these files from the **CDN**, not from this repo.
-Editing the source here does **not** change production until you run the
-export/republish step. (There is a stale mirror at
-`hkbuproject-sandbox.vercel.app/filmtv/` — sync or ignore it deliberately.)
+The Webflow page loads these files **live from Vercel**:
+`https://hkbuproject-sandbox.vercel.app/filmtv/…` (e.g. `.../chart.js`). The
+project-sandbox is deployed there, so **pushing updates production automatically**
+— no CDN purge or manual export step. Just reference the Vercel URL from Webflow.
 
 ---
 
@@ -118,15 +118,17 @@ filmtvChart.render(rootEl, { items });                   // raw — chart aggreg
       "key": "FMP",                 // publication key (taxonomy in chart.js)
       "label": "電影小冊子",          // legend label
       "prefixes": ["FMP"],          // id prefixes that roll into this series
-      "counts":     [15, 0, 0, …]   // entries per year — aligns to years[]
+      "counts":     [15, 0, 0, …],  // entries per year (article view)  — aligns to years[]
+      "bookCounts": [ 1, 0, 0, …]   // distinct books per year (book view) — aligns to years[]
     }
   ],
   "counts": { … }                   // optional; not required by the chart
 }
 ```
 
-Each `counts` array is **index-aligned to `years`**. The chart is article-only
-(counts 篇); it does not consume a book-count array.
+Each `counts` / `bookCounts` array is **index-aligned to `years`**. Send both:
+this page's chart renders `counts` (篇), and the separate **book chart page**
+renders `bookCounts` (本). A chart instance picks which via `data-view` (below).
 
 ### X-axis range — PROJECT RULE
 
@@ -160,8 +162,59 @@ document.addEventListener("filmtv:filter", e =>
   applySearchFilters(e.detail).then(data => filmtvChart.render(e.target, data)));
 ```
 
-The chart is **article-only** — it counts entries (篇) and does not follow the
-results article/book toggle.
+**Count view per instance.** A chart element counts entries (篇) by default, or
+distinct books (本) when it sets `data-view="book"` — used by the separate **book
+chart page**. The chart does **not** follow the results article/book toggle on its
+own. The model always carries both `counts` and `bookCounts`, so either view
+renders from one payload.
+
+```html
+<div data-chart></div>                 <!-- entries (篇), the default -->
+<div data-chart data-view="book"></div><!-- distinct books (本), book chart page -->
+```
+
+A host that wants its own switcher (e.g. the demo page) can flip a live chart
+without re-fetching — it's a pure redraw from the same model:
+
+```js
+filmtvChart.setView(rootEl, "book");   // or "article"
+```
+
+### Book view — differs from article view (backend shapes the payload)
+
+`chart.js` needs **no special code** for these; they're all decided by the
+`{ years, series }` you send. The book chart / **collection page** differs from
+the search-page article chart in three ways:
+
+1. **Book count, not article count** — `data-view="book"` renders `bookCounts[]`
+   with the 本 unit (article view renders `counts[]` / 篇).
+2. **Year axis fitted to the publication's span** — article view keeps the
+   STABLE full-archive axis (1926–1997); book view passes only that
+   publication's years (e.g. 香港電視 → 1967–1997, contiguous + zero-filled), so
+   the axis fits its earliest–latest year.
+3. **電影雙周刊 is split, not merged** — in article view its 9 id prefixes
+   (`CEM, CEI, CEY, CED, CEF, CEV, CEH, CEP, CEO`) roll up into ONE 電影雙周刊
+   series. In book view send them as **9 separate series** (own `key`/`label`), so
+   each sub-line gets its own stack + legend entry. **Colours are NOT in the
+   payload** — they live in `chart.css` (`--filmtv-chart-ce-<prefix>`, e.g.
+   `--filmtv-chart-ce-cem`) and `chart.js` applies them by key. The taxonomy
+   colours (`--filmtv-chart-color-1..4`) are unchanged; merged CEM keeps color-3,
+   split CEM (正刊) uses `--filmtv-chart-ce-cem`.
+
+The book-view **filter set** is the 4 publications: 電影小冊子 / 香港電視 /
+電影雙周刊 / 電影雙周刊出版書籍 (article view keeps the search-result filters).
+Demo of all of the above: `chart.html` (view toggle swaps the filter presets and
+the dataset); the split book dataset is `sample-data/chart-book-sample.json`.
+
+### Collection page (one publication)
+
+`/collection` shows every book of one publication — a year selector, a grid of
+cover cards, and this chart in book view for that publication only. The chart is
+`chart.js` unchanged: mount `<div data-chart data-view="book">` and feed it
+`{ years:<pub span>, series:[<that one publication, with bookCounts>] }`. The
+year buttons + cover cards are rendered separately (mock: `collection.js`, NOT
+part of this handoff — the backend renders them from the by-article payload,
+grouping by `bookNumber` exactly like results.js book rows).
 
 ---
 
@@ -227,7 +280,10 @@ All events **bubble to `document`**.
 - [ ] Remove `DATA_URL` + `mockFetch()` from `results.js`, `chart.js`, `cooccur.js`.
 - [ ] Reimplement the demo `<script>` drivers in `chart.html` / `cooccur.html` against the live fetch.
 - [ ] Call `filmtvResults.render()` **per page**; wire pagination to results only.
-- [ ] Call `filmtvChart.render()` **per search/filter** with pre-aggregated `{ years, series }` (each series carries `counts` only); pass the full archive `years` by default, the user's input range when year-filtered.
+- [ ] Call `filmtvChart.render()` **per search/filter** with pre-aggregated `{ years, series }` (each series carries both `counts` and `bookCounts`); pass the full archive `years` by default, the user's input range when year-filtered.
+- [ ] Set `data-view="book"` on the book chart page's chart element; leave it default (article) elsewhere.
+- [ ] Book view: fit `years` to the publication's span (not the full archive), and send 電影雙周刊 as its 9 CE\* prefixes split into separate series (see "Book view" above).
+- [ ] Collection page: feed the book chart one publication's series; render the year buttons + cover cards from the by-article payload grouped by `bookNumber`.
 - [ ] Don't call `filmtvChart.render()` on page turns.
 - [ ] Listen for the two `filmtv:*` events (`filmtv:filter`, `filmtv:addKeyword`) and round-trip them.
 - [ ] Run the CDN export/republish step so production picks up the change.

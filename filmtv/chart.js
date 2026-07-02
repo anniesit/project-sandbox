@@ -14,7 +14,7 @@
  * Integration API (global), mirrors window.filmtvResults:
  *   window.filmtvChart.render(rootEl, { items })           // raw entries; chart aggregates
  *   window.filmtvChart.render(rootEl, { years, series })   // pre-aggregated (large result sets)
- *       series: [{ key, label, color?, counts:[ per-year ] }]
+ *       series: [{ key, label, color?, counts:[ per-year ], bookCounts:[ per-year ] }]
  *
  * Ownership split (same as results.js): this file owns the VISUAL + the click
  * affordance; the backend owns the SEARCH STATE. On a user selection the chart
@@ -42,12 +42,16 @@
  * — never call this chart's render() on a page turn (the chart has no page
  * concept) or the bars re-grow.
  *
- * COUNT UNIT: the chart always counts entries (篇). It does NOT follow the
- * results article/book view toggle — that toggle only regroups the results list.
- * See HANDOFF.md for the full integration contract.
+ * COUNT UNIT: each chart instance counts entries (篇) by default, or distinct
+ * books (本) when its host element sets data-view="book" (for the separate book
+ * chart page). The chart does NOT follow the results article/book toggle on its
+ * own; a host with its own control switches it via filmtvChart.setView(root,
+ * view). The model always carries BOTH count arrays, so switching is a pure
+ * redraw with no re-fetch. See HANDOFF.md for the full integration contract.
  *
  * data-* contract:
  *   [data-chart]            chart root (one per instance)
+ *   [data-view]            optional "article" (default) | "book" — fixed count view
  *   [data-src]             optional JSON url override for the mock driver
  *   [data-height]          optional plot height in px (default 360)
  * ============================================================ */
@@ -84,6 +88,11 @@
     p.prefixes.forEach(function (pre) { PREFIX_MAP[pre] = p.key; });
   });
 
+  // 電影雙周刊 family id prefixes. Article view rolls them up into one CEM series
+  // (taxonomy colour-3); BOOK view sends each as its own series, coloured from its
+  // --filmtv-chart-ce-<prefix> token in chart.css. Same set as the CEM group.
+  var CE_FAMILY = GROUP_PREFIXES["CEM"] || ["CEM"];
+
   // true on devices with a real hover+fine pointer (desktop): bar click commits
   // directly. Touch devices tap a bar to pin the tooltip, then tap its button.
   var HOVER = !!(window.matchMedia &&
@@ -102,9 +111,15 @@
   ];
 
   var GEOM = { top: 14, right: 14, bottom: 30, left: 46 };
-  // The chart always counts entries (篇). It is article-only — the results
-  // article/book toggle no longer drives it.
+  // Count unit per instance (FIXED at init via data-view; never toggled at
+  // runtime): article view -> entries (篇), book view -> distinct books (本).
+  // The model always carries BOTH arrays so either view can render.
   var UNIT_ARTICLE = " 篇";
+  var UNIT_BOOK = " 本";
+  function unitFor(view) { return view === "book" ? UNIT_BOOK : UNIT_ARTICLE; }
+  // active per-year counts for a series, by view ("book" -> distinct books)
+  function countsFor(s, view) { return (view === "book" ? s.bookCounts : s.counts) || []; }
+  function totalFor(s, view) { return view === "book" ? s.bookTotal : s.total; }
 
   /* ---------- bootstrap ---------- */
   ready(function () {
@@ -117,6 +132,9 @@
     var st = {
       height: parseInt(root.getAttribute("data-height"), 10) || 360,
       model: null,
+      // count view for THIS instance: "article" (篇) or "book" (本). Fixed at
+      // init from data-view; the chart never toggles it at runtime.
+      view: viewFor(root),
       tipIndex: null,    // year index the tooltip currently describes
       pendingAnim: true, // grow bars from 0 on the next real draw (load)
       renderSeq: 0,      // bumps per render; part of the draw signature
@@ -169,6 +187,31 @@
       .catch(function (err) { console.error("[chart] mock load failed (" + url + "):", err); });
   }
 
+  // Default count view for an instance, read once from data-view at init (default
+  // article). A page can pin the view this way (the book chart page uses
+  // data-view="book") OR switch it imperatively via filmtvChart.setView — the
+  // chart no longer follows the results toggle on its own.
+  function viewFor(root) {
+    return root.getAttribute("data-view") === "book" ? "book" : "article";
+  }
+
+  // Imperative view switch (article <-> book) for a host that provides its own
+  // control — e.g. the demo page's buttons. Re-picks the count array and redraws
+  // (with grow) from the SAME model: no re-fetch, no rebuild. Both count arrays
+  // already live in the model, so this is a pure redraw.
+  function setChartView(root, view) {
+    var st = root && root.__filmtv;
+    if (!st) return;
+    view = view === "book" ? "book" : "article";
+    if (view === st.view) return;
+    st.view = view;
+    if (!st.model) return;
+    hideTip(st);
+    renderLegend(root, st);
+    st.pendingAnim = true;   // re-grow bars on the switch
+    draw(root);
+  }
+
   /* ---------- public render (backend calls this) ---------- */
   function render(root, data) {
     if (!root) {
@@ -193,15 +236,23 @@
     if (Array.isArray(data.years) && Array.isArray(data.series)) {
       var ys = data.years.map(Number);
       var series = data.series.map(function (s, i) {
+        // bookCounts is supplied by the backend in parallel to counts; if absent
+        // (older payload) the book view degrades to the entry counts.
+        var bc = s.bookCounts || s.counts || [];
+        var prefixes = s.prefixes || GROUP_PREFIXES[s.key] || [s.key];
         return {
           key: s.key,
           label: s.label || s.key,
-          prefixes: s.prefixes || GROUP_PREFIXES[s.key] || [s.key],
-          // fixed colour by taxonomy index (like the raw path) so a series keeps
-          // its colour even when the result set filters down to a subset
-          color: s.color || palette[(s.key in GROUP_ORDER ? GROUP_ORDER[s.key] : i) % palette.length],
+          prefixes: prefixes,
+          // colour priority: explicit override -> 電影雙周刊 split token (book view,
+          // from chart.css) -> taxonomy/array palette. Fixed per key so a series
+          // keeps its colour even when the result set filters down to a subset.
+          color: s.color || ceColor(root, s.key, prefixes) ||
+            palette[(s.key in GROUP_ORDER ? GROUP_ORDER[s.key] : i) % palette.length],
           counts: ys.map(function (_, k) { return Number((s.counts || [])[k]) || 0; }),
-          total: (s.counts || []).reduce(function (a, b) { return a + (Number(b) || 0); }, 0)
+          bookCounts: ys.map(function (_, k) { return Number(bc[k]) || 0; }),
+          total: (s.counts || []).reduce(function (a, b) { return a + (Number(b) || 0); }, 0),
+          bookTotal: bc.reduce(function (a, b) { return a + (Number(b) || 0); }, 0)
         };
       });
       return finalizeModel(ys, series, palette);
@@ -210,7 +261,7 @@
     // raw entries: aggregate into per-year, per-publication counts.
     var items = Array.isArray(data.items) ? data.items : [];
     var minY = Infinity, maxY = -Infinity;
-    var groups = {}; // key -> { key, counts:{year->n}, total, labels:{} }
+    var groups = {}; // key -> { key, counts:{year->n}, total, books:{year->{bookNumber:1}}, labels:{} }
 
     for (var i = 0; i < items.length; i++) {
       var it = items[i];
@@ -219,9 +270,15 @@
       if (year < minY) minY = year;
       if (year > maxY) maxY = year;
       var key = publicationKey(it) || "—";
-      var g = groups[key] || (groups[key] = { key: key, counts: {}, total: 0, labels: {} });
+      var g = groups[key] || (groups[key] = { key: key, counts: {}, total: 0, books: {}, labels: {} });
       g.counts[year] = (g.counts[year] || 0) + 1;
       g.total++;
+      // book count = distinct bookNumber per year (a book sits in exactly one
+      // year+publication, so per-year distinct counts sum to the series book total)
+      if (it.bookNumber != null && it.bookNumber !== "") {
+        var bset = g.books[year] || (g.books[year] = {});
+        bset[it.bookNumber] = 1;
+      }
       // remember the most common journal name as the legend label
       var jr = it.journal || "";
       if (jr) g.labels[jr] = (g.labels[jr] || 0) + 1;
@@ -233,12 +290,17 @@
 
     var built = Object.keys(groups).map(function (k) {
       var g = groups[k];
+      var bookCounts = years.map(function (yy) {
+        return g.books[yy] ? Object.keys(g.books[yy]).length : 0;
+      });
       return {
         key: g.key,
         label: GROUP_LABEL[g.key] || topLabel(g.labels) || g.key,
         prefixes: GROUP_PREFIXES[g.key] || [g.key],
         counts: years.map(function (yy) { return g.counts[yy] || 0; }),
-        total: g.total
+        bookCounts: bookCounts,
+        total: g.total,
+        bookTotal: bookCounts.reduce(function (a, b) { return a + b; }, 0)
       };
     });
     // taxonomy order first (stable stack + colour), then any unlisted by size
@@ -276,20 +338,21 @@
     var years = model.years;
     var n = years.length;
     var series = model.series;
+    var view = st.view;
 
     // grow-from-0 only on a real (sized) draw triggered by load/render.
-    // Skip no-op redraws (same width/data) — notably the ResizeObserver's
+    // Skip no-op redraws (same width/view/data) — notably the ResizeObserver's
     // initial fire, which would otherwise repaint the bars static and wipe the
     // just-started grow animation. pendingAnim always forces a draw.
     var animate = !!st.pendingAnim;
-    var sig = W + "|" + st.renderSeq;
+    var sig = W + "|" + view + "|" + st.renderSeq;
     if (!animate && sig === st.lastSig) return;
     st.pendingAnim = false;
     st.lastSig = sig;
 
-    // per-year visible stacked totals -> dynamic y axis
+    // per-year visible stacked totals -> dynamic y axis (uses the active view's counts)
     var totals = years.map(function (_, i) {
-      return series.reduce(function (a, s) { return a + (s.counts[i] || 0); }, 0);
+      return series.reduce(function (a, s) { return a + (countsFor(s, view)[i] || 0); }, 0);
     });
     var axis = niceAxis(Math.max.apply(null, totals.concat(1)));
     var yMax = axis.max;
@@ -305,7 +368,7 @@
     var s = [];
     s.push('<svg class="filmtv-chart-svg-el" width="' + W + '" height="' + H +
       '" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' +
-      esc(ariaSummary(years, series, totals)) + '">');
+      esc(ariaSummary(years, series, totals, view)) + '">');
 
     // y gridlines + labels
     for (var t = 0; t <= yMax + 0.0001; t += axis.step) {
@@ -322,7 +385,7 @@
       var cum = 0;
       var segs = [];
       for (var k = 0; k < series.length; k++) {
-        var v = series[k].counts[i] || 0;
+        var v = countsFor(series[k], view)[i] || 0;
         if (v <= 0) continue;
         var y1 = Y(cum + v), y0 = Y(cum);
         segs.push('<rect class="filmtv-chart-bar" x="' + (X(i) - barW / 2) + '" y="' + y1 +
@@ -354,7 +417,7 @@
     st.svgHost.innerHTML = s.join("");
 
     // stash geometry for the hover handler
-    st.geom = { X: X, Y: Y, band: band, totals: totals, series: series, years: years, plotH: plotH };
+    st.geom = { X: X, Y: Y, band: band, totals: totals, series: series, years: years, plotH: plotH, view: view };
   }
 
   /* ---------- tooltip + selection (a bar commits a YEAR filter) ---------- */
@@ -396,9 +459,10 @@
   // build + position the tooltip; `pin` keeps it open and tappable (touch)
   function showTip(root, st, i, pin) {
     var g = st.geom;
+    var view = g.view;
     var rows = [];
     for (var k = 0; k < g.series.length; k++) {
-      var v = g.series[k].counts[i] || 0;
+      var v = countsFor(g.series[k], view)[i] || 0;
       if (v <= 0) continue;
       rows.push('<li class="filmtv-chart-tip-row"><span class="filmtv-chart-tip-swatch" style="background:' +
         g.series[k].color + '"></span><span class="filmtv-chart-tip-name">' +
@@ -407,7 +471,7 @@
     st.tooltip.innerHTML =
       '<div class="filmtv-chart-tip-head">' +
         '<span class="filmtv-chart-tip-year">' + g.years[i] + ' 年</span>' +
-        '<span class="filmtv-chart-tip-total">總數 ' + fmt(g.totals[i]) + UNIT_ARTICLE + '</span>' +
+        '<span class="filmtv-chart-tip-total">總數 ' + fmt(g.totals[i]) + unitFor(view) + '</span>' +
       '</div>' +
       (rows.length ? '<ul class="filmtv-chart-tip-list">' + rows.join("") + "</ul>" : "") +
       '<button type="button" class="filmtv-chart-commit">查看此年結果 →</button>';
@@ -456,12 +520,13 @@
   }
 
   function renderLegend(root, st) {
+    var view = st.view;
     var html = st.model.series.map(function (s) {
       return '<button type="button" class="filmtv-chart-legend-item" role="listitem" data-key="' +
         esc(s.key) + '" aria-label="' + esc("篩選：" + s.label) + '">' +
         '<span class="filmtv-chart-legend-swatch" style="background:' + s.color + '"></span>' +
         '<span class="filmtv-chart-legend-label">' + esc(s.label) + '</span>' +
-        '<span class="filmtv-chart-legend-count">' + fmt(s.total) + '</span></button>';
+        '<span class="filmtv-chart-legend-count">' + fmt(totalFor(s, view)) + '</span></button>';
     }).join("");
     st.legend.innerHTML = html;
   }
@@ -530,18 +595,32 @@
     return out.length ? out : PALETTE.slice();
   }
 
+  // Colour for a 電影雙周刊 split sub-series, read from chart.css
+  // (--filmtv-chart-ce-<prefix>). Returns "" for anything that is NOT a split
+  // sub-series: non-family keys, and the MERGED CEM group (its prefixes cover the
+  // whole family) which keeps the taxonomy colour. Lets chart.css own these too.
+  function ceColor(root, key, prefixes) {
+    if (!key || CE_FAMILY.indexOf(key) === -1) return "";
+    if (key === "CEM" && prefixes && prefixes.length > 1) return "";
+    var v = window.getComputedStyle(root)
+      .getPropertyValue("--filmtv-chart-ce-" + String(key).toLowerCase()).trim();
+    return v || "";
+  }
+
   function topLabel(map) {
     var best = "", n = -1;
     for (var k in map) if (map[k] > n) { n = map[k]; best = k; }
     return best;
   }
 
-  function ariaSummary(years, series, totals) {
+  function ariaSummary(years, series, totals, view) {
     if (!years.length) return "Stacked bar chart, no data.";
     var grand = totals.reduce(function (a, b) { return a + b; }, 0);
-    return "Stacked bar chart of entry count by year, " + years[0] + " to " +
+    var noun = view === "book" ? "book" : "entry";
+    var plural = view === "book" ? "books" : "entries";
+    return "Stacked bar chart of " + noun + " count by year, " + years[0] + " to " +
       years[years.length - 1] + ", " + series.length + " publications, " +
-      fmt(grand) + " " + (grand === 1 ? "entry" : "entries") + " total.";
+      fmt(grand) + " " + (grand === 1 ? noun : plural) + " total.";
   }
 
   /* ---------- tiny utils ---------- */
@@ -562,5 +641,5 @@
   }
 
   /* ---------- public API ---------- */
-  window.filmtvChart = { render: render, buildModel: buildModel };
+  window.filmtvChart = { render: render, buildModel: buildModel, setView: setChartView };
 })();

@@ -18,25 +18,39 @@
 .filmtv-chart {
   /* categorical stack palette — one colour per publication series,
      in taxonomy order (see PUBLICATIONS in chart.js) */
-  --filmtv-chart-color-1: #7a4f86;   /* 電影小冊子 */
-  --filmtv-chart-color-2: #c2683a;   /* 香港電視 */
-  --filmtv-chart-color-3: #4f7a63;   /* 電影雙周刊 */
-  --filmtv-chart-color-4: #d6a531;   /* 電影雙周刊出版書籍 */
+  --filmtv-chart-color-1: #7a4f86; /* 電影小冊子 */
+  --filmtv-chart-color-2: #c2683a; /* 香港電視 */
+  --filmtv-chart-color-3: #4f7a63; /* 電影雙周刊 */
+  --filmtv-chart-color-4: #d6a531; /* 電影雙周刊出版書籍 */
   --filmtv-chart-color-5: #3f6184;
   --filmtv-chart-color-6: #8a1c2b;
   --filmtv-chart-color-7: #9c6b3f;
   --filmtv-chart-color-8: #5c6b34;
 
+  /* 電影雙周刊 family — BOOK view only. There the 9 CE* id prefixes are shown as
+     separate stacked series (chart.js CE_FAMILY); each keyed by its prefix so the
+     colour is order-independent. color-1..4 above stay the taxonomy colours; in
+     ARTICLE view these 9 merge back into 電影雙周刊 (color-3). */
+  --filmtv-chart-ce-cem: #4f7a63; /* 正刊 */
+  --filmtv-chart-ce-cei: #5494dd; /* 片目及索引 */
+  --filmtv-chart-ce-cey: #6a3d9a; /* 電影電視黃頁 */
+  --filmtv-chart-ce-ced: #e7298a; /* DVD Magazine */
+  --filmtv-chart-ce-cef: #e6ab02; /* Foreign Films Magazine */
+  --filmtv-chart-ce-cev: #80b1d3; /* Home Videos Magazine */
+  --filmtv-chart-ce-ceh: #a6761d; /* 荷里活映畫 */
+  --filmtv-chart-ce-cep: #756bb1; /* 電影海報館 */
+  --filmtv-chart-ce-ceo: #f781bf; /* 電影海報精選 */
+
   /* semantic UI colours */
-  --filmtv-chart-ink: #1F3606;                 /* primary text */
-  --filmtv-chart-muted: #4e7622;                /* axis / secondary text */
-  --filmtv-chart-grid: rgba(28, 26, 24, 0.10);  /* gridlines */
+  --filmtv-chart-ink: #1f3606; /* primary text */
+  --filmtv-chart-muted: #4e7622; /* axis / secondary text */
+  --filmtv-chart-grid: rgba(28, 26, 24, 0.1); /* gridlines */
   --filmtv-chart-band: rgba(138, 28, 43, 0.06); /* hovered column / legend wash */
-  --filmtv-chart-surface: #ffffff;              /* tooltip background */
-  --filmtv-chart-border: #E2EDD4;
+  --filmtv-chart-surface: #ffffff; /* tooltip background */
+  --filmtv-chart-border: #e2edd4;
   --filmtv-chart-shadow: rgba(0, 0, 0, 0.16);
   --filmtv-chart-accent: var(--primary--accent, #638f34); /* commit button + focus ring */
-  --filmtv-chart-on-accent: #ffffff;            /* text on the accent */
+  --filmtv-chart-on-accent: #ffffff; /* text on the accent */
 }
 
 /* dark mode — only the semantic tokens change 
@@ -64,14 +78,24 @@ html.u-mode-dark .filmtv-chart {
 }*/
 
 /* --- 1b. where each token is applied --- */
-.filmtv-chart { color: var(--filmtv-chart-ink); }
+.filmtv-chart {
+  color: var(--filmtv-chart-ink);
+}
 
-.filmtv-chart-grid { stroke: var(--filmtv-chart-grid); }
+.filmtv-chart-grid {
+  stroke: var(--filmtv-chart-grid);
+}
 .filmtv-chart-ylabel,
-.filmtv-chart-xlabel { fill: var(--filmtv-chart-muted); }
+.filmtv-chart-xlabel {
+  fill: var(--filmtv-chart-muted);
+}
 
-.filmtv-chart-hit { fill: transparent; }
-.filmtv-chart-hit:hover { fill: var(--filmtv-chart-band); }
+.filmtv-chart-hit {
+  fill: transparent;
+}
+.filmtv-chart-hit:hover {
+  fill: var(--filmtv-chart-band);
+}
 
 .filmtv-chart-tooltip {
   background: var(--filmtv-chart-surface);
@@ -80,16 +104,24 @@ html.u-mode-dark .filmtv-chart {
 }
 .filmtv-chart-tip-total,
 .filmtv-chart-tip-num,
-.filmtv-chart-legend-count { color: var(--filmtv-chart-muted); }
-.filmtv-chart-tip-list { border-top-color: var(--filmtv-chart-border); }
+.filmtv-chart-legend-count {
+  color: var(--filmtv-chart-muted);
+}
+.filmtv-chart-tip-list {
+  border-top-color: var(--filmtv-chart-border);
+}
 
 .filmtv-chart-commit {
   background: var(--filmtv-chart-accent);
   color: var(--filmtv-chart-on-accent);
 }
 
-.filmtv-chart-legend-item:hover { background: var(--filmtv-chart-band); }
-.filmtv-chart-legend-item:focus-visible { outline: 2px solid var(--filmtv-chart-accent); }
+.filmtv-chart-legend-item:hover {
+  background: var(--filmtv-chart-band);
+}
+.filmtv-chart-legend-item:focus-visible {
+  outline: 2px solid var(--filmtv-chart-accent);
+}
 
 /* ============================================================
  * PART 2 — STRUCTURE / LAYOUT  (no colours below this line)
@@ -98,20 +130,35 @@ html.u-mode-dark .filmtv-chart {
 .filmtv-chart {
   display: block;
   width: 100%;
-  font-family: 'GenRyuMin2 TC', 'Songti TC', 'Noto Serif TC', 'PMingLiU', serif;
+  font-family: "GenRyuMin2 TC", "Songti TC", "Noto Serif TC", "PMingLiU", serif;
   -webkit-font-smoothing: antialiased;
 }
 
 /* ---------- plot area ---------- */
-.filmtv-chart-canvas { position: relative; width: 100%; }
+.filmtv-chart-canvas {
+  position: relative;
+  width: 100%;
+}
 .filmtv-chart-svg,
-.filmtv-chart-svg-el { display: block; width: 100%; }
+.filmtv-chart-svg-el {
+  display: block;
+  width: 100%;
+}
 
-.filmtv-chart-grid { stroke-width: 1; shape-rendering: crispEdges; }
+.filmtv-chart-grid {
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
 .filmtv-chart-ylabel,
-.filmtv-chart-xlabel { font-size: 11px; }
-.filmtv-chart-bar { shape-rendering: crispEdges; }
-.filmtv-chart-hit { cursor: pointer; }
+.filmtv-chart-xlabel {
+  font-size: 11px;
+}
+.filmtv-chart-bar {
+  shape-rendering: crispEdges;
+}
+.filmtv-chart-hit {
+  cursor: pointer;
+}
 
 /* grow each stacked column from the baseline (~200ms) on load + view toggle.
    Scales the whole <g> from its own bounding-box bottom; transform-only, so it
@@ -123,11 +170,17 @@ html.u-mode-dark .filmtv-chart {
   animation: filmtv-chart-grow 0.2s ease-out both;
 }
 @keyframes filmtv-chart-grow {
-  from { transform: scaleY(0); }
-  to   { transform: scaleY(1); }
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .filmtv-chart-barcol.is-grow { animation: none; }
+  .filmtv-chart-barcol.is-grow {
+    animation: none;
+  }
 }
 
 /* ---------- tooltip ---------- */
@@ -139,35 +192,72 @@ html.u-mode-dark .filmtv-chart {
   min-width: 9rem;
   max-width: 16rem;
   padding: 0.5rem 0.625rem;
-  transform: translate(-50%, -100%);     /* sits above the bar */
+  transform: translate(-50%, -100%); /* sits above the bar */
   border-width: 1px;
-  border-style: solid;                    /* colour in PART 1 */
+  border-style: solid; /* colour in PART 1 */
   border-radius: 6px;
   pointer-events: none;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.1s ease;
 }
-.filmtv-chart-tooltip.is-on { opacity: 1; visibility: visible; }
-.filmtv-chart-tooltip.is-pinned { pointer-events: auto; }          /* touch: tappable */
-.filmtv-chart-tooltip.is-below { transform: translate(-50%, 0); }  /* flipped under the bar */
+.filmtv-chart-tooltip.is-on {
+  opacity: 1;
+  visibility: visible;
+}
+.filmtv-chart-tooltip.is-pinned {
+  pointer-events: auto;
+} /* touch: tappable */
+.filmtv-chart-tooltip.is-below {
+  transform: translate(-50%, 0);
+} /* flipped under the bar */
 
-.filmtv-chart-tip-head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; }
-.filmtv-chart-tip-year { font-weight: 600; font-size: 0.875rem; line-height: 1.2; }
-.filmtv-chart-tip-total { font-size: 0.8125rem; }
+.filmtv-chart-tip-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.filmtv-chart-tip-year {
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.2;
+}
+.filmtv-chart-tip-total {
+  font-size: 0.8125rem;
+}
 .filmtv-chart-tip-list {
   list-style: none;
   margin: 0.4rem 0 0;
   padding: 0.4rem 0 0;
   border-top-width: 1px;
-  border-top-style: solid;                /* colour in PART 1 */
+  border-top-style: solid; /* colour in PART 1 */
   display: grid;
   gap: 0.2rem;
 }
-.filmtv-chart-tip-row { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8125rem; line-height: 1.3; }
-.filmtv-chart-tip-swatch { flex: 0 0 auto; width: 0.625rem; height: 0.625rem; border-radius: 2px; }
-.filmtv-chart-tip-name { flex: 1 1 auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.filmtv-chart-tip-num { flex: 0 0 auto; font-variant-numeric: tabular-nums; }
+.filmtv-chart-tip-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8125rem;
+  line-height: 1.3;
+}
+.filmtv-chart-tip-swatch {
+  flex: 0 0 auto;
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 2px;
+}
+.filmtv-chart-tip-name {
+  flex: 1 1 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.filmtv-chart-tip-num {
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+}
 
 /* commit button — hidden until the tooltip is pinned (touch). On desktop the
    bar click commits directly, so the button stays out of the way. */
@@ -184,14 +274,27 @@ html.u-mode-dark .filmtv-chart {
   text-align: center;
   cursor: pointer;
   pointer-events: auto;
-  transition: filter 0.12s ease, transform 0.06s ease;
+  transition:
+    filter 0.12s ease,
+    transform 0.06s ease;
 }
-.filmtv-chart-tooltip.is-pinned .filmtv-chart-commit { display: block; }
-.filmtv-chart-commit:hover { filter: brightness(0.93); }
-.filmtv-chart-commit:active { transform: scale(0.98); }
+.filmtv-chart-tooltip.is-pinned .filmtv-chart-commit {
+  display: block;
+}
+.filmtv-chart-commit:hover {
+  filter: brightness(0.93);
+}
+.filmtv-chart-commit:active {
+  transform: scale(0.98);
+}
 
 /* ---------- legend (each item commits a publication filter) ---------- */
-.filmtv-chart-legend { display: flex; flex-wrap: wrap; gap: 0.125rem 0.75rem; margin-bottom: 0.25rem; }
+.filmtv-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.125rem 0.75rem;
+  margin-bottom: 0.25rem;
+}
 .filmtv-chart-legend-item {
   display: inline-flex;
   align-items: center;
@@ -206,6 +309,15 @@ html.u-mode-dark .filmtv-chart {
   cursor: pointer;
   transition: background 0.12s ease;
 }
-.filmtv-chart-legend-item:focus-visible { outline-offset: 1px; }
-.filmtv-chart-legend-swatch { width: 0.75rem; height: 0.75rem; border-radius: 2px; flex: 0 0 auto; }
-.filmtv-chart-legend-count { font-variant-numeric: tabular-nums; }
+.filmtv-chart-legend-item:focus-visible {
+  outline-offset: 1px;
+}
+.filmtv-chart-legend-swatch {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 2px;
+  flex: 0 0 auto;
+}
+.filmtv-chart-legend-count {
+  font-variant-numeric: tabular-nums;
+}

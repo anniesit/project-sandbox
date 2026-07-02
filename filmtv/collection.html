@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>影視刊物資料庫 · 香港電視 藏品</title>
+  <link rel="stylesheet" href="chart.css" />
+  <link rel="stylesheet" href="https://hkbuproject-sandbox.vercel.app/filmtv/font/genryumin-tc/genryumin-tc.css" />
+  <style>
+    /* ⚠️ PREVIEW CHROME ONLY. On the real site these blocks are authored in
+       Webflow; this file just mirrors the data-* hook structure so collection.js
+       (mock) and chart.js (real) can be seen rendering. Not part of the handoff. */
+    :root {
+      --ink: #1c1a18; --muted: #6b6661; --line: rgba(28,26,24,0.12);
+      --accent: #8a1c2b; --paper: #fff; --bg: #f3f1ee;
+    }
+    body {
+      margin: 0; padding: 2.5rem clamp(1rem, 4vw, 3rem);
+      background: var(--bg); color: var(--ink);
+      font-family: 'GenRyuMin2 TC', 'Songti TC', 'Noto Serif TC', 'PMingLiU', serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 1040px; margin: 0 auto; }
+    .page-head { margin-bottom: 1.5rem; }
+    .page-head h1 { margin: 0 0 0.25rem; font-size: 1.6rem; letter-spacing: 0.01em; }
+    .page-head p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+    .panel {
+      background: var(--paper); border: 1px solid var(--line); border-radius: 12px;
+      padding: 1.5rem clamp(1rem, 3vw, 1.75rem); margin-bottom: 1.25rem;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    .panel-label { margin: 0 0 0.9rem; font-size: 0.8rem; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--muted); }
+
+    /* year buttons */
+    .year-list { display: flex; flex-wrap: wrap; gap: 0.4rem; list-style: none; margin: 0; padding: 0; }
+    .year-button {
+      display: inline-flex; align-items: baseline; gap: 0.3rem;
+      padding: 0.35rem 0.7rem; border: 1px solid var(--line); border-radius: 999px;
+      background: var(--paper); font: inherit; font-size: 0.85rem; color: #3a3733;
+      cursor: pointer; transition: all 0.12s ease;
+    }
+    .year-button:hover { border-color: var(--accent); color: var(--accent); }
+    .year-button.cc-active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .year-count { font-size: 0.72rem; opacity: 0.7; }
+
+    /* book cards */
+    .book-head { display: flex; align-items: baseline; gap: 0.6rem; margin-bottom: 1rem; }
+    .book-head h2 { margin: 0; font-size: 1.15rem; }
+    .book-head .count { color: var(--muted); font-size: 0.85rem; }
+    .book-grid {
+      display: grid; gap: 1.1rem 1rem;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+    .book-card {
+      display: flex; flex-direction: column; text-decoration: none; color: inherit;
+    }
+    .book-cover-wrap { position: relative; aspect-ratio: 160 / 219; overflow: hidden;
+      border: 1px solid var(--line); border-radius: 6px; background: #e6e9ea; }
+    .book-cover { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .book-title { margin-top: 0.5rem; font-size: 0.9rem; }
+    .book-issue { font-size: 0.82rem; color: var(--accent); }
+    .book-date { font-size: 0.76rem; color: var(--muted); margin-top: 0.1rem; }
+
+    .hint { margin-top: 1rem; font-size: 0.78rem; color: #8a847d; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="page-head">
+      <h1>香港電視 藏品</h1>
+      <p>單一刊物藏品頁 · 年份選擇、書刊封面、書刊年份統計（西元 1967–1997）</p>
+    </header>
+
+    <!-- ONE [data-collection] wraps the whole page (year selector + card grid).
+         [data-count] hooks inside it: book=total, year=this year, year-label=year. -->
+    <div data-collection data-src="sample-data/collection-tvw.json">
+
+      <p style="margin:0 0 1.25rem;color:var(--muted);font-size:0.9rem;">
+        全刊 <strong data-count="book">0</strong> 本 · 現正顯示 <strong data-count="year-label">—</strong> 年</p>
+
+      <div class="panel">
+        <p class="panel-label">年份</p>
+        <!-- year list as a semantic <ul>; ONE <li> template (collection.js clones
+             it per year). data-tpl on the <li>, the styled control is the <button>. -->
+        <ul class="year-list" data-year-list>
+          <li data-tpl="year-button">
+            <button class="year-button" type="button">
+              <span data-field="year">1986</span>
+              <span class="year-count" data-field="year-count"></span>
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <div class="panel">
+        <div class="book-head">
+          <h2>書刊封面</h2>
+          <span class="count"><span data-count="year-label">—</span> 年 · <span data-count="year">0</span> 本</span>
+        </div>
+        <!-- card container + ONE template card (collection.js clones it per book) -->
+        <div class="book-grid" data-book-grid>
+          <a class="book-card" data-tpl="book-card" href="#">
+            <span class="book-cover-wrap">
+              <img class="book-cover" data-field="cover" alt="" />
+            </span>
+            <span class="book-title" data-field="book-title"></span>
+            <span class="book-issue" data-field="book-issue"></span>
+            <span class="book-date" data-field="book-date"></span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <p class="panel-label">書刊年份統計（本）</p>
+      <!-- The chart is the REAL handoff component: chart.js, book view, single
+           publication, year axis fitted to 1967–1997 by the payload. -->
+      <div data-chart data-view="book" data-height="300"
+           data-src="sample-data/collection-tvw-chart.json"></div>
+      <p class="hint">此圖表為交付元件（chart.js）。年份按鈕與封面卡由 collection.js 模擬渲染，僅供預覽。</p>
+    </div>
+  </div>
+
+  <script src="collection.js"></script>
+  <script src="chart.js"></script>
+</body>
+</html>
