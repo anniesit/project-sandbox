@@ -102,10 +102,12 @@
   }
 
   function renderYears(root, data) {
-    var host = root.querySelector("[data-year-list]");
-    var tplEl = host && host.querySelector('[data-tpl="year-button"]');
-    if (!tplEl) return;
-    var tpl = tplEl;
+    var container = root.querySelector("[data-year-list]");
+    var tpl = container && container.querySelector('[data-tpl="year-button"]');
+    if (!tpl) return;
+    // clones become SIBLINGS of the template (like results.js), so an <li> template
+    // inside a <ul> yields real <li> list items in that <ul>.
+    var host = tpl.parentNode;
     hideTemplate(tpl);
     removeClones(host);
 
@@ -127,10 +129,10 @@
   }
 
   function renderBooks(root, data) {
-    var host = root.querySelector("[data-book-grid]");
-    var tplEl = host && host.querySelector('[data-tpl="book-card"]');
-    if (!tplEl) return;
-    var tpl = tplEl;
+    var container = root.querySelector("[data-book-grid]");
+    var tpl = container && container.querySelector('[data-tpl="book-card"]');
+    if (!tpl) return;
+    var host = tpl.parentNode;   // clones become siblings of the template
     hideTemplate(tpl);
     removeClones(host);
 
@@ -218,10 +220,18 @@
   }
 
   /* ---------- field helpers ---------- */
+  // Collect the leaf [data-field="name"] nodes in scope. IMPORTANT: the hook can
+  // be on the clone ROOT itself (e.g. the year <button> carries both data-tpl and
+  // data-field="year") — querySelectorAll only sees descendants, so check the
+  // scope element too, or that field would never be filled.
   function leafFields(scope, name) {
-    var all = scope.querySelectorAll('[data-field="' + name + '"]');
+    var sel = '[data-field="' + name + '"]';
+    var found = [];
+    if (scope.matches && scope.matches(sel)) found.push(scope);
+    var all = scope.querySelectorAll(sel);
+    for (var i = 0; i < all.length; i++) found.push(all[i]);
     var out = [];
-    for (var i = 0; i < all.length; i++) if (!all[i].querySelector("[data-field]")) out.push(all[i]);
+    for (var j = 0; j < found.length; j++) if (!found[j].querySelector("[data-field]")) out.push(found[j]);
     return out;
   }
   function setLeafField(scope, name, value) {
