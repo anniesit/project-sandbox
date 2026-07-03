@@ -155,7 +155,7 @@ html.u-mode-dark .filmtv-chart {
 }
 .filmtv-chart-ylabel,
 .filmtv-chart-xlabel {
-  font-size: 11px;
+  font-size: 0.8rem;
 }
 .filmtv-chart-bar {
   shape-rendering: crispEdges;
@@ -228,7 +228,7 @@ html.u-mode-dark .filmtv-chart {
   line-height: 1.2;
 }
 .filmtv-chart-tip-total {
-  font-size: 0.8125rem;
+  font-size: 0.825rem;
 }
 .filmtv-chart-tip-list {
   list-style: none;
@@ -243,7 +243,7 @@ html.u-mode-dark .filmtv-chart {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 0.8125rem;
+  font-size: 0.825rem;
   line-height: 1.3;
 }
 .filmtv-chart-tip-swatch {
@@ -273,7 +273,7 @@ html.u-mode-dark .filmtv-chart {
   border: 0;
   border-radius: 5px;
   font: inherit;
-  font-size: 0.8125rem;
+  font-size: 0.825rem;
   font-weight: 600;
   text-align: center;
   cursor: pointer;
@@ -308,7 +308,7 @@ html.u-mode-dark .filmtv-chart {
   border-radius: 4px;
   background: transparent;
   font: inherit;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: inherit;
   cursor: pointer;
   transition: background 0.12s ease;
