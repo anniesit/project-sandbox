@@ -39,6 +39,13 @@
  *   [data-count="book"]            optional: total books in the publication
  *   [data-count="year"]            optional: books shown for the active year
  *   [data-count="year-label"]      optional: the active year number (e.g. 1986)
+ *                                  every matching element updates together, so
+ *                                  the ≤991px year-panel-as-modal trigger button
+ *                                  just needs one more [data-count="year-label"]
+ *                                  inside it — no extra JS. See collection.html
+ *                                  for the dialog.panel.cc-year + trigger markup
+ *                                  (opened by the design-system's MAST modal.js,
+ *                                  same "dialog + button" pattern as cooccur.js).
  *
  * Selecting a year sets the active button and fires (bubbling) filmtv:selectYear
  * { detail:{ year } } — the backend listens, fetches that year's books, calls

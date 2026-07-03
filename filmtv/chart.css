@@ -31,14 +31,14 @@
      separate stacked series (chart.js CE_FAMILY); each keyed by its prefix so the
      colour is order-independent. color-1..4 above stay the taxonomy colours; in
      ARTICLE view these 9 merge back into 電影雙周刊 (color-3). */
-  --filmtv-chart-ce-cem: #4f7a63; /* 正刊 */
-  --filmtv-chart-ce-cei: #5494dd; /* 片目及索引 */
-  --filmtv-chart-ce-cey: #6a3d9a; /* 電影電視黃頁 */
-  --filmtv-chart-ce-ced: #e7298a; /* DVD Magazine */
+  --filmtv-chart-ce-cem: #548a6d; /* 正刊 */
+  --filmtv-chart-ce-cei: #6990dc; /* 片目及索引 */
+  --filmtv-chart-ce-cey: #a765b0; /* 電影電視黃頁 */
+  --filmtv-chart-ce-ced: #d97453; /* DVD Magazine */
   --filmtv-chart-ce-cef: #e6ab02; /* Foreign Films Magazine */
-  --filmtv-chart-ce-cev: #80b1d3; /* Home Videos Magazine */
-  --filmtv-chart-ce-ceh: #a6761d; /* 荷里活映畫 */
-  --filmtv-chart-ce-cep: #756bb1; /* 電影海報館 */
+  --filmtv-chart-ce-cev: #89b764; /* Home Videos Magazine */
+  --filmtv-chart-ce-ceh: #43aaae; /* 荷里活映畫 */
+  --filmtv-chart-ce-cep: #7f7ab6; /* 電影海報館 */
   --filmtv-chart-ce-ceo: #f781bf; /* 電影海報精選 */
 
   /* semantic UI colours */
@@ -121,6 +121,10 @@ html.u-mode-dark .filmtv-chart {
 }
 .filmtv-chart-legend-item:focus-visible {
   outline: 2px solid var(--filmtv-chart-accent);
+}
+/* book-view legend is display-only — no hover wash */
+.filmtv-chart-legend-item.is-static:hover {
+  background: transparent;
 }
 
 /* ============================================================
@@ -311,6 +315,10 @@ html.u-mode-dark .filmtv-chart {
 }
 .filmtv-chart-legend-item:focus-visible {
   outline-offset: 1px;
+}
+/* book-view legend is display-only — no pointer cursor (see .is-static in chart.js) */
+.filmtv-chart-legend-item.is-static {
+  cursor: default;
 }
 .filmtv-chart-legend-swatch {
   width: 0.75rem;

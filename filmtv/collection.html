@@ -44,6 +44,48 @@
     .year-button.cc-active { background: var(--accent); border-color: var(--accent); color: #fff; }
     .year-count { font-size: 0.72rem; opacity: 0.7; }
 
+    /* ---- responsive year panel: inline panel on desktop, modal ≤991px ----
+       Same design-system modal component as cooccur.html (<dialog class="modal">
+       + adjacent trigger <button>, wired by all.js's "dialog + button" pattern).
+       The dialog never gets the [open] attribute on desktop — display:block is
+       forced by CSS alone — so the design-system's `body:has(dialog[open])`
+       scroll-lock rule never fires while it's just an inline panel. ≤991px hides
+       that inline (:not(:modal)) state; the trigger (hidden on desktop) calls
+       showModal() to present the same element as a real modal. */
+    dialog.panel.cc-year:not(:modal) {
+      position: static;
+      display: block;
+      width: auto;
+      margin: 0 0 1.25rem;
+    }
+    dialog.panel.cc-year:modal { width: min(420px, 92vw); }
+    dialog.panel.cc-year::backdrop { background: rgba(20, 18, 16, 0.5); }
+    .cc-year .modal-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+    .cc-year .modal-head .panel-label { margin: 0; }
+    .cc-year .modal-close {
+      display: none; /* shown only ≤991px, alongside the trigger */
+      flex: 0 0 auto; width: 1.8rem; height: 1.8rem; border-radius: 50%;
+      border: 1px solid var(--line); background: var(--paper); cursor: pointer;
+      font-size: 1.05rem; line-height: 1; color: var(--ink);
+    }
+    .cc-year-trigger {
+      display: none; /* shown only ≤991px */
+      font: inherit; font-size: 0.9rem; padding: 0.55rem 0.9rem;
+      border: 1px solid var(--line); border-radius: 999px; background: var(--paper);
+      color: var(--ink); cursor: pointer; margin: 0 0 1.25rem;
+    }
+    /* all.js's "dialog + button" opener reads previousElementSibling off the
+       RAW click target, not off the matched button — so a click landing on a
+       child element (e.g. a wrapping <div>/<span> for the label) resolves to
+       nothing and showModal() never fires. Force every click in the trigger
+       to resolve to the <button> itself. */
+    .cc-year-trigger * { pointer-events: none; }
+    @media (max-width: 991px) {
+      dialog.panel.cc-year:not(:modal) { display: none; }
+      .cc-year-trigger { display: inline-flex; align-items: baseline; gap: 0.3rem; }
+      .cc-year .modal-close { display: inline-flex; align-items: center; justify-content: center; }
+    }
+
     /* book cards */
     .book-head { display: flex; align-items: baseline; gap: 0.6rem; margin-bottom: 1rem; }
     .book-head h2 { margin: 0; font-size: 1.15rem; }
@@ -79,8 +121,14 @@
       <p style="margin:0 0 1.25rem;color:var(--muted);font-size:0.9rem;">
         全刊 <strong data-count="book">0</strong> 本 · 現正顯示 <strong data-count="year-label">—</strong> 年</p>
 
-      <div class="panel">
-        <p class="panel-label">年份</p>
+      <!-- MAST modal trigger pattern (same as cooccur.html): the <dialog> must
+           immediately precede its trigger <button> as siblings — all.js looks
+           at "dialog + button" to know which dialog a trigger opens. -->
+      <dialog class="panel cc-year">
+        <div class="modal-head">
+          <p class="panel-label">年份</p>
+          <button type="button" class="modal-close" data-modal="close" aria-label="關閉">&times;</button>
+        </div>
         <!-- year list as a semantic <ul>; ONE <li> template (collection.js clones
              it per year). data-tpl on the <li>, the styled control is the <button>. -->
         <ul class="year-list" data-year-list>
@@ -91,7 +139,13 @@
             </button>
           </li>
         </ul>
-      </div>
+      </dialog>
+      <!-- ≤991px only (see CSS): opens the dialog above as a modal. The label
+           reuses the SAME [data-count="year-label"] hook already on this page,
+           so collection.js keeps it in sync for free — no extra JS. -->
+      <button type="button" class="cc-year-trigger">
+        年份：<span data-count="year-label">—</span>
+      </button>
 
       <div class="panel">
         <div class="book-head">
@@ -124,5 +178,64 @@
 
   <script src="collection.js"></script>
   <script src="chart.js"></script>
+  <script>
+    /* ---- inline modal shim (Webflow's design-system all.js does this for
+       real — see cooccur.html for the same shim/comment) ---- */
+    (function () {
+      document.addEventListener("click", function (e) {
+        var t = e.target;
+        if (t.closest("dialog + button")) {                 // trigger: open
+          var dlg = t.closest("dialog + button").previousElementSibling;
+          if (dlg && dlg.tagName === "DIALOG") dlg.showModal();
+        } else if (t.closest('dialog button[data-modal="close"]')) {  // close button
+          var d = t.closest("dialog"); if (d) d.close();
+        }
+      });
+      document.querySelectorAll("dialog.cc-year").forEach(function (d) {
+        d.addEventListener("click", function (e) { if (e.target === d) d.close(); }); // click backdrop
+      });
+    })();
+  </script>
+  <script>
+    /* ---- REAL fix, add this on the live Webflow site too (not preview-only) ----
+       The vendored all.js (design-system/bundles/all.js, MAST's modal.js) opens
+       a trigger correctly via `t.closest("dialog + button")`, but then grabs
+       `previousElementSibling` off the RAW click target instead of off that
+       matched button — so it only works if the click lands exactly on the
+       <button>, not on a child element (our trigger wraps its label in a div/
+       span, per data-count="year-label"). The CSS `pointer-events:none` fix on
+       .collection-year-trigger's children works around that for the OPEN path.
+
+       This script is a small, independent companion for two remaining gaps:
+       1) a guaranteed-correct close handler for the [data-modal="close"]
+          button, in case the vendored close path is unreliable for the same
+          class of reason (redundant/no-op if all.js's own close already ran).
+          Delegated on `document` (not an eager querySelectorAll+forEach) so
+          it works no matter where this <script> tag sits relative to the
+          dialog markup — an eager per-element attach silently attaches to
+          nothing if this script runs before the dialog/button exist yet.
+       2) auto-closing the dialog if it's opened on ≤991px and the viewport is
+          then WIDENED past 991px without closing it first — otherwise it stays
+          in :modal state (small, fixed, centered) instead of reverting to the
+          normal full-width inline panel, since crossing the breakpoint alone
+          never changes the dialog's open/modal state. */
+    (function () {
+      document.addEventListener("click", function (e) {
+        var btn = e.target.closest('dialog.cc-year [data-modal="close"]');
+        if (!btn) return;
+        var dlg = btn.closest("dialog");
+        if (dlg) dlg.close();
+      });
+
+      var mqDesktop = window.matchMedia("(min-width: 992px)");
+      function closeOpenModalsOnDesktop() {
+        document.querySelectorAll("dialog.cc-year[open]").forEach(function (dlg) {
+          if (dlg.matches(":modal")) dlg.close();
+        });
+      }
+      if (mqDesktop.addEventListener) mqDesktop.addEventListener("change", function (e) { if (e.matches) closeOpenModalsOnDesktop(); });
+      else mqDesktop.addListener(function (e) { if (e.matches) closeOpenModalsOnDesktop(); }); // older Safari
+    })();
+  </script>
 </body>
 </html>

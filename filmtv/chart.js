@@ -117,6 +117,11 @@
   var UNIT_ARTICLE = " 篇";
   var UNIT_BOOK = " 本";
   function unitFor(view) { return view === "book" ? UNIT_BOOK : UNIT_ARTICLE; }
+  // tooltip commit-button label, per view: article view searches results, book
+  // view (book chart / collection page) jumps to that year's publications.
+  var COMMIT_ARTICLE = "查看此年結果 →";
+  var COMMIT_BOOK = "查看此年刊物";
+  function commitLabel(view) { return view === "book" ? COMMIT_BOOK : COMMIT_ARTICLE; }
   // active per-year counts for a series, by view ("book" -> distinct books)
   function countsFor(s, view) { return (view === "book" ? s.bookCounts : s.counts) || []; }
   function totalFor(s, view) { return view === "book" ? s.bookTotal : s.total; }
@@ -474,7 +479,7 @@
         '<span class="filmtv-chart-tip-total">總數 ' + fmt(g.totals[i]) + unitFor(view) + '</span>' +
       '</div>' +
       (rows.length ? '<ul class="filmtv-chart-tip-list">' + rows.join("") + "</ul>" : "") +
-      '<button type="button" class="filmtv-chart-commit">查看此年結果 →</button>';
+      '<button type="button" class="filmtv-chart-commit">' + commitLabel(view) + '</button>';
 
     st.tipIndex = i;
     st.tooltip.classList.add("is-on");
@@ -503,10 +508,13 @@
     hideTip(st);
   }
 
-  /* ---------- legend (click commits a PUBLICATION filter) ---------- */
+  /* ---------- legend ----------
+     ARTICLE view: each item is a button that commits a PUBLICATION filter.
+     BOOK view: the legend is DISPLAY-ONLY (no button, no data-key, no hover/tap)
+     — publication filtering there is done by the page's own controls. */
   function bindLegend(root, st) {
     st.legend.addEventListener("click", function (e) {
-      var btn = closest(e.target, "[data-key]");
+      var btn = closest(e.target, "[data-key]");   // book-view items have none -> no-op
       if (!btn) return;
       var key = btn.getAttribute("data-key");
       var s = findSeries(st, key);
@@ -521,12 +529,16 @@
 
   function renderLegend(root, st) {
     var view = st.view;
+    var interactive = view !== "book";   // book-view legend is static
     var html = st.model.series.map(function (s) {
-      return '<button type="button" class="filmtv-chart-legend-item" role="listitem" data-key="' +
-        esc(s.key) + '" aria-label="' + esc("篩選：" + s.label) + '">' +
+      var inner =
         '<span class="filmtv-chart-legend-swatch" style="background:' + s.color + '"></span>' +
         '<span class="filmtv-chart-legend-label">' + esc(s.label) + '</span>' +
-        '<span class="filmtv-chart-legend-count">' + fmt(totalFor(s, view)) + '</span></button>';
+        '<span class="filmtv-chart-legend-count">' + fmt(totalFor(s, view)) + '</span>';
+      return interactive
+        ? '<button type="button" class="filmtv-chart-legend-item" role="listitem" data-key="' +
+            esc(s.key) + '" aria-label="' + esc("篩選：" + s.label) + '">' + inner + '</button>'
+        : '<div class="filmtv-chart-legend-item is-static" role="listitem">' + inner + '</div>';
     }).join("");
     st.legend.innerHTML = html;
   }
