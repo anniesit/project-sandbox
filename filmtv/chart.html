@@ -1,247 +1,329 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-Hant">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>影視刊物資料庫 · 年份統計</title>
-  <link rel="stylesheet" href="chart.css" />
-  <link rel="stylesheet" href="https://hkbuproject-sandbox.vercel.app/filmtv/font/genryumin-tc/genryumin-tc.css" />
-  <style>
-    /* demo page chrome only — the chart owns its own styles in chart.css */
-    body {
-      margin: 0;
-      padding: 2.5rem clamp(1rem, 4vw, 3rem);
-      background: #f3f1ee;
-      color: #1c1a18;
-      font-family: 'GenRyuMin2 TC', 'Songti TC', 'Noto Serif TC', 'PMingLiU', serif;
-      -webkit-font-smoothing: antialiased;
-    }
-    .wrap { max-width: 980px; margin: 0 auto; }
-    .page-head { margin-bottom: 1.5rem; }
-    .page-head h1 { margin: 0 0 0.25rem; font-size: 1.5rem; letter-spacing: 0.01em; }
-    .page-head p { margin: 0; color: #6b6661; font-size: 0.9rem; }
-    .panel {
-      background: #fff;
-      border: 1px solid rgba(28, 26, 24, 0.10);
-      border-radius: 12px;
-      padding: 1.5rem clamp(1rem, 3vw, 1.75rem);
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-    }
-    .presets {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-bottom: 1.25rem;
-    }
-    /* author display:flex above beats the [hidden] UA rule, so hide explicitly */
-    .presets[hidden] { display: none; }
-    .preset {
-      padding: 0.4rem 0.8rem;
-      border: 1px solid rgba(28, 26, 24, 0.16);
-      border-radius: 999px;
-      background: #fff;
-      font: inherit;
-      font-size: 0.8125rem;
-      color: #3a3733;
-      cursor: pointer;
-      transition: all 0.12s ease;
-    }
-    .preset:hover { border-color: #8a1c2b; color: #8a1c2b; }
-    .preset.is-active {
-      background: #8a1c2b;
-      border-color: #8a1c2b;
-      color: #fff;
-    }
-    .hint {
-      margin-top: 1rem;
-      font-size: 0.78rem;
-      color: #8a847d;
-    }
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <header class="page-head">
-      <h1>影視刊物資料庫</h1>
-      <p>檢索結果年份統計 · 依刊物分色堆疊（西元 1926–1997）</p>
-    </header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>影視刊物資料庫 · 年份統計</title>
+    <link rel="stylesheet" href="chart.css" />
+    <link rel="stylesheet" href="https://hkbuproject-sandbox.vercel.app/filmtv/font/genryumin-tc/genryumin-tc.css" />
+    <style>
+      /* demo page chrome only — the chart owns its own styles in chart.css */
+      body {
+        margin: 0;
+        padding: 2.5rem clamp(1rem, 4vw, 3rem);
+        background: #f3f1ee;
+        color: #1c1a18;
+        font-family: "GenRyuMin2 TC", "Songti TC", "Noto Serif TC", "PMingLiU", serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap {
+        max-width: 980px;
+        margin: 0 auto;
+      }
+      .page-head {
+        margin-bottom: 1.5rem;
+      }
+      .page-head h1 {
+        margin: 0 0 0.25rem;
+        font-size: 1.5rem;
+        letter-spacing: 0.01em;
+      }
+      .page-head p {
+        margin: 0;
+        color: #6b6661;
+        font-size: 0.9rem;
+      }
+      .panel {
+        background: #fff;
+        border: 1px solid rgba(28, 26, 24, 0.1);
+        border-radius: 12px;
+        padding: 1.5rem clamp(1rem, 3vw, 1.75rem);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      }
+      .presets {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1.25rem;
+      }
+      /* author display:flex above beats the [hidden] UA rule, so hide explicitly */
+      .presets[hidden] {
+        display: none;
+      }
+      .preset {
+        padding: 0.4rem 0.8rem;
+        border: 1px solid rgba(28, 26, 24, 0.16);
+        border-radius: 999px;
+        background: #fff;
+        font: inherit;
+        font-size: 0.8125rem;
+        color: #3a3733;
+        cursor: pointer;
+        transition: all 0.12s ease;
+      }
+      .preset:hover {
+        border-color: #8a1c2b;
+        color: #8a1c2b;
+      }
+      .preset.is-active {
+        background: #8a1c2b;
+        border-color: #8a1c2b;
+        color: #fff;
+      }
+      .hint {
+        margin-top: 1rem;
+        font-size: 0.78rem;
+        color: #8a847d;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="page-head">
+        <h1>影視刊物資料庫</h1>
+        <p>檢索結果年份統計 · 依刊物分色堆疊（西元 1926–1997）</p>
+      </header>
 
-    <div class="panel">
-      <!-- PRIMARY view switch: 文章統計（篇） vs 書刊統計（本）. Switching view swaps
+      <div class="panel">
+        <!-- PRIMARY view switch: 文章統計（篇） vs 書刊統計（本）. Switching view swaps
            the count unit AND the filter presets below AND (book) the dataset. The
            two live site pages each PIN one view (search page = article; the book
            chart / collection page mounts data-view="book"). -->
-      <div class="presets" id="views">
-        <button class="preset is-active" data-view="article">文章統計（篇）</button>
-        <button class="preset" data-view="book">書刊統計（本）</button>
-      </div>
+        <div class="presets" id="views">
+          <button class="preset is-active" data-view="article">條目檢索頁 - 文章統計（篇）</button>
+          <button class="preset" data-view="book">刊物閱覽頁 - 書刊統計（本）</button>
+        </div>
 
-      <!-- filter presets — one group per view; the view switch shows the matching
+        <!-- filter presets — one group per view; the view switch shows the matching
            group. ARTICLE: search-style result subsets on the STABLE 1926–1997 axis
            (project rule). BOOK: one per publication, axis fitted to that
            publication's own year span, and 電影雙周刊 shown as its 9 CE* sub-series. -->
-      <div class="presets" id="presets-article">
-        <button class="preset is-active" data-preset="all">全部結果</button>
-        <button class="preset" data-preset="early">小冊子年代（1926–1958）</button>
-        <button class="preset" data-preset="late">雙周刊年代（1979–1997）</button>
-        <button class="preset" data-preset="mag">電影雙周刊</button>
-        <button class="preset" data-preset="tv">香港電視</button>
-      </div>
-      <div class="presets" id="presets-book" hidden>
-        <button class="preset" data-pub="FMP">電影小冊子</button>
-        <button class="preset" data-pub="TVW">香港電視</button>
-        <button class="preset is-active" data-pub="CE">電影雙周刊</button>
-        <button class="preset" data-pub="CEB">電影雙周刊出版書籍</button>
-      </div>
+        <div class="presets" id="presets-article">
+          <button class="preset is-active" data-preset="all">全部結果</button>
+          <button class="preset" data-preset="early">小冊子年代（1926–1958）</button>
+          <button class="preset" data-preset="late">雙周刊年代（1979–1997）</button>
+          <button class="preset" data-preset="mag">電影雙周刊</button>
+          <button class="preset" data-preset="tv">香港電視</button>
+        </div>
+        <div class="presets" id="presets-book" hidden>
+          <button class="preset" data-pub="FMP">電影小冊子</button>
+          <button class="preset" data-pub="TVW">香港電視</button>
+          <button class="preset is-active" data-pub="CE">電影雙周刊</button>
+          <button class="preset" data-pub="CEB">電影雙周刊出版書籍</button>
+        </div>
 
-      <!-- chart.js mounts here. data-height is optional (default 360). -->
-      <div data-chart data-height="360" data-src="sample-data/chart-sample.json"></div>
+        <!-- chart.js mounts here. data-height is optional (default 360). -->
+        <div data-chart data-height="360" data-src="sample-data/chart-sample.json"></div>
 
-      <p class="hint">桌面：滑過長條看該年明細，點按長條即以該年篩選結果。觸控：輕點長條後再點「查看此年結果 →」。點按圖例則以該刊物篩選。書刊（本）檢視：每個刊物依其起訖年份縮放年份軸，「電影雙周刊」以 9 個子刊分色堆疊。</p>
-      <p class="hint" id="demo-status" hidden></p>
+        <p class="hint">
+          桌面：滑過長條看該年明細，點按長條即以該年篩選結果。觸控：輕點長條後再點「查看此年結果 →」。點按圖例則以該刊物篩選。書刊（本）檢視：每個刊物依其起訖年份縮放年份軸，「電影雙周刊」以 9
+          個子刊分色堆疊。
+        </p>
+        <p class="hint" id="demo-status" hidden></p>
+      </div>
     </div>
-  </div>
 
-  <script src="chart.js"></script>
-  <script>
-    // Demo-only driver — a stand-in for the backend. It holds TWO pre-aggregated
-    // samples and feeds the chart the slice the current view+filter asks for,
-    // mimicking result sets arriving from a query. The article and book views are
-    // DIFFERENT datasets: book view splits 電影雙周刊 into its 9 CE* sub-series and
-    // fits the year axis to each publication's span.
-    (function () {
-      var chartEl = document.querySelector("[data-chart]");
-      var views = document.getElementById("views");
-      var presetsA = document.getElementById("presets-article");
-      var presetsB = document.getElementById("presets-book");
-      var status = document.getElementById("demo-status");
+    <script src="chart.js"></script>
+    <script>
+      // Demo-only driver — a stand-in for the backend. It holds TWO pre-aggregated
+      // samples and feeds the chart the slice the current view+filter asks for,
+      // mimicking result sets arriving from a query. The article and book views are
+      // DIFFERENT datasets: book view splits 電影雙周刊 into its 9 CE* sub-series and
+      // fits the year axis to each publication's span.
+      (function () {
+        var chartEl = document.querySelector("[data-chart]");
+        var views = document.getElementById("views");
+        var presetsA = document.getElementById("presets-article");
+        var presetsB = document.getElementById("presets-book");
+        var status = document.getElementById("demo-status");
 
-      var DATA = { article: null, book: null };
-      var VIEW = "article";
-      var ACTIVE = { article: "all", book: "CE" }; // selected filter per view
+        var DATA = { article: null, book: null };
+        var VIEW = "article";
+        var ACTIVE = { article: "all", book: "CE" }; // selected filter per view
 
-      // book-view publication filters -> the id-prefix keys they stack.
-      var PUBS = {
-        FMP: { label: "電影小冊子", keys: ["FMP"] },
-        TVW: { label: "香港電視", keys: ["TVW"] },
-        CE:  { label: "電影雙周刊", keys: ["CEM", "CEI", "CEY", "CED", "CEF", "CEV", "CEH", "CEP", "CEO"] },
-        CEB: { label: "電影雙周刊出版書籍", keys: ["CEB"] }
-      };
-
-      // ---- pre-aggregated slicing (a backend narrows a query the same way) ----
-      function sliceYears(data, keepYear) {
-        var idx = [];
-        data.years.forEach(function (y, i) { if (keepYear(y)) idx.push(i); });
-        return {
-          years: idx.map(function (i) { return data.years[i]; }),
-          series: data.series.map(function (s) {
-            return {
-              key: s.key, label: s.label, prefixes: s.prefixes, color: s.color,
-              counts: idx.map(function (i) { return s.counts[i]; }),
-              bookCounts: idx.map(function (i) { return s.bookCounts[i]; })
-            };
-          })
+        // book-view publication filters -> the id-prefix keys they stack.
+        var PUBS = {
+          FMP: { label: "電影小冊子", keys: ["FMP"] },
+          TVW: { label: "香港電視", keys: ["TVW"] },
+          CE: { label: "電影雙周刊", keys: ["CEM", "CEI", "CEY", "CED", "CEF", "CEV", "CEH", "CEP", "CEO"] },
+          CEB: { label: "電影雙周刊出版書籍", keys: ["CEB"] },
         };
-      }
-      function onlySeries(data, keys) {
-        return { years: data.years, series: data.series.filter(function (s) { return keys.indexOf(s.key) >= 0; }) };
-      }
-      // keep only these series AND fit the year axis to their combined book span
-      // (book view: "fit the axis to the publication's earliest–latest year").
-      function fitToPub(data, keys) {
-        var sub = onlySeries(data, keys);
-        var lo = Infinity, hi = -Infinity;
-        sub.years.forEach(function (y, i) {
-          if (sub.series.some(function (s) { return (s.bookCounts[i] || 0) > 0; })) {
-            if (i < lo) lo = i; if (i > hi) hi = i;
-          }
-        });
-        if (lo > hi) return sub;
-        return sliceYears(sub, function (y) { var i = sub.years.indexOf(y); return i >= lo && i <= hi; });
-      }
-      function total(data, field) {
-        return data.series.reduce(function (a, s) {
-          return a + s[field].reduce(function (x, n) { return x + (n || 0); }, 0);
-        }, 0);
-      }
 
-      var ARTICLE_FILTERS = {
-        all:   function () { return DATA.article; },
-        early: function () { return sliceYears(DATA.article, function (y) { return y <= 1958; }); },
-        late:  function () { return sliceYears(DATA.article, function (y) { return y >= 1979; }); },
-        mag:   function () { return onlySeries(DATA.article, ["CEM"]); },
-        tv:    function () { return onlySeries(DATA.article, ["TVW"]); }
-      };
-
-      function payload() {
-        return VIEW === "article"
-          ? ARTICLE_FILTERS[ACTIVE.article]()
-          : fitToPub(DATA.book, PUBS[ACTIVE.book].keys);
-      }
-      function unit() { return VIEW === "book" ? " 本" : " 篇"; }
-
-      function markActive(group, attr, val) {
-        group.querySelectorAll(".preset").forEach(function (b) {
-          b.classList.toggle("is-active", b.getAttribute(attr) === val);
-        });
-      }
-
-      // render the current view+filter: swap the preset group, set the count view,
-      // and hand the chart the matching slice.
-      function apply() {
-        if (!DATA.article || !DATA.book) return;
-        presetsA.hidden = VIEW !== "article";
-        presetsB.hidden = VIEW !== "book";
-        if (VIEW === "article") markActive(presetsA, "data-preset", ACTIVE.article);
-        else markActive(presetsB, "data-pub", ACTIVE.book);
-        status.hidden = true;
-        window.filmtvChart.setView(chartEl, VIEW);
-        window.filmtvChart.render(chartEl, payload());
-      }
-
-      Promise.all([
-        fetch("sample-data/chart-sample.json").then(function (r) { return r.json(); }),
-        fetch("sample-data/chart-book-sample.json").then(function (r) { return r.json(); })
-      ]).then(function (res) { DATA.article = res[0]; DATA.book = res[1]; apply(); });
-
-      views.addEventListener("click", function (e) {
-        var btn = e.target.closest(".preset"); if (!btn) return;
-        VIEW = btn.getAttribute("data-view");
-        views.querySelectorAll(".preset").forEach(function (b) {
-          b.classList.toggle("is-active", b.getAttribute("data-view") === VIEW);
-        });
-        apply();
-      });
-      presetsA.addEventListener("click", function (e) {
-        var btn = e.target.closest(".preset"); if (!btn || presetsA.hidden) return;
-        ACTIVE.article = btn.getAttribute("data-preset"); apply();
-      });
-      presetsB.addEventListener("click", function (e) {
-        var btn = e.target.closest(".preset"); if (!btn || presetsB.hidden) return;
-        ACTIVE.book = btn.getAttribute("data-pub"); apply();
-      });
-
-      // BACKEND's job in production: listen for the chart's selection event, narrow
-      // the query, re-render. Here we slice the CURRENT view's sample in-memory.
-      document.addEventListener("filmtv:filter", function (e) {
-        var data = VIEW === "article" ? DATA.article : DATA.book;
-        if (!data) return;
-        var d = e.detail, sub, scope;
-        if (d.year != null) {
-          sub = sliceYears(data, function (y) { return y === d.year; });
-          scope = d.year + " 年";
-        } else {
-          sub = onlySeries(data, [d.publication]);
-          scope = d.label;
+        // ---- pre-aggregated slicing (a backend narrows a query the same way) ----
+        function sliceYears(data, keepYear) {
+          var idx = [];
+          data.years.forEach(function (y, i) {
+            if (keepYear(y)) idx.push(i);
+          });
+          return {
+            years: idx.map(function (i) {
+              return data.years[i];
+            }),
+            series: data.series.map(function (s) {
+              return {
+                key: s.key,
+                label: s.label,
+                prefixes: s.prefixes,
+                color: s.color,
+                counts: idx.map(function (i) {
+                  return s.counts[i];
+                }),
+                bookCounts: idx.map(function (i) {
+                  return s.bookCounts[i];
+                }),
+              };
+            }),
+          };
         }
-        var n = total(sub, VIEW === "book" ? "bookCounts" : "counts");
-        if (VIEW === "article") markActive(presetsA, "data-preset", null);
-        else markActive(presetsB, "data-pub", null);
-        status.hidden = false;
-        status.textContent = "已篩選：" + scope + "（" + n.toLocaleString() + unit() + "）· 按上方預設重設";
-        window.filmtvChart.render(chartEl, sub);
-      });
-    })();
-  </script>
-</body>
+        function onlySeries(data, keys) {
+          return {
+            years: data.years,
+            series: data.series.filter(function (s) {
+              return keys.indexOf(s.key) >= 0;
+            }),
+          };
+        }
+        // keep only these series AND fit the year axis to their combined book span
+        // (book view: "fit the axis to the publication's earliest–latest year").
+        function fitToPub(data, keys) {
+          var sub = onlySeries(data, keys);
+          var lo = Infinity,
+            hi = -Infinity;
+          sub.years.forEach(function (y, i) {
+            if (
+              sub.series.some(function (s) {
+                return (s.bookCounts[i] || 0) > 0;
+              })
+            ) {
+              if (i < lo) lo = i;
+              if (i > hi) hi = i;
+            }
+          });
+          if (lo > hi) return sub;
+          return sliceYears(sub, function (y) {
+            var i = sub.years.indexOf(y);
+            return i >= lo && i <= hi;
+          });
+        }
+        function total(data, field) {
+          return data.series.reduce(function (a, s) {
+            return (
+              a +
+              s[field].reduce(function (x, n) {
+                return x + (n || 0);
+              }, 0)
+            );
+          }, 0);
+        }
+
+        var ARTICLE_FILTERS = {
+          all: function () {
+            return DATA.article;
+          },
+          early: function () {
+            return sliceYears(DATA.article, function (y) {
+              return y <= 1958;
+            });
+          },
+          late: function () {
+            return sliceYears(DATA.article, function (y) {
+              return y >= 1979;
+            });
+          },
+          mag: function () {
+            return onlySeries(DATA.article, ["CEM"]);
+          },
+          tv: function () {
+            return onlySeries(DATA.article, ["TVW"]);
+          },
+        };
+
+        function payload() {
+          return VIEW === "article" ? ARTICLE_FILTERS[ACTIVE.article]() : fitToPub(DATA.book, PUBS[ACTIVE.book].keys);
+        }
+        function unit() {
+          return VIEW === "book" ? " 本" : " 篇";
+        }
+
+        function markActive(group, attr, val) {
+          group.querySelectorAll(".preset").forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute(attr) === val);
+          });
+        }
+
+        // render the current view+filter: swap the preset group, set the count view,
+        // and hand the chart the matching slice.
+        function apply() {
+          if (!DATA.article || !DATA.book) return;
+          presetsA.hidden = VIEW !== "article";
+          presetsB.hidden = VIEW !== "book";
+          if (VIEW === "article") markActive(presetsA, "data-preset", ACTIVE.article);
+          else markActive(presetsB, "data-pub", ACTIVE.book);
+          status.hidden = true;
+          window.filmtvChart.setView(chartEl, VIEW);
+          window.filmtvChart.render(chartEl, payload());
+        }
+
+        Promise.all([
+          fetch("sample-data/chart-sample.json").then(function (r) {
+            return r.json();
+          }),
+          fetch("sample-data/chart-book-sample.json").then(function (r) {
+            return r.json();
+          }),
+        ]).then(function (res) {
+          DATA.article = res[0];
+          DATA.book = res[1];
+          apply();
+        });
+
+        views.addEventListener("click", function (e) {
+          var btn = e.target.closest(".preset");
+          if (!btn) return;
+          VIEW = btn.getAttribute("data-view");
+          views.querySelectorAll(".preset").forEach(function (b) {
+            b.classList.toggle("is-active", b.getAttribute("data-view") === VIEW);
+          });
+          apply();
+        });
+        presetsA.addEventListener("click", function (e) {
+          var btn = e.target.closest(".preset");
+          if (!btn || presetsA.hidden) return;
+          ACTIVE.article = btn.getAttribute("data-preset");
+          apply();
+        });
+        presetsB.addEventListener("click", function (e) {
+          var btn = e.target.closest(".preset");
+          if (!btn || presetsB.hidden) return;
+          ACTIVE.book = btn.getAttribute("data-pub");
+          apply();
+        });
+
+        // BACKEND's job in production: listen for the chart's selection event, narrow
+        // the query, re-render. Here we slice the CURRENT view's sample in-memory.
+        document.addEventListener("filmtv:filter", function (e) {
+          var data = VIEW === "article" ? DATA.article : DATA.book;
+          if (!data) return;
+          var d = e.detail,
+            sub,
+            scope;
+          if (d.year != null) {
+            sub = sliceYears(data, function (y) {
+              return y === d.year;
+            });
+            scope = d.year + " 年";
+          } else {
+            sub = onlySeries(data, [d.publication]);
+            scope = d.label;
+          }
+          var n = total(sub, VIEW === "book" ? "bookCounts" : "counts");
+          if (VIEW === "article") markActive(presetsA, "data-preset", null);
+          else markActive(presetsB, "data-pub", null);
+          status.hidden = false;
+          status.textContent = "已篩選：" + scope + "（" + n.toLocaleString() + unit() + "）· 按上方預設重設";
+          window.filmtvChart.render(chartEl, sub);
+        });
+      })();
+    </script>
+  </body>
 </html>
