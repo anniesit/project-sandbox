@@ -78,14 +78,19 @@
     { key: "FMP", label: "電影小冊子", prefixes: ["FMP"] },
     { key: "TVW", label: "香港電視", prefixes: ["TVW"] },
     { key: "CEM", label: "電影雙周刊", prefixes: ["CEM", "CEI", "CEY", "CED", "CEF", "CEV", "CEH", "CEP", "CEO"] },
-    { key: "CEB", label: "電影雙周刊出版書籍", prefixes: ["CEB"] }
+    { key: "CEB", label: "電影雙周刊出版書籍", prefixes: ["CEB"] },
   ];
-  var PREFIX_MAP = {}, GROUP_ORDER = {}, GROUP_LABEL = {}, GROUP_PREFIXES = {};
+  var PREFIX_MAP = {},
+    GROUP_ORDER = {},
+    GROUP_LABEL = {},
+    GROUP_PREFIXES = {};
   PUBLICATIONS.forEach(function (p, i) {
     GROUP_ORDER[p.key] = i;
     GROUP_LABEL[p.key] = p.label;
     GROUP_PREFIXES[p.key] = p.prefixes;
-    p.prefixes.forEach(function (pre) { PREFIX_MAP[pre] = p.key; });
+    p.prefixes.forEach(function (pre) {
+      PREFIX_MAP[pre] = p.key;
+    });
   });
 
   // 電影雙周刊 family id prefixes. Article view rolls them up into one CEM series
@@ -95,8 +100,7 @@
 
   // true on devices with a real hover+fine pointer (desktop): bar click commits
   // directly. Touch devices tap a bar to pin the tooltip, then tap its button.
-  var HOVER = !!(window.matchMedia &&
-    window.matchMedia("(hover: hover) and (pointer: fine)").matches);
+  var HOVER = !!(window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches);
 
   // entry -> stack group key: first 3 id chars, mapped through the taxonomy.
   function publicationKey(item) {
@@ -105,10 +109,7 @@
   }
 
   /* Fallback categorical palette (CSS vars --filmtv-chart-color-N override). */
-  var PALETTE = [
-    "#8a1c2b", "#c2683a", "#d6a531", "#4f7a63",
-    "#3f6184", "#7a4f86", "#9c6b3f", "#5c6b34"
-  ];
+  var PALETTE = ["#8a1c2b", "#c2683a", "#d6a531", "#4f7a63", "#3f6184", "#7a4f86", "#9c6b3f", "#5c6b34"];
 
   var GEOM = { top: 14, right: 14, bottom: 30, left: 46 };
   // Count unit per instance (FIXED at init via data-view; never toggled at
@@ -116,15 +117,23 @@
   // The model always carries BOTH arrays so either view can render.
   var UNIT_ARTICLE = " 篇";
   var UNIT_BOOK = " 本";
-  function unitFor(view) { return view === "book" ? UNIT_BOOK : UNIT_ARTICLE; }
+  function unitFor(view) {
+    return view === "book" ? UNIT_BOOK : UNIT_ARTICLE;
+  }
   // tooltip commit-button label, per view: article view searches results, book
   // view (book chart / collection page) jumps to that year's publications.
   var COMMIT_ARTICLE = "查看此年結果 →";
-  var COMMIT_BOOK = "查看此年刊物";
-  function commitLabel(view) { return view === "book" ? COMMIT_BOOK : COMMIT_ARTICLE; }
+  var COMMIT_BOOK = "查看此年刊物 →";
+  function commitLabel(view) {
+    return view === "book" ? COMMIT_BOOK : COMMIT_ARTICLE;
+  }
   // active per-year counts for a series, by view ("book" -> distinct books)
-  function countsFor(s, view) { return (view === "book" ? s.bookCounts : s.counts) || []; }
-  function totalFor(s, view) { return view === "book" ? s.bookTotal : s.total; }
+  function countsFor(s, view) {
+    return (view === "book" ? s.bookCounts : s.counts) || [];
+  }
+  function totalFor(s, view) {
+    return view === "book" ? s.bookTotal : s.total;
+  }
 
   /* ---------- bootstrap ---------- */
   ready(function () {
@@ -140,11 +149,11 @@
       // count view for THIS instance: "article" (篇) or "book" (本). Fixed at
       // init from data-view; the chart never toggles it at runtime.
       view: viewFor(root),
-      tipIndex: null,    // year index the tooltip currently describes
+      tipIndex: null, // year index the tooltip currently describes
       pendingAnim: true, // grow bars from 0 on the next real draw (load)
-      renderSeq: 0,      // bumps per render; part of the draw signature
-      lastSig: null,     // signature of the last committed draw (skip no-op redraws)
-      raf: 0
+      renderSeq: 0, // bumps per render; part of the draw signature
+      lastSig: null, // signature of the last committed draw (skip no-op redraws)
+      raf: 0,
     };
     root.__filmtv = st;
     buildShell(root, st);
@@ -155,10 +164,15 @@
     if (typeof ResizeObserver === "function") {
       new ResizeObserver(function () {
         if (st.raf) return;
-        st.raf = requestAnimationFrame(function () { st.raf = 0; draw(root); });
+        st.raf = requestAnimationFrame(function () {
+          st.raf = 0;
+          draw(root);
+        });
       }).observe(st.canvas);
     } else {
-      window.addEventListener("resize", function () { draw(root); });
+      window.addEventListener("resize", function () {
+        draw(root);
+      });
     }
 
     mockFetch(root, st);
@@ -187,9 +201,16 @@
   function mockFetch(root, st) {
     var url = root.getAttribute("data-src") || DATA_URL;
     fetch(url, { credentials: "omit" })
-      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
-      .then(function (data) { render(root, data || {}); })
-      .catch(function (err) { console.error("[chart] mock load failed (" + url + "):", err); });
+      .then(function (r) {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.json();
+      })
+      .then(function (data) {
+        render(root, data || {});
+      })
+      .catch(function (err) {
+        console.error("[chart] mock load failed (" + url + "):", err);
+      });
   }
 
   // Default count view for an instance, read once from data-view at init (default
@@ -213,7 +234,7 @@
     if (!st.model) return;
     hideTip(st);
     renderLegend(root, st);
-    st.pendingAnim = true;   // re-grow bars on the switch
+    st.pendingAnim = true; // re-grow bars on the switch
     draw(root);
   }
 
@@ -229,7 +250,7 @@
     hideTip(st);
     renderLegend(root, st);
     st.renderSeq++;
-    st.pendingAnim = true;   // grow bars from 0 on (re)render
+    st.pendingAnim = true; // grow bars from 0 on (re)render
     draw(root);
   }
 
@@ -252,12 +273,19 @@
           // colour priority: explicit override -> 電影雙周刊 split token (book view,
           // from chart.css) -> taxonomy/array palette. Fixed per key so a series
           // keeps its colour even when the result set filters down to a subset.
-          color: s.color || ceColor(root, s.key, prefixes) ||
-            palette[(s.key in GROUP_ORDER ? GROUP_ORDER[s.key] : i) % palette.length],
-          counts: ys.map(function (_, k) { return Number((s.counts || [])[k]) || 0; }),
-          bookCounts: ys.map(function (_, k) { return Number(bc[k]) || 0; }),
-          total: (s.counts || []).reduce(function (a, b) { return a + (Number(b) || 0); }, 0),
-          bookTotal: bc.reduce(function (a, b) { return a + (Number(b) || 0); }, 0)
+          color: s.color || ceColor(root, s.key, prefixes) || palette[(s.key in GROUP_ORDER ? GROUP_ORDER[s.key] : i) % palette.length],
+          counts: ys.map(function (_, k) {
+            return Number((s.counts || [])[k]) || 0;
+          }),
+          bookCounts: ys.map(function (_, k) {
+            return Number(bc[k]) || 0;
+          }),
+          total: (s.counts || []).reduce(function (a, b) {
+            return a + (Number(b) || 0);
+          }, 0),
+          bookTotal: bc.reduce(function (a, b) {
+            return a + (Number(b) || 0);
+          }, 0),
         };
       });
       return finalizeModel(ys, series, palette);
@@ -265,7 +293,8 @@
 
     // raw entries: aggregate into per-year, per-publication counts.
     var items = Array.isArray(data.items) ? data.items : [];
-    var minY = Infinity, maxY = -Infinity;
+    var minY = Infinity,
+      maxY = -Infinity;
     var groups = {}; // key -> { key, counts:{year->n}, total, books:{year->{bookNumber:1}}, labels:{} }
 
     for (var i = 0; i < items.length; i++) {
@@ -288,7 +317,10 @@
       var jr = it.journal || "";
       if (jr) g.labels[jr] = (g.labels[jr] || 0) + 1;
     }
-    if (!isFinite(minY)) { minY = 0; maxY = 0; }
+    if (!isFinite(minY)) {
+      minY = 0;
+      maxY = 0;
+    }
 
     var years = [];
     for (var y = minY; y <= maxY; y++) years.push(y);
@@ -302,10 +334,14 @@
         key: g.key,
         label: GROUP_LABEL[g.key] || topLabel(g.labels) || g.key,
         prefixes: GROUP_PREFIXES[g.key] || [g.key],
-        counts: years.map(function (yy) { return g.counts[yy] || 0; }),
+        counts: years.map(function (yy) {
+          return g.counts[yy] || 0;
+        }),
         bookCounts: bookCounts,
         total: g.total,
-        bookTotal: bookCounts.reduce(function (a, b) { return a + b; }, 0)
+        bookTotal: bookCounts.reduce(function (a, b) {
+          return a + b;
+        }, 0),
       };
     });
     // taxonomy order first (stable stack + colour), then any unlisted by size
@@ -318,16 +354,16 @@
     // when the result set filters down to a subset of publications
     var spare = PUBLICATIONS.length;
     built.forEach(function (s) {
-      s.color = s.key in GROUP_ORDER
-        ? palette[GROUP_ORDER[s.key] % palette.length]
-        : palette[(spare++) % palette.length];
+      s.color = s.key in GROUP_ORDER ? palette[GROUP_ORDER[s.key] % palette.length] : palette[spare++ % palette.length];
     });
 
     return finalizeModel(years, built, palette);
   }
 
   function finalizeModel(years, series, palette) {
-    series.forEach(function (s, i) { if (!s.color) s.color = palette[i % palette.length]; });
+    series.forEach(function (s, i) {
+      if (!s.color) s.color = palette[i % palette.length];
+    });
     return { years: years, series: series };
   }
 
@@ -357,7 +393,9 @@
 
     // per-year visible stacked totals -> dynamic y axis (uses the active view's counts)
     var totals = years.map(function (_, i) {
-      return series.reduce(function (a, s) { return a + (countsFor(s, view)[i] || 0); }, 0);
+      return series.reduce(function (a, s) {
+        return a + (countsFor(s, view)[i] || 0);
+      }, 0);
     });
     var axis = niceAxis(Math.max.apply(null, totals.concat(1)));
     var yMax = axis.max;
@@ -367,21 +405,21 @@
     var band = n > 0 ? plotW / n : plotW;
     var barW = Math.max(2, Math.min(band * 0.74, 26));
 
-    function X(i) { return GEOM.left + i * band + band / 2; }
-    function Y(v) { return GEOM.top + plotH - (v / yMax) * plotH; }
+    function X(i) {
+      return GEOM.left + i * band + band / 2;
+    }
+    function Y(v) {
+      return GEOM.top + plotH - (v / yMax) * plotH;
+    }
 
     var s = [];
-    s.push('<svg class="filmtv-chart-svg-el" width="' + W + '" height="' + H +
-      '" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' +
-      esc(ariaSummary(years, series, totals, view)) + '">');
+    s.push('<svg class="filmtv-chart-svg-el" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="' + esc(ariaSummary(years, series, totals, view)) + '">');
 
     // y gridlines + labels
     for (var t = 0; t <= yMax + 0.0001; t += axis.step) {
       var gy = Y(t);
-      s.push('<line class="filmtv-chart-grid" x1="' + GEOM.left + '" y1="' + gy +
-        '" x2="' + (W - GEOM.right) + '" y2="' + gy + '"/>');
-      s.push('<text class="filmtv-chart-ylabel" x="' + (GEOM.left - 8) + '" y="' + (gy + 4) +
-        '" text-anchor="end">' + fmt(t) + '</text>');
+      s.push('<line class="filmtv-chart-grid" x1="' + GEOM.left + '" y1="' + gy + '" x2="' + (W - GEOM.right) + '" y2="' + gy + '"/>');
+      s.push('<text class="filmtv-chart-ylabel" x="' + (GEOM.left - 8) + '" y="' + (gy + 4) + '" text-anchor="end">' + fmt(t) + "</text>");
     }
 
     // stacked bars — each year's segments live in one <g> so the whole column
@@ -392,15 +430,13 @@
       for (var k = 0; k < series.length; k++) {
         var v = countsFor(series[k], view)[i] || 0;
         if (v <= 0) continue;
-        var y1 = Y(cum + v), y0 = Y(cum);
-        segs.push('<rect class="filmtv-chart-bar" x="' + (X(i) - barW / 2) + '" y="' + y1 +
-          '" width="' + barW + '" height="' + Math.max(0, y0 - y1) +
-          '" fill="' + series[k].color + '"/>');
+        var y1 = Y(cum + v),
+          y0 = Y(cum);
+        segs.push('<rect class="filmtv-chart-bar" x="' + (X(i) - barW / 2) + '" y="' + y1 + '" width="' + barW + '" height="' + Math.max(0, y0 - y1) + '" fill="' + series[k].color + '"/>');
         cum += v;
       }
       if (segs.length) {
-        s.push('<g class="filmtv-chart-barcol' + (animate ? " is-grow" : "") + '">' +
-          segs.join("") + '</g>');
+        s.push('<g class="filmtv-chart-barcol' + (animate ? " is-grow" : "") + '">' + segs.join("") + "</g>");
       }
     }
 
@@ -408,14 +444,12 @@
     var step = labelStep(years, plotW);
     for (var xi = 0; xi < n; xi++) {
       if (years[xi] % step !== 0) continue;
-      s.push('<text class="filmtv-chart-xlabel" x="' + X(xi) + '" y="' + (H - 10) +
-        '" text-anchor="middle">' + years[xi] + '</text>');
+      s.push('<text class="filmtv-chart-xlabel" x="' + X(xi) + '" y="' + (H - 10) + '" text-anchor="middle">' + years[xi] + "</text>");
     }
 
     // transparent full-height hover targets, one per year band
     for (var hi = 0; hi < n; hi++) {
-      s.push('<rect class="filmtv-chart-hit" data-yi="' + hi + '" x="' + (GEOM.left + hi * band) +
-        '" y="' + GEOM.top + '" width="' + band + '" height="' + plotH + '"/>');
+      s.push('<rect class="filmtv-chart-hit" data-yi="' + hi + '" x="' + (GEOM.left + hi * band) + '" y="' + GEOM.top + '" width="' + band + '" height="' + plotH + '"/>');
     }
 
     s.push("</svg>");
@@ -436,12 +470,15 @@
         if (!hit || !st.geom) return hideTip(st);
         showTip(root, st, +hit.getAttribute("data-yi"), false);
       });
-      canvas.addEventListener("mouseleave", function () { hideTip(st); });
+      canvas.addEventListener("mouseleave", function () {
+        hideTip(st);
+      });
     }
 
     // click doubles as a tap on touch devices
     canvas.addEventListener("click", function (e) {
-      if (closest(e.target, ".filmtv-chart-commit")) {       // the tooltip button
+      if (closest(e.target, ".filmtv-chart-commit")) {
+        // the tooltip button
         e.preventDefault();
         if (st.tipIndex != null) commitYear(root, st, st.tipIndex);
         return;
@@ -449,8 +486,9 @@
       var hit = closest(e.target, ".filmtv-chart-hit");
       if (!hit || !st.geom) return;
       var i = +hit.getAttribute("data-yi");
-      if (HOVER) commitYear(root, st, i);   // desktop: one click commits
-      else showTip(root, st, i, true);      // touch: first tap pins the tooltip
+      if (HOVER)
+        commitYear(root, st, i); // desktop: one click commits
+      else showTip(root, st, i, true); // touch: first tap pins the tooltip
     });
 
     // touch: a tap anywhere outside the chart dismisses a pinned tooltip
@@ -469,17 +507,30 @@
     for (var k = 0; k < g.series.length; k++) {
       var v = countsFor(g.series[k], view)[i] || 0;
       if (v <= 0) continue;
-      rows.push('<li class="filmtv-chart-tip-row"><span class="filmtv-chart-tip-swatch" style="background:' +
-        g.series[k].color + '"></span><span class="filmtv-chart-tip-name">' +
-        esc(g.series[k].label) + '</span><span class="filmtv-chart-tip-num">' + fmt(v) + '</span></li>');
+      rows.push(
+        '<li class="filmtv-chart-tip-row"><span class="filmtv-chart-tip-swatch" style="background:' +
+          g.series[k].color +
+          '"></span><span class="filmtv-chart-tip-name">' +
+          esc(g.series[k].label) +
+          '</span><span class="filmtv-chart-tip-num">' +
+          fmt(v) +
+          "</span></li>",
+      );
     }
     st.tooltip.innerHTML =
       '<div class="filmtv-chart-tip-head">' +
-        '<span class="filmtv-chart-tip-year">' + g.years[i] + ' 年</span>' +
-        '<span class="filmtv-chart-tip-total">總數 ' + fmt(g.totals[i]) + unitFor(view) + '</span>' +
-      '</div>' +
+      '<span class="filmtv-chart-tip-year">' +
+      g.years[i] +
+      " 年</span>" +
+      '<span class="filmtv-chart-tip-total">總數 ' +
+      fmt(g.totals[i]) +
+      unitFor(view) +
+      "</span>" +
+      "</div>" +
       (rows.length ? '<ul class="filmtv-chart-tip-list">' + rows.join("") + "</ul>" : "") +
-      '<button type="button" class="filmtv-chart-commit">' + commitLabel(view) + '</button>';
+      '<button type="button" class="filmtv-chart-commit">' +
+      commitLabel(view) +
+      "</button>";
 
     st.tipIndex = i;
     st.tooltip.classList.add("is-on");
@@ -488,10 +539,12 @@
 
     // centre on the band; sit above the bar, flipping below if there's no room
     var W = st.canvas.clientWidth;
-    var cx = g.X(i), cy = g.Y(g.totals[i]);
-    var tw = st.tooltip.offsetWidth, th = st.tooltip.offsetHeight;
+    var cx = g.X(i),
+      cy = g.Y(g.totals[i]);
+    var tw = st.tooltip.offsetWidth,
+      th = st.tooltip.offsetHeight;
     st.tooltip.style.left = Math.max(tw / 2 + 2, Math.min(cx, W - tw / 2 - 2)) + "px";
-    var below = (cy - 10 - th) < 4;
+    var below = cy - 10 - th < 4;
     st.tooltip.classList.toggle("is-below", below);
     st.tooltip.style.top = (below ? cy + 12 : cy - 10) + "px";
   }
@@ -514,7 +567,7 @@
      — publication filtering there is done by the page's own controls. */
   function bindLegend(root, st) {
     st.legend.addEventListener("click", function (e) {
-      var btn = closest(e.target, "[data-key]");   // book-view items have none -> no-op
+      var btn = closest(e.target, "[data-key]"); // book-view items have none -> no-op
       if (!btn) return;
       var key = btn.getAttribute("data-key");
       var s = findSeries(st, key);
@@ -522,24 +575,31 @@
         year: null,
         publication: key,
         label: s ? s.label : key,
-        prefixes: s ? s.prefixes : [key]
+        prefixes: s ? s.prefixes : [key],
       });
     });
   }
 
   function renderLegend(root, st) {
     var view = st.view;
-    var interactive = view !== "book";   // book-view legend is static
-    var html = st.model.series.map(function (s) {
-      var inner =
-        '<span class="filmtv-chart-legend-swatch" style="background:' + s.color + '"></span>' +
-        '<span class="filmtv-chart-legend-label">' + esc(s.label) + '</span>' +
-        '<span class="filmtv-chart-legend-count">' + fmt(totalFor(s, view)) + '</span>';
-      return interactive
-        ? '<button type="button" class="filmtv-chart-legend-item" role="listitem" data-key="' +
-            esc(s.key) + '" aria-label="' + esc("篩選：" + s.label) + '">' + inner + '</button>'
-        : '<div class="filmtv-chart-legend-item is-static" role="listitem">' + inner + '</div>';
-    }).join("");
+    var interactive = view !== "book"; // book-view legend is static
+    var html = st.model.series
+      .map(function (s) {
+        var inner =
+          '<span class="filmtv-chart-legend-swatch" style="background:' +
+          s.color +
+          '"></span>' +
+          '<span class="filmtv-chart-legend-label">' +
+          esc(s.label) +
+          "</span>" +
+          '<span class="filmtv-chart-legend-count">' +
+          fmt(totalFor(s, view)) +
+          "</span>";
+        return interactive
+          ? '<button type="button" class="filmtv-chart-legend-item" role="listitem" data-key="' + esc(s.key) + '" aria-label="' + esc("篩選：" + s.label) + '">' + inner + "</button>"
+          : '<div class="filmtv-chart-legend-item is-static" role="listitem">' + inner + "</div>";
+      })
+      .join("");
     st.legend.innerHTML = html;
   }
 
@@ -552,8 +612,9 @@
   // dispatch the search-filter selection (bubbles to document for the backend)
   function emitFilter(root, detail) {
     var ev;
-    try { ev = new CustomEvent("filmtv:filter", { detail: detail, bubbles: true }); }
-    catch (err) {
+    try {
+      ev = new CustomEvent("filmtv:filter", { detail: detail, bubbles: true });
+    } catch (err) {
       ev = document.createEvent("CustomEvent");
       ev.initCustomEvent("filmtv:filter", true, false, detail);
     }
@@ -614,25 +675,46 @@
   function ceColor(root, key, prefixes) {
     if (!key || CE_FAMILY.indexOf(key) === -1) return "";
     if (key === "CEM" && prefixes && prefixes.length > 1) return "";
-    var v = window.getComputedStyle(root)
-      .getPropertyValue("--filmtv-chart-ce-" + String(key).toLowerCase()).trim();
+    var v = window
+      .getComputedStyle(root)
+      .getPropertyValue("--filmtv-chart-ce-" + String(key).toLowerCase())
+      .trim();
     return v || "";
   }
 
   function topLabel(map) {
-    var best = "", n = -1;
-    for (var k in map) if (map[k] > n) { n = map[k]; best = k; }
+    var best = "",
+      n = -1;
+    for (var k in map)
+      if (map[k] > n) {
+        n = map[k];
+        best = k;
+      }
     return best;
   }
 
   function ariaSummary(years, series, totals, view) {
     if (!years.length) return "Stacked bar chart, no data.";
-    var grand = totals.reduce(function (a, b) { return a + b; }, 0);
+    var grand = totals.reduce(function (a, b) {
+      return a + b;
+    }, 0);
     var noun = view === "book" ? "book" : "entry";
     var plural = view === "book" ? "books" : "entries";
-    return "Stacked bar chart of " + noun + " count by year, " + years[0] + " to " +
-      years[years.length - 1] + ", " + series.length + " publications, " +
-      fmt(grand) + " " + (grand === 1 ? noun : plural) + " total.";
+    return (
+      "Stacked bar chart of " +
+      noun +
+      " count by year, " +
+      years[0] +
+      " to " +
+      years[years.length - 1] +
+      ", " +
+      series.length +
+      " publications, " +
+      fmt(grand) +
+      " " +
+      (grand === 1 ? noun : plural) +
+      " total."
+    );
   }
 
   /* ---------- tiny utils ---------- */
@@ -640,8 +722,14 @@
     if (document.readyState !== "loading") fn();
     else document.addEventListener("DOMContentLoaded", fn);
   }
-  function el(tag, cls) { var e = document.createElement(tag); e.className = cls; return e; }
-  function closest(target, sel) { return target && target.closest ? target.closest(sel) : null; }
+  function el(tag, cls) {
+    var e = document.createElement(tag);
+    e.className = cls;
+    return e;
+  }
+  function closest(target, sel) {
+    return target && target.closest ? target.closest(sel) : null;
+  }
   function fmt(n) {
     var num = Number(n);
     return isFinite(num) ? num.toLocaleString("en-US") : String(n);
