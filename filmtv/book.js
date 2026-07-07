@@ -181,6 +181,11 @@
     var pool = (Array.isArray(data.items) ? data.items : []).filter(function (it) {
       return baseOf(it.bookNumber) === base && !EXCLUDE_TYPES[String(it.type)];
     });
+    // Order the TOC by page. Source order isn't reliably page-ordered (e.g. book
+    // 25). Stable sort keeps same-page articles in source order; a blank / non-
+    // numeric page (or a range like "10-11", sorted by its leading number) that
+    // can't be parsed sinks to the end.
+    pool = stableSort(pool, function (a, b) { return pageNum(a.page) - pageNum(b.page); });
 
     setSwitcherNote(root, pool.length ? "" : "找不到 BookNumber：" + bookNumber);
 
@@ -546,6 +551,18 @@
   function ready(fn) {
     if (document.readyState !== "loading") fn();
     else document.addEventListener("DOMContentLoaded", fn);
+  }
+  // Leading integer of a page value; blank / unparseable -> +Infinity (sorts last).
+  function pageNum(p) {
+    var m = String(p == null ? "" : p).match(/\d+/);
+    return m ? parseInt(m[0], 10) : Infinity;
+  }
+  // Stable sort (decorate-with-index) so it holds even where Array.sort isn't stable.
+  function stableSort(arr, cmp) {
+    return arr
+      .map(function (v, i) { return { v: v, i: i }; })
+      .sort(function (a, b) { return cmp(a.v, b.v) || a.i - b.i; })
+      .map(function (x) { return x.v; });
   }
   function setAll(root, selector, value) {
     var els = root.querySelectorAll(selector);
