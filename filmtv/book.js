@@ -426,17 +426,25 @@
     var els = leafFields(scope, name);
     for (var i = 0; i < els.length; i++) els[i].textContent = value == null ? "" : String(value);
   }
+  // u-d is a Webflow DISPLAY utility (e.g. u-d="inline" / "inline-flex"), not just
+  // a hide flag — so revealing an element must RESTORE its authored value, never
+  // removeAttribute (which would strip "inline" and drop it back to block). We
+  // remember the authored value the first time we touch a (fresh clone) element.
+  function rememberUd(el) { if (!("_ud" in el)) el._ud = el.getAttribute("u-d"); }
+  function showEl(el) {
+    rememberUd(el);
+    if (el._ud != null && el._ud !== "none") el.setAttribute("u-d", el._ud);
+    else el.removeAttribute("u-d");
+  }
+  function hideEl(el) { rememberUd(el); el.setAttribute("u-d", "none"); }
   function toggle(el, show, text) {
     if (!el) return;
-    if (show) { if (text != null) el.textContent = text; el.removeAttribute("u-d"); }
-    else el.setAttribute("u-d", "none");
+    if (show) { if (text != null) el.textContent = text; showEl(el); }
+    else hideEl(el);
   }
-  // The pipe's authored display is "inline" via a u-d attr on its wrapper; keep
-  // that value when showing rather than clobbering it.
   function togglePipe(pipe, show) {
-    var wrap = pipe.parentElement || pipe;
-    if (show) wrap.removeAttribute("u-d");
-    else wrap.setAttribute("u-d", "none");
+    var wrap = pipe.parentElement || pipe;   // authored u-d="inline-flex" lives on the wrapper
+    if (show) showEl(wrap); else hideEl(wrap);
   }
   // Fill the issue number; hide the whole "第 __ 期" heading when there is none
   // (the 第/期 chars are static siblings, so an empty span would read "第  期").
@@ -469,8 +477,8 @@
     var empty = value == null || String(value).trim() === "";
     for (var i = 0; i < els.length; i++) {
       els[i].textContent = empty ? "" : String(value);
-      if (empty) els[i].setAttribute("u-d", "none");
-      else els[i].removeAttribute("u-d");
+      if (empty) hideEl(els[i]);
+      else showEl(els[i]);            // restore authored u-d (e.g. "inline")
     }
   }
   function setArticleType(scope, code) {
@@ -478,8 +486,8 @@
     var info = typeInfo(code);
     for (var i = 0; i < els.length; i++) {
       var el = els[i];
-      if (!info) { el.setAttribute("u-d", "none"); continue; }
-      el.removeAttribute("u-d");
+      if (!info) { hideEl(el); continue; }
+      showEl(el);
       el.textContent = info.label;
       for (var v = 0; v < TYPE_VARIANT_CLASSES.length; v++) el.classList.remove(TYPE_VARIANT_CLASSES[v]);
       if (info.variant) el.classList.add(info.variant);

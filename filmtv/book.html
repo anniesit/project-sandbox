@@ -19,8 +19,12 @@
       font-family: 'GenRyuMin2 TC', 'Songti TC', 'Noto Serif TC', 'PMingLiU', serif;
       -webkit-font-smoothing: antialiased;
     }
-    /* the design-system util book.js relies on (hide via attribute) */
+    /* design-system display utilities (present on the live site); mirrored here
+       so the preview matches after book.js restores authored u-d values. */
     [u-d="none"] { display: none !important; }
+    [u-d="inline"] { display: inline !important; }
+    [u-d="inline-flex"] { display: inline-flex !important; }
+    [u-d="inline-block"] { display: inline-block !important; }
 
     .wrap { max-width: 1040px; margin: 0 auto; }
     .panel {
@@ -77,9 +81,9 @@
 </head>
 <body>
   <div class="wrap">
-    <!-- [data-collection] is what the live page carries; book.js also accepts
-         [data-book]. It scopes every hook below. -->
-    <main class="page-main" data-collection>
+    <!-- [data-book] scopes every hook below (book.js also still accepts the
+         old [data-collection] as a fallback). -->
+    <main class="page-main" data-book>
 
       <!-- ============ HEADER ============ -->
       <section class="panel cc-book-header">
