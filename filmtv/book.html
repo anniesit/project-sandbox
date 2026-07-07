@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>影視刊物資料庫 · 書刊目錄</title>
+  <link rel="stylesheet" href="https://hkbuproject-sandbox.vercel.app/filmtv/font/genryumin-tc/genryumin-tc.css" />
+  <style>
+    /* ⚠️ PREVIEW CHROME ONLY. On the real site these blocks are authored in
+       Webflow; this file mirrors the Book page's data-* hook structure so
+       book.js (mock) can be seen rendering. Not part of the handoff. */
+    :root {
+      --ink: #1c1a18; --muted: #6b6661; --line: rgba(28,26,24,0.12);
+      --accent: #8a1c2b; --paper: #fff; --bg: #f3f1ee;
+    }
+    body {
+      margin: 0; padding: 2.5rem clamp(1rem, 4vw, 3rem);
+      background: var(--bg); color: var(--ink);
+      font-family: 'GenRyuMin2 TC', 'Songti TC', 'Noto Serif TC', 'PMingLiU', serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    /* the design-system util book.js relies on (hide via attribute) */
+    [u-d="none"] { display: none !important; }
+
+    .wrap { max-width: 1040px; margin: 0 auto; }
+    .panel {
+      background: var(--paper); border: 1px solid var(--line); border-radius: 12px;
+      padding: 1.5rem clamp(1rem, 3vw, 1.75rem); margin-bottom: 1.25rem;
+    }
+
+    /* ---- header ---- */
+    .cc-book-header .u-w-100 { width: 100%; }
+    .book-header-row { display: flex; gap: 1.5rem; align-items: flex-start; margin-bottom: 1rem; }
+    .thumbnail { border: 1px solid var(--line); border-radius: 6px; overflow: hidden;
+      background: #e6e9ea; flex: 0 0 auto; }
+    .thumbnail.cc-book-header { width: 160px; aspect-ratio: 160/219; }
+    .thumbnail.cc-book-toc { width: 132px; aspect-ratio: 160/219; }
+    .card-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .book-header-meta h1 { margin: 0 0 .25rem; font-size: 1.7rem; }
+    .book-header-meta h2 { margin: 0 0 .75rem; font-size: 1.1rem; color: var(--accent); }
+    .paragraph-xl { font-size: .95rem; display: flex; gap: .4rem; margin: 0 0 .3rem; }
+    .access-tag { display: inline-flex; gap: .3rem; align-items: center; font-size: .8rem;
+      color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: .2rem .6rem; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .text-link { background: none; border: 0; font: inherit; color: var(--ink); cursor: pointer; }
+
+    /* ---- toc ---- */
+    .toc-head { display: flex; gap: 1rem; align-items: baseline; margin-bottom: .5rem; }
+    .toc-head h3 { margin: 0; font-size: 1.2rem; }
+    [data-view-toggle] { display: flex; gap: .4rem; margin: .75rem 0 1.25rem; }
+    .view-toggle-btn { padding: .35rem .8rem; border: 1px solid var(--line); border-radius: 999px;
+      background: var(--paper); font: inherit; font-size: .85rem; color: #3a3733; cursor: pointer; }
+    .view-toggle-btn.cc-active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    .toc-body { display: flex; gap: 1.5rem; align-items: flex-start; }
+    .book-toc-ul { flex: 1 1 auto; min-width: 0; position: relative; }
+    .book-toc-ul ul { list-style: none; margin: 0; padding: 0; }
+    .book-toc-li { display: flex; gap: 1rem; align-items: flex-start;
+      padding: .7rem 0; border-bottom: 1px dotted var(--line); }
+    .book-article-meta { flex: 1 1 auto; min-width: 0; }
+    .book-article-meta [data-field="section"] { color: var(--muted); }
+    .book-article-meta [data-field="title"] { font-weight: 600; }
+    .book-article-meta [data-field="author"] { color: var(--muted); font-size: .85rem; margin-left: .5rem; }
+    .pipe { display: inline-block; width: 1px; height: .9em; background: var(--line);
+      margin: 0 .5rem; vertical-align: middle; }
+    .tag { display: inline-block; font-size: .72rem; padding: .1rem .5rem; border-radius: 4px;
+      margin-top: .35rem; }
+    .tag.is-film { background: #eaf1f6; color: #2c5d7c; }
+    .tag.is-cultural { background: #f3eef6; color: #6b4a7c; }
+    .tag.is-comm { background: #f6efe9; color: #7c5a2c; }
+    .tag.is-other { background: #eef0ef; color: #4a544f; }
+    .book-article-page { flex: 0 0 auto; color: var(--muted); font-size: .85rem; white-space: nowrap; }
+    .u-mb-0 { margin-bottom: 0; }
+
+    .hint { margin-top: 1rem; font-size: .78rem; color: #8a847d; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <!-- [data-collection] is what the live page carries; book.js also accepts
+         [data-book]. It scopes every hook below. -->
+    <main class="page-main" data-collection>
+
+      <!-- ============ HEADER ============ -->
+      <section class="panel cc-book-header">
+        <div class="topbar u-w-100">
+          <button class="text-link"><div>← 返回 香港電視</div></button>
+          <div class="access-tag cc-collection"><span>🔒</span><div>有限開放</div></div>
+        </div>
+
+        <div class="book-header-row u-w-100" data-field="publication">
+          <div class="thumbnail cc-book-header">
+            <img class="card-img" alt="" data-field="cover" />
+          </div>
+          <div class="book-header-meta">
+            <h1>香港電視</h1>
+            <h2>第 <span data-field="journal-issue">8</span> 期</h2>
+            <div class="paragraph-xl u-mb-0" u-flex="row-left-center">
+              <div>出版商　：</div>
+              <div data-field="publisher">香港電視出版有限公司</div>
+            </div>
+            <div class="paragraph-xl u-mb-0" u-flex="row-left-center">
+              <div>出版日期：</div>
+              <div data-field="book-date">1968-01-03</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="topbar u-w-100">
+          <button class="text-link"><div>← 上一本</div></button>
+          <button class="text-link"><div>下一本 →</div></button>
+        </div>
+      </section>
+
+      <!-- ============ TABLE OF CONTENTS ============ -->
+      <section class="panel">
+        <div class="toc-head">
+          <h3>刊物目錄</h3>
+        </div>
+
+        <!-- tab bar: FIRST .view-toggle-btn is the template book.js clones -->
+        <div data-view-toggle="true" role="group" aria-label="顯示方式">
+          <button class="view-toggle-btn cc-active" aria-pressed="true" type="button"><div>正刊</div></button>
+          <button class="view-toggle-btn" aria-pressed="false" type="button"><div>DVD Magazine</div></button>
+          <button class="view-toggle-btn" aria-pressed="false" type="button"><div>附件</div></button>
+        </div>
+
+        <div class="toc-body">
+          <div class="thumbnail cc-book-toc">
+            <img class="card-img" alt="" data-field="toc-img" />
+          </div>
+
+          <!-- panel host: FIRST <ul> is the panel template; its first
+               li.book-toc-li is the row template book.js clones -->
+          <div class="book-toc-ul">
+            <ul>
+              <li class="book-toc-li">
+                <div class="book-article-meta">
+                  <div class="paragraph-xl u-mb-0" u-d="inline" data-field="section">有讚有彈　有彈有讚</div>
+                  <div u-d="inline-flex"><div class="pipe cc-book"></div></div>
+                  <div class="paragraph-xl u-mb-0" u-d="inline" data-field="title">香港澳門．一水之隔　無線電視．畫面傳真</div>
+                  <div class="paragraph-lg u-mb-0" u-d="inline" data-field="author">王澤</div>
+                  <div class="tag is-cultural" data-field="article-type" u-mt="sm">編輯的話、讀者來信、序言、後記</div>
+                </div>
+                <div class="book-article-page" u-flex="row-left-center">
+                  <div class="dotted-line"></div>
+                  <div class="paragraph-lg u-mb-0">頁 <span data-field="page">230</span></div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <p class="hint">目錄由 book.js 模擬渲染，僅供預覽。右下角可輸入 BookNumber 切換書刊（25 / 956 / 2922）。</p>
+      </section>
+    </main>
+  </div>
+
+  <script src="book.js"></script>
+</body>
+</html>
