@@ -1,33 +1,39 @@
 /* ============================================================
- * book.js — Film/TV publication BOOK PAGE mock renderer
+ * book.js — Film/TV publication BOOK PAGE renderer (handoff component)
  *
- * ⚠️ MOCK / PREVIEW ONLY (same status as collection.js). This file fills the
- * Webflow-authored Book page with realistic table-of-contents data so the
- * published preview looks real. The backend colleague writes her OWN renderer
- * against the live by-article data — this file is NOT part of the handoff.
- * It IS, however, the reference for the data-* contract below.
+ * This is the REUSABLE frontend component for the Book page — it stays in
+ * production after backend integration. It owns the VISUAL only: it renders the
+ * data it is handed and manages the tab interaction. It does NOT fetch, and it
+ * keeps no state of its own. See HANDOFF.md for the integration contract.
+ *
+ *   window.filmtvBook.render(rootEl, { items, imageBase, counts }, opts)
+ *
+ * The sample-data LOADING (fetch of the mock JSON) + the floating BookNumber
+ * dev switcher live in the SEPARATE, disposable `book.mock.js` — a reference
+ * the backend colleague deletes and replaces with her own fetch → render().
  *
  * The Book page shows ONE book (issue) of a publication:
  *   • a HEADER  (cover, journal + 第N期, publisher, date, access tag)
  *   • a TABLE OF CONTENTS  — the book's articles as <li> rows, minus the
  *     "non-content" article types (see EXCLUDE_TYPES)
- *   • a first-page THUMBNAIL beside the TOC (first article of type 3)
- *   • TABS that switch between the main book and its future ATTACHMENTS
+ *   • a first-page THUMBNAIL beside the TOC — an attachment's first page,
+ *     shown only while that attachment's tab is active
+ *   • TABS that switch between the main book and its ATTACHMENTS
  *
- * ATTACHMENTS (forward-looking): a book's bookNumber may gain a trailing
- * lowercase letter for each attachment, e.g. book "CE_0001" has attachments
- * "CE_0001a", "CE_0001b". They share the same BASE (letters stripped). This
- * renderer groups the pool by that suffix and gives each group its own <ul>
- * panel + tab. Today's sample data has no attachments, so only the "正刊"
- * (main) tab renders and the tab bar is hidden when there is a single group.
+ * ATTACHMENTS: a book's bookNumber may gain a trailing lowercase letter per
+ * attachment, e.g. book "CE_0001" has attachments "CE_0001a", "CE_0001b" (they
+ * share the BASE, letters stripped). `items` for render() is the WHOLE family
+ * (main + attachments); the component groups by that suffix and gives each
+ * group its own <ul> panel + tab. A lone group (no attachments) hides the bar.
  *
- * DATA: reuses the search sample (sample-data/2922.json — all 3 books). The
- * floating dev switcher (bottom-right, injected) re-renders any BookNumber in
- * that file: 25 / 956 (香港電視) or 2922 (多情河歌集).
+ * TYPE-EXCLUSION: types 23/16/1/12/10 (公司通訊 / 產品商鋪 / 廣告 / 得獎名單 /
+ * 表格) are dropped from the TOC. This is applied in ONE place — pickVisible() —
+ * so a future user-facing "show excluded types" toggle just calls render() with
+ * opts.showExcludedTypes = true. It survives integration (the reader's TOC is
+ * guaranteed not to show ads regardless of what the backend sends).
  *
  * data-* contract (author these hooks in Webflow; most already exist):
  *   [data-book] | [data-collection]   OPTIONAL scope wrapper (else document).
- *     [data-src]                       optional JSON url override (mock only).
  *   HEADER
  *     img[data-field=cover]            book cover image
  *     [data-field=journal]             optional journal name (h1); no hook today
@@ -39,8 +45,12 @@
  *     [data-view-toggle]               tab bar; its FIRST .view-toggle-btn is the
  *                                      tab TEMPLATE (cloned per group). aria-pressed
  *                                      + .cc-active mark the active tab.
- *     .thumbnail.cc-book-toc           wrapper hidden when no type-3 image
- *       img[data-field=toc-img]        first page of the first type-3 article
+ *     .thumbnail.cc-book-toc           shown ONLY on an attachment tab (that
+ *                                      attachment's first page); hidden for the
+ *                                      main book / books without attachments.
+ *                                      While hidden, .cc-max-w-90 is added to the
+ *                                      nearest .container to cap the wide TOC.
+ *       img[data-field=toc-img]        attachment first-page image
  *     .book-toc-ul                     panel host; its FIRST <ul> is the panel
  *                                      TEMPLATE (cloned per group). Its first
  *                                      li.book-toc-li is the row template with:
@@ -51,33 +61,15 @@
  *         [data-field=page]            page number
  *         .pipe                        separator, hidden unless section AND title
  *   COUNTS (optional)
- *     [data-count=article]             kept-article total for the book
+ *     [data-count=article]             visible-article total (post-exclusion)
  *
- * A tab click is a pure CSS panel swap (fade) — no re-fetch. The switcher is a
- * preview-only affordance (backend removes it); a real Book page is reached by
- * its own route carrying the BookNumber.
+ * A tab click is a pure CSS panel swap (fade) — no re-fetch.
  * ============================================================ */
 (function () {
   "use strict";
 
-  var SELF =
-    (document.currentScript && document.currentScript.src) ||
-    (function () {
-      var s = document.querySelector('script[src*="book.js"]');
-      return s ? s.src : window.location.href;
-    })();
-
-  /* >>> MOCK DATA URL <<< preview-only. */
-  var DATA_URL = new URL("./sample-data/2922.json", SELF).href;
-
-  /* Which BookNumber to show on load (a TVW 香港電視 book with a type-3 目錄). */
-  var DEFAULT_BOOK = "956";
-
   /* Article types dropped from the TOC (公司通訊 / 產品商鋪 / 廣告 / 得獎名單 / 表格). */
   var EXCLUDE_TYPES = { "23": 1, "16": 1, "1": 1, "12": 1, "10": 1 };
-
-  /* Type used for the beside-TOC first-page thumbnail (目錄 / 內容 / 片目索引). */
-  var TOC_IMG_TYPE = "3";
 
   /* Article-type code -> { label, variant }. Kept in sync with results.js. */
   var ARTICLE_TYPES = {
@@ -117,86 +109,62 @@
   var TYPE_VARIANT_CLASSES = ["is-film", "is-cultural", "is-comm", "is-other"];
   var ACCESS_TAG_PREFIXES = ["TVW"];
 
-  /* ---------- bootstrap ---------- */
-  ready(function () {
-    injectCss();
-    var list = roots();
-    for (var i = 0; i < list.length; i++) {
-      mockFetch(list[i]);
-      mountSwitcher(list[i]);
-    }
-  });
-
   function roots() {
     var found = document.querySelectorAll("[data-book], [data-collection]");
     return found.length ? found : [document];
   }
-  function srcOf(root) {
-    return (root.getAttribute && root.getAttribute("data-src")) || DATA_URL;
-  }
 
   // Panels fade; the inactive one is display:none so heights don't stack. The
   // rule is injected (not in Webflow) so the Designer canvas shows both panels.
+  // Injected lazily on first render — the component does nothing until called.
   function injectCss() {
     if (document.getElementById("filmtv-book-css")) return;
     var st = document.createElement("style");
     st.id = "filmtv-book-css";
     st.textContent =
       '.book-toc-panel{transition:opacity .18s ease}' +
-      '.book-toc-panel.is-entering{opacity:0}' +
-      /* floating dev switcher */
-      '.book-switcher{position:fixed;right:1rem;bottom:1rem;z-index:9999;display:flex;' +
-      'gap:.4rem;align-items:center;padding:.5rem .6rem;border-radius:10px;' +
-      'background:rgba(28,26,24,.92);color:#fff;font:500 13px/1.2 system-ui,sans-serif;' +
-      'box-shadow:0 4px 16px rgba(0,0,0,.25)}' +
-      '.book-switcher label{opacity:.75}' +
-      '.book-switcher input{width:6.5rem;padding:.3rem .45rem;border:1px solid rgba(255,255,255,.25);' +
-      'border-radius:6px;background:#fff;color:#1c1a18;font:inherit}' +
-      '.book-switcher button{padding:.32rem .7rem;border:0;border-radius:6px;cursor:pointer;' +
-      'background:#8a1c2b;color:#fff;font:inherit}' +
-      '.book-switcher .book-switcher-note{opacity:.7;font-weight:400;max-width:11rem}';
+      '.book-toc-panel.is-entering{opacity:0}';
     (document.head || document.documentElement).appendChild(st);
   }
 
-  function mockFetch(root) {
-    var url = srcOf(root);
-    fetch(url, { credentials: "omit" })
-      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
-      .then(function (data) {
-        root.__data = data || {};
-        var want = (root.getAttribute && root.getAttribute("data-book-number")) || DEFAULT_BOOK;
-        render(root, root.__data, want);
-      })
-      .catch(function (err) { console.error("[book] mock load failed (" + url + "):", err); });
-  }
-
-  /* ---------- render ---------- */
-  // bookNumber may be a base ("956") or an attachment id ("CE_0001a"); either way
-  // the whole family (base + attachments) is grouped and shown across the tabs.
-  function render(root, data, bookNumber) {
+  /* ---------- render (backend calls this) ----------
+   * data  = { items, imageBase, counts } — items is the WHOLE book family
+   *         (main + attachments). Omit root to render every [data-book] instance.
+   * opts  = { showExcludedTypes } — future toggle seam; default drops EXCLUDE_TYPES. */
+  function render(root, data, opts) {
+    if (!root) {
+      var list = roots();
+      for (var n = 0; n < list.length; n++) render(list[n], data, opts);
+      return;
+    }
+    injectCss();
     data = data || {};
     var imageBase = data.imageBase || "";
-    var base = baseOf(bookNumber);
+    var items = Array.isArray(data.items) ? data.items : [];
 
-    var pool = (Array.isArray(data.items) ? data.items : []).filter(function (it) {
-      return baseOf(it.bookNumber) === base && !EXCLUDE_TYPES[String(it.type)];
-    });
-    // Order the TOC by page. Source order isn't reliably page-ordered (e.g. book
-    // 25). Stable sort keeps same-page articles in source order; a blank / non-
-    // numeric page (or a range like "10-11", sorted by its leading number) that
-    // can't be parsed sinks to the end.
+    var pool = pickVisible(items, opts);
+    // Order the TOC by page. Source order isn't reliably page-ordered. Stable
+    // sort keeps same-page articles in source order; a blank / non-numeric page
+    // (or a range like "10-11", sorted by its leading number) sinks to the end.
     pool = stableSort(pool, function (a, b) { return pageNum(a.page) - pageNum(b.page); });
 
-    setSwitcherNote(root, pool.length ? "" : "找不到 BookNumber：" + bookNumber);
-
     var groups = groupBySuffix(pool);              // main ("") first, then a,b,c…
-    var mainItems = (groups[0] && groups[0].suffix === "") ? groups[0].items : (groups[0] ? groups[0].items : []);
-    var head = mainItems[0] || pool[0] || {};
+    var head = (groups[0] && groups[0].items[0]) || {};
 
     renderHeader(root, head, imageBase);
-    renderTocImg(root, mainItems, imageBase);
-    renderTabsAndPanels(root, groups, imageBase);
-    setAll(root, '[data-count="article"]', formatNum(pool.length));
+    renderTabsAndPanels(root, groups, imageBase);  // also drives the toc-img per active tab
+
+    var count = data.counts && data.counts.articles != null ? data.counts.articles : pool.length;
+    setAll(root, '[data-count="article"]', formatNum(count));
+  }
+
+  // The single place type-exclusion happens. A future "show excluded types"
+  // toggle just passes opts.showExcludedTypes = true.
+  function pickVisible(items, opts) {
+    var showExcluded = !!(opts && opts.showExcludedTypes);
+    return items.filter(function (it) {
+      return showExcluded || !EXCLUDE_TYPES[String(it.type)];
+    });
   }
 
   /* ---------- header ---------- */
@@ -209,18 +177,22 @@
     setAccessTag(root, item);
   }
 
-  /* ---------- first-page thumbnail (first type-3 article) ---------- */
-  function renderTocImg(root, items, imageBase) {
+  /* ---------- beside-TOC thumbnail (ATTACHMENT first page only) ----------
+   * The thumbnail shows the first page of an ATTACHMENT and only while that
+   * attachment's tab is active; for the main book (and any book without
+   * attachments) it stays hidden. When hidden, we cap the otherwise over-wide
+   * TOC by adding .cc-max-w-90 to the nearest .container (removed when shown).
+   * (Switch `container` -> the .book-toc-ul below to cap only the list column.) */
+  function updateTocImg(root, group, imageBase) {
     var img = root.querySelector('[data-field="toc-img"]');
     if (!img) return;
     var wrap = img.closest(".thumbnail") || img.parentElement;
-    var first = firstOfType(items, TOC_IMG_TYPE);
-    if (first && first.image) {
-      setImg(img, first.image, imageBase, "目錄首頁");
-      if (wrap) wrap.removeAttribute("u-d");
-    } else if (wrap) {
-      wrap.setAttribute("u-d", "none");                        // no type-3 or no image
-    }
+    var container = img.closest(".container");
+    var first = group && group.suffix ? group.items[0] : null;  // "" (main) -> no image
+    var show = !!(first && first.image);
+    if (show) setImg(img, first.image, imageBase, "附件首頁");
+    if (wrap) { if (show) wrap.removeAttribute("u-d"); else wrap.setAttribute("u-d", "none"); }
+    if (container) container.classList.toggle("cc-max-w-90", !show);
   }
 
   /* ---------- tabs + TOC panels ---------- */
@@ -229,18 +201,26 @@
     var toggle = root.querySelector("[data-view-toggle]");
     if (!host) return;
 
-    var panelTpl = host.querySelector(":scope > ul") || host.querySelector("ul");
-    if (!panelTpl) return;
+    // Capture DETACHED templates ONCE (stashed on the host/toggle) so a later
+    // render — even one with zero groups — can never destroy them. (A previous
+    // empty render used to wipe the authored tab-button template.)
+    if (!host.__panelTpl) {
+      var authoredUl = host.querySelector(":scope > ul") || host.querySelector("ul");
+      if (!authoredUl) return;
+      host.__panelTpl = authoredUl.cloneNode(true);
+    }
+    var panelTpl = host.__panelTpl;
     var liTpl = panelTpl.querySelector(".book-toc-li");
     if (!liTpl) return;
-    liTpl = liTpl.cloneNode(true);                             // detach before we clear
 
-    var btnTpl = toggle ? toggle.querySelector(".view-toggle-btn") : null;
-    if (btnTpl) btnTpl = btnTpl.cloneNode(true);
+    if (toggle && !toggle.__btnTpl) {
+      var authoredBtn = toggle.querySelector(".view-toggle-btn");
+      if (authoredBtn) toggle.__btnTpl = authoredBtn.cloneNode(true);
+    }
+    var btnTpl = toggle ? toggle.__btnTpl : null;
 
-    keepOnly(host, panelTpl);                                  // drop old panels
-    hideTemplate(panelTpl);
-    if (toggle) clearChildren(toggle);                        // drop authored + old tabs
+    clearChildren(host);                                      // drop authored ul / old panels
+    if (toggle) clearChildren(toggle);                        // drop authored / old tabs
 
     for (var g = 0; g < groups.length; g++) {
       host.appendChild(buildPanel(panelTpl, liTpl, groups[g], g, imageBase));
@@ -253,9 +233,14 @@
       else toggle.setAttribute("u-d", "none");
     }
 
-    bindTabs(root, toggle, host);
-    showPanel(host, 0);
-    setActiveTab(toggle, 0);
+    // Activating a tab swaps the panel, the active state, AND the toc-img.
+    var select = function (idx) {
+      showPanel(host, idx);
+      setActiveTab(toggle, idx);
+      updateTocImg(root, groups[idx], imageBase);
+    };
+    bindTabs(toggle, select);
+    select(0);
   }
 
   function buildPanel(panelTpl, liTpl, group, idx, imageBase) {
@@ -304,16 +289,18 @@
     return btn;
   }
 
-  function bindTabs(root, toggle, host) {
-    if (!toggle || toggle.__bookBound) return;
+  // Bind once; the listener calls toggle.__bookSelect, which we refresh on every
+  // render so a re-render (switching book) never leaves a stale closure behind.
+  function bindTabs(toggle, select) {
+    if (!toggle) return;
+    toggle.__bookSelect = select;
+    if (toggle.__bookBound) return;
     toggle.__bookBound = true;
     toggle.addEventListener("click", function (e) {
       var btn = e.target.closest ? e.target.closest("[data-toc-tab]") : null;
       if (!btn || !toggle.contains(btn)) return;
       e.preventDefault();
-      var idx = Number(btn.getAttribute("data-toc-tab"));
-      showPanel(host, idx);
-      setActiveTab(toggle, idx);
+      toggle.__bookSelect(Number(btn.getAttribute("data-toc-tab")));
     });
   }
 
@@ -343,44 +330,7 @@
     }
   }
 
-  /* ---------- floating dev switcher (preview only) ---------- */
-  function mountSwitcher(root) {
-    if (root.__switcher || root === document) {
-      // when scope is the document, still mount once on <body>
-      if (document.querySelector(".book-switcher")) return;
-    }
-    var box = document.createElement("div");
-    box.className = "book-switcher";
-    box.innerHTML =
-      '<label for="book-switcher-input">BookNumber</label>' +
-      '<input id="book-switcher-input" type="text" autocomplete="off" ' +
-      'placeholder="25 / 956 / 2922" />' +
-      '<button type="button">顯示</button>' +
-      '<span class="book-switcher-note"></span>';
-    var input = box.querySelector("input");
-    var btn = box.querySelector("button");
-    input.value = (root.getAttribute && root.getAttribute("data-book-number")) || DEFAULT_BOOK;
-    function go() {
-      var bn = input.value.trim();
-      if (!bn) return;
-      var data = root.__data || {};
-      if (root.setAttribute) root.setAttribute("data-book-number", bn);
-      render(root, data, bn);
-    }
-    btn.addEventListener("click", go);
-    input.addEventListener("keydown", function (e) { if (e.key === "Enter") go(); });
-    document.body.appendChild(box);
-    root.__switcher = box;
-  }
-  function setSwitcherNote(root, text) {
-    var note = document.querySelector(".book-switcher-note");
-    if (note) note.textContent = text || "";
-  }
-
-  /* ---------- grouping (base + attachment suffix) ---------- */
-  function baseOf(bn) {
-    return String(bn == null ? "" : bn).replace(/[a-z]+$/, "");
-  }
+  /* ---------- grouping (main book + attachment suffix) ---------- */
   function suffixOf(bn) {
     var m = String(bn == null ? "" : bn).match(/([a-z]+)$/);
     return m ? m[1] : "";
@@ -397,21 +347,12 @@
       return { suffix: s, label: s === "" ? "正刊" : "附件 " + s.toUpperCase(), items: map[s].items };
     });
   }
-  function firstOfType(items, type) {
-    for (var i = 0; i < items.length; i++) if (String(items[i].type) === String(type)) return items[i];
-    return null;
-  }
 
   /* ---------- template helpers (same conventions as collection.js) ---------- */
-  function hideTemplate(el) { if (el.tagName !== "TEMPLATE") el.setAttribute("u-d", "none"); }
   function activate(node) {
     node.removeAttribute("u-d");
     node.removeAttribute("data-tpl");
     node.setAttribute("data-clone", "");
-  }
-  function keepOnly(host, keep) {
-    var kids = host.children, i;
-    for (i = kids.length - 1; i >= 0; i--) if (kids[i] !== keep) host.removeChild(kids[i]);
   }
   function clearChildren(host) { while (host.firstChild) host.removeChild(host.firstChild); }
 
@@ -548,10 +489,6 @@
   }
 
   /* ---------- utils ---------- */
-  function ready(fn) {
-    if (document.readyState !== "loading") fn();
-    else document.addEventListener("DOMContentLoaded", fn);
-  }
   // Leading integer of a page value; blank / unparseable -> +Infinity (sorts last).
   function pageNum(p) {
     var m = String(p == null ? "" : p).match(/\d+/);
@@ -573,11 +510,6 @@
     return isFinite(num) ? num.toLocaleString("en-US") : String(n);
   }
 
-  /* ---------- public API (mock preview only) ---------- */
-  window.filmtvBook = {
-    render: function (root, bookNumber) {
-      var r = root || roots()[0];
-      render(r, r.__data || {}, bookNumber || DEFAULT_BOOK);
-    }
-  };
+  /* ---------- public API (backend integration) ---------- */
+  window.filmtvBook = { render: render };
 })();

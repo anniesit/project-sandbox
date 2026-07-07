@@ -27,6 +27,10 @@
     [u-d="inline-block"] { display: inline-block !important; }
 
     .wrap { max-width: 1040px; margin: 0 auto; }
+    /* .container + its max-width modifier (book.js toggles .cc-max-w-90 when the
+       beside-TOC thumbnail is hidden). Real values come from Webflow. */
+    .container { width: 100%; }
+    .container.cc-max-w-90 { max-width: 640px; }
     .panel {
       background: var(--paper); border: 1px solid var(--line); border-radius: 12px;
       padding: 1.5rem clamp(1rem, 3vw, 1.75rem); margin-bottom: 1.25rem;
@@ -117,7 +121,11 @@
       </section>
 
       <!-- ============ TABLE OF CONTENTS ============ -->
-      <section class="panel">
+      <!-- mirrors the live DOM: section > .container > .panel, so book.js can
+           toggle .cc-max-w-90 on the .container when the thumbnail is hidden -->
+      <section class="section">
+       <div class="container">
+        <div class="panel">
         <div class="toc-head">
           <h3>刊物目錄</h3>
         </div>
@@ -155,10 +163,15 @@
           </div>
         </div>
         <p class="hint">目錄由 book.js 模擬渲染，僅供預覽。右下角可輸入 BookNumber 切換書刊（25 / 956 / 2922）。</p>
+        </div>
+       </div>
       </section>
     </main>
   </div>
 
+  <!-- book.js = the reusable renderer (stays after integration).
+       book.mock.js = the disposable sample-data loader + dev switcher. -->
   <script src="book.js"></script>
+  <script src="book.mock.js"></script>
 </body>
 </html>

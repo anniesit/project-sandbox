@@ -1,8 +1,8 @@
 # Film/TV Archive — Frontend ↔ Backend Integration Handoff
 
-Three dependency-free, vanilla-JS components render the search experience. This
-doc is the **integration contract**: what each component expects, what it emits,
-and exactly what scaffolding to remove. The JS file headers remain the source of
+These dependency-free, vanilla-JS components render the archive UI. This doc is
+the **integration contract**: what each component expects, what it emits, and
+exactly what scaffolding to remove. The JS file headers remain the source of
 truth for behaviour — this doc is the quick reference and captures the
 project-specific decisions that aren't obvious from the code.
 
@@ -11,6 +11,11 @@ project-specific decisions that aren't obvious from the code.
 | `results.js` | Result list + article/book view toggle | `filmtvResults.render`, `filmtvResults.setView` |
 | `chart.js` | Stacked bar chart (entries or books by year) | `filmtvChart.render`, `filmtvChart.setView` |
 | `cooccur.js` | Keyword co-occurrence bubble chart (in a modal) | `filmtvCooccur.render`, `filmtvCooccur.redraw` |
+| `book.js` | Book page table of contents (one book + attachments) | `filmtvBook.render` |
+
+`book.js` renders the separate **Book page**. Unlike the others its mock driver
+is a **separate file, `book.mock.js`** (sample-data loader + dev switcher) —
+delete that whole file rather than stripping an inline fetch. See its section.
 
 ## Ownership split (read this first)
 
@@ -39,6 +44,10 @@ That's the **mock driver**; remove it and call `render()` with live data.
   function, and its call inside `initChart()` / the bootstrap.
 - Keep everything else — the components still self-initialise on
   `DOMContentLoaded` from their `[data-*]` host elements.
+
+**`book.js` is the exception** — its mock driver is already a separate file
+(`book.mock.js`), not an inline fetch. Just **delete `book.mock.js`** and call
+`filmtvBook.render()` from your own fetch (see the `book.js` section).
 
 **In the demo HTML** (`chart.html`, `cooccur.html`) the inline `<script>` driver
 is a **backend stand-in** — don't just delete it, *reimplement its calls* against
@@ -98,6 +107,51 @@ both panels at once — so flipping the toggle is a pure CSS panel swap (article
 cards ⇄ book rows). It does **NOT** re-fetch, re-render, or fire any event. A book
 row shows **all** its articles on the current page, with no in-book collapse. The
 chart is article-only and does not follow this toggle.
+
+---
+
+## `book.js` — Book page table of contents
+
+```js
+filmtvBook.render(rootEl, { items, imageBase, counts }, opts);
+```
+
+- `rootEl` — the `[data-book]` element (legacy `[data-collection]` also accepted),
+  or omit to render every instance.
+- `items` — **one book family**: the main book's articles PLUS its attachments'
+  articles. Attachments are distinguished by a trailing lowercase letter on
+  `bookNumber` (`CE_0001` → `CE_0001a`, `CE_0001b`); the component groups by that
+  suffix into a **正刊 tab + 附件 A/B… tabs** (bar hidden when there are none).
+- `imageBase` — prefix for bare `item.image` filenames (else `""`), as in `results.js`.
+- `counts` — optional `{ articles }` for `[data-count=article]`; else the visible
+  count is derived.
+- `opts` — optional `{ showExcludedTypes: boolean }` (default `false`). See below.
+
+**`item` shape** — same as `results.js` (above), plus an optional `publisher`
+string for the header. `page` drives the TOC order (ascending, stable).
+
+**Type-exclusion (built in):** article types **23, 16, 1, 12, 10** (公司通訊 /
+產品商鋪 / 廣告 / 得獎名單 / 表格) are dropped from the TOC. This is applied inside
+`render()` (one place: `pickVisible`), so it holds regardless of what you send.
+A future "show excluded types" UI toggle just calls `render(root, data, { showExcludedTypes: true })`.
+
+**toc-img (attachment only):** the beside-TOC thumbnail (`img[data-field=toc-img]`
+in `.thumbnail.cc-book-toc`) shows an **attachment's first page**, and only while
+that attachment's tab is active. For the main book / books with no attachments it
+is hidden — and while hidden the component adds `.cc-max-w-90` to the nearest
+`.container` to cap the otherwise over-wide TOC (removed when the image shows).
+**Webflow must define `.cc-max-w-90`** (the header uses a different `cc-min-w-90`).
+
+**Mock driver — `book.mock.js` (delete on integration):** it fetches the combined
+`sample-data/2922.json`, selects one book family by BookNumber (`baseOf` match),
+mounts a floating dev switcher, and calls `filmtvBook.render()`. In production
+each book is its own route carrying the BookNumber, so you fetch that one book's
+family server-side and call `render()` directly — no switcher, no family select.
+
+**Still open (as of handoff):** (1) `publisher` is absent from the current article
+data → the header row hides; supply a `publisher` field or hardcode it in Webflow.
+(2) Attachment tab labels (正刊 / 附件 A…) and their real data are unconfirmed until
+attachment records exist.
 
 ---
 
