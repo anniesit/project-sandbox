@@ -1,0 +1,71 @@
+{
+  "bookNumber": "2048",
+  "title": "花燈記",
+  "issue": "",
+  "date": "",
+  "publisher": "",
+  "bookOrientation": "right",
+  "_note": "MOCK. Real book 2048 in the filmpamphlet collection is the opera-film pamphlet 《花燈記》 (right-bound, vertical text). Metadata fields left empty where unknown; article bodies below are 純文字示例 placeholders whose page ranges are chosen to exercise the OCR test cases (single / multi-article page / cross-page).",
+  "imageBaseUrl": "https://storage.lib.hkbu.edu.hk/filmpamphlet/Image/2048/",
+  "thumbnailBaseUrl": "https://storage.lib.hkbu.edu.hk/filmpamphlet/Thumbnail/2048/",
+  "pages": [
+    { "label": "封面", "file": "2048_001.jpg", "width": 700, "height": 1000 },
+    { "label": "頁 2", "file": "2048_002.jpg", "width": 700, "height": 1000 },
+    { "label": "頁 3", "file": "2048_003.jpg", "width": 700, "height": 1000 },
+    { "label": "頁 4", "file": "2048_004.jpg", "width": 700, "height": 1000 },
+    { "label": "頁 5", "file": "2048_005.jpg", "width": 700, "height": 1000 },
+    { "label": "頁 6", "file": "2048_006.jpg", "width": 700, "height": 1000 },
+    { "label": "頁 7", "file": "2048_007.jpg", "width": 700, "height": 1000 },
+    { "label": "頁 8", "file": "2048_008.jpg", "width": 700, "height": 1000 },
+    { "label": "頁 9", "file": "2048_009.jpg", "width": 700, "height": 1000 },
+    { "label": "頁 10", "file": "2048_010.jpg", "width": 700, "height": 1000 },
+    { "label": "頁 11", "file": "2048_011.jpg", "width": 700, "height": 1000 },
+    { "label": "頁 12", "file": "2048_012.jpg", "width": 700, "height": 1000 },
+    { "label": "頁 13", "file": "2048_013.jpg", "width": 700, "height": 1000 },
+    { "label": "頁 14", "file": "2048_014.jpg", "width": 700, "height": 1000 },
+    { "label": "頁 15", "file": "2048_015.jpg", "width": 700, "height": 1000 },
+    { "label": "封底", "file": "2048_016.jpg", "width": 700, "height": 1000 }
+  ],
+  "articles": [
+    {
+      "id": "HDJ-0001",
+      "title": "本事：《花燈記》劇情簡介",
+      "author": "",
+      "pageStart": 2,
+      "pageEnd": 2,
+      "articleBody": "（純文字示例）《花燈記》改編自民間傳誦故事，敷演元宵花燈之夜男女相遇、悲歡離合的一段情緣。此段文字為預覽用途的模擬內文，用以測試 OCR 純文字面板在「單頁單篇」情況下的排版、捲動與字體大小調整——此頁只有一篇文章，故「純文字目錄」按鈕應隱藏。"
+    },
+    {
+      "id": "HDJ-0002",
+      "title": "《花燈記》全部曲詞",
+      "author": "",
+      "pageStart": 3,
+      "pageEnd": 8,
+      "articleBody": "（純文字示例）此為跨頁文章示例——曲詞由第三頁延續至第八頁，用以驗證同一篇文章在其涵蓋的每一頁都會顯示完整內文。實際內容應由後端 OCR 提供，此處僅以模擬文字佔位，示範長篇內文在面板內的獨立捲動。"
+    },
+    {
+      "id": "HDJ-0003",
+      "title": "演員與角色",
+      "author": "",
+      "pageStart": 9,
+      "pageEnd": 9,
+      "articleBody": "（純文字示例）介紹《花燈記》的主要演員及其扮演的角色。此為單頁文章，與《拍攝花絮》在第九頁重疊，用以測試同一頁存在多篇文章時的情況。"
+    },
+    {
+      "id": "HDJ-0004",
+      "title": "拍攝花絮",
+      "author": "",
+      "pageStart": 9,
+      "pageEnd": 11,
+      "articleBody": "（純文字示例）記述《花燈記》拍攝期間的點滴。此文與《演員與角色》在第九頁重疊——當一頁有兩篇或以上文章時，OCR 面板應列出全部，並顯示「純文字目錄」按鈕以供跳轉。"
+    },
+    {
+      "id": "HDJ-0005",
+      "title": "戲曲電影漫談",
+      "author": "",
+      "pageStart": 12,
+      "pageEnd": 14,
+      "articleBody": "（純文字示例）借《花燈記》一片，漫談戲曲電影如何在舞台程式與電影語言之間取得平衡。此段為預覽模擬內文。"
+    }
+  ]
+}

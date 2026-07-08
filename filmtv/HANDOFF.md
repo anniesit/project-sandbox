@@ -155,6 +155,63 @@ attachment records exist.
 
 ---
 
+## `viewer.js` — Book Viewer (page-by-page reader)
+
+An interactive, **stateful** in-browser reader for ONE book's scanned pages —
+unlike the other components (stateless `render(data)`), this one owns a state
+machine, event handling, and URL sync. **Stage 1 = Page Manipulation** (layout,
+page-turn, zoom, rotation, drag-to-pan, fullscreen, scroll modes, thumbnail,
+OCR). Navigation / Search / Metadata are LATER stages that extend the SAME file.
+
+```js
+filmtvViewer.init({ root, dataBaseUrl });        // wire once; reads ?book=&page=&article=
+filmtvViewer.load(bookNumber, { page, article }); // (re)load a book
+filmtvViewer.render();                            // re-render current state
+```
+
+- `root` — optional `[data-viewer]` element (else `document`).
+- `dataBaseUrl` — base for the data fetch; **`{dataBaseUrl}/{bookNumber}/book.json`**.
+  Dev = the local `sample-data` folder; prod = your API (e.g. `/api/books`). The
+  path shape is the ONLY thing that changes at deploy — keep it aligned.
+- URL contract (shareable): `?book=<n>` · `?book=<n>&page=<i>` · `?book=<n>&article=<id>`.
+  Only book/page/article live in the URL; layout/zoom/rotation intentionally do not.
+  `history.pushState` on every page change; `popstate` navigates pages.
+
+**`book.json` shape** (backend returns this at the path above):
+```json
+{ "bookNumber":"2048", "title":"…", "issue":"", "date":"", "publisher":"",
+  "bookOrientation":"right",                      // left | right | top | bottom (binding edge)
+  "imageBaseUrl":"https://…/2048/",               // full URL = imageBaseUrl + page.file
+  "thumbnailBaseUrl":"https://…/",                // optional; falls back to imageBaseUrl
+  "pages":[ { "label":"封面", "file":"2048_001.jpg", "width":700, "height":1000 } ],
+  "articles":[ { "id":"…","title":"…","author":"","pageStart":3,"pageEnd":8,"articleBody":"…" } ] }
+```
+`pageStart`/`pageEnd` are **1-based indices into `pages[]`** (reading position), NOT
+printed page numbers. `label` is a pre-formatted display string (backend maps
+special cases like 封面/封底); the viewer never sees raw numeric page values.
+
+**Webflow HTML contract:** author the ids / `data-*` hooks / `<template>` elements
+listed in the header comment of `viewer.js` (IDs must match exactly). Layout & Zoom
+use the design-system **dropdown component** — the viewer reads them via the
+`input` event on each dropdown's hidden `<input>`. The Layout/Zoom **step +/−
+buttons are intentionally absent** (design decision — dropdown only); to add a
+zoom level, add one entry to `ZOOM_PRESETS` in `viewer.js` + one `<li>` option.
+The page number is an **editable numeric jump input** (`#js-page-input`).
+
+**Mock driver — `viewer.mock.js` (delete on integration):** points `dataBaseUrl`
+at `sample-data`, inits the viewer (default book **2048** = the opera-film pamphlet
+《花燈記》, a real 16-page book on the library CDN), and mounts a floating dev
+switcher (swap BookNumber + force any of the four `bookOrientation` values). In
+production you `init()` once and let the viewer read the page URL — no switcher.
+
+**Backend asks (perf — the JS is cheap, images/data are not):** (1) provide
+`thumbnailBaseUrl` (thumbnail tier); (2) include `pages[].width`/`height` (kills
+layout shift); (3) decide whether `articles[].articleBody` ships in `book.json`
+or is lazy-fetched per article — inlining all OCR can push `book.json` to MB-scale
+and block first render.
+
+---
+
 ## `chart.js` — stacked bar chart
 
 ```js
