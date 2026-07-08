@@ -31,6 +31,23 @@ var CE_EXPORTS = ["202412LDDimport.json"];   // add more phpMyAdmin exports here
 var MERGE_SAMPLE = "2922.json";              // existing TVW/FMP items to keep
 var OUT = "book-sample.json";
 
+/* FABRICATED mock rows (no real data yet) to exercise the tab + book-name logic
+ * for the CE_0648 family, alongside the real CE_0648a (DVD Magazine) export:
+ *   • CE_0648  正刊  — one 封面 (cover) article; its journal 電影雙周刊 is the book
+ *     name shown in the header (data-field=journal).
+ *   • CE_0648b 附件  — one postcard (an attachment that is "not a book"); its
+ *     journal 電影雙周刊 MATCHES 正刊, so it labels as 附件 1 (a 2nd such attachment
+ *     would be 附件 2, …). CE_0648a differs (DVD Magazine) so it keeps that name.
+ * Delete this block once real CE_0648 / CE_0648b data arrives. */
+var MOCK_ITEMS = [
+  { id: "CEM-064801", bookNumber: "CE_0648", journal: "電影雙周刊", journalIssue: "648",
+    datePublished: "2004-02-12", year: "2004", title: "", section: null, author: null,
+    page: "1", type: "14", image: "CE_0648_001.jpg", publisher: "電影雙周刊出版社", href: "#" },
+  { id: "CEP-064801", bookNumber: "CE_0648b", journal: "電影雙周刊", journalIssue: "648",
+    datePublished: "2004-02-12", year: "2004", title: "隨書明信片", section: null, author: null,
+    page: "1", type: "24", image: "CE_0648b_001.jpg", publisher: "電影雙周刊出版社", href: "#" }
+];
+
 /* ---------- helpers ---------- */
 function pad2(s) { s = String(s == null ? "" : s).trim(); return s && s.length < 2 ? "0" + s : s; }
 function nonEmpty() {
@@ -99,6 +116,8 @@ CE_EXPORTS.forEach(function (f) {
   items = items.concat(rows.map(toItem));
   console.log("· " + f + ": " + rows.length + " rows");
 });
+items = items.concat(MOCK_ITEMS);
+console.log("· mock rows (CE_0648 正刊 + CE_0648b 附件): " + MOCK_ITEMS.length);
 
 // Keep the existing TVW/FMP sample so the switcher still previews them.
 try {

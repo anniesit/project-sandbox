@@ -148,7 +148,7 @@
     // (or a range like "10-11", sorted by its leading number) sinks to the end.
     pool = stableSort(pool, function (a, b) { return pageNum(a.page) - pageNum(b.page); });
 
-    var groups = groupBySuffix(pool);              // main ("") first, then a,b,c…
+    var groups = labelGroups(groupBySuffix(pool));  // main ("") first, then a,b,c…
     var head = (groups[0] && groups[0].items[0]) || {};
 
     renderHeader(root, head, imageBase);
@@ -170,7 +170,7 @@
   /* ---------- header ---------- */
   function renderHeader(root, item, imageBase) {
     setImg(root.querySelector('[data-field="cover"]'), item.image, imageBase, bookTitle(item));
-    setLeafField(root, "journal", item.journal || "");        // no-op if unhooked
+    setJournal(root, item.journal);                           // fills + reveals; no-op if unhooked
     setIssue(root, item.journalIssue);
     setMetaRow(root, "publisher", item.publisher);            // absent in data -> row hidden
     setDate(root, item.datePublished);
@@ -343,9 +343,29 @@
       map[s].items.push(items[i]);
     }
     order.sort(function (a, b) { return a === "" ? -1 : b === "" ? 1 : a < b ? -1 : 1; });
-    return order.map(function (s) {
-      return { suffix: s, label: s === "" ? "正刊" : "附件 " + s.toUpperCase(), items: map[s].items };
-    });
+    return order.map(function (s) { return map[s]; });
+  }
+  // Tab labels: the main book is 正刊; an attachment whose journal DIFFERS from the
+  // main's shows that journal (a distinct publication, e.g. "DVD Magazine"); an
+  // attachment SHARING the main's journal is a generic supplement -> 附件 1, 附件 2,
+  // … numbered in order. (journal = the item's published_in_zh-Hant, per the data.)
+  function labelGroups(groups) {
+    var mainJournal = null;
+    for (var i = 0; i < groups.length; i++) {
+      if (groups[i].suffix === "") { mainJournal = journalOf(groups[i]); break; }
+    }
+    var supplement = 0;
+    for (var g = 0; g < groups.length; g++) {
+      var grp = groups[g], j = journalOf(grp);
+      if (grp.suffix === "") grp.label = "正刊";
+      else if (j && j === mainJournal) grp.label = "附件 " + (++supplement);
+      else if (j) grp.label = j;
+      else grp.label = "附件 " + grp.suffix.toUpperCase();   // fallback (no journal on the data)
+    }
+    return groups;
+  }
+  function journalOf(grp) {
+    return grp.items && grp.items[0] ? (grp.items[0].journal || "") : "";
   }
 
   /* ---------- template helpers (same conventions as collection.js) ---------- */
@@ -391,6 +411,23 @@
   function togglePipe(pipe, show) {
     var wrap = pipe.parentElement || pipe;   // authored u-d="inline-flex" lives on the wrapper
     if (show) showEl(wrap); else hideEl(wrap);
+  }
+  // Journal / book name. Fill the [data-field=journal] leaf AND reveal it — text
+  // alone won't unhide an authored-hidden element/row (that was the bug: journal
+  // had a value but its row stayed hidden). Empty -> clear + hide its metarow.
+  function setJournal(scope, value) {
+    var el = leaf(scope, "journal");
+    if (!el) return;
+    var empty = value == null || String(value).trim() === "";
+    var row = el.closest('[u-flex="row-left-center"]');   // a label:value metarow, if any
+    if (empty) {
+      el.textContent = "";
+      if (row) row.setAttribute("u-d", "none");
+    } else {
+      el.textContent = String(value);
+      showEl(el);                                          // restore authored u-d (reveal)
+      if (row) row.removeAttribute("u-d");
+    }
   }
   // Fill the issue number; hide the whole "第 __ 期" heading when there is none
   // (the 第/期 chars are static siblings, so an empty span would read "第  期").

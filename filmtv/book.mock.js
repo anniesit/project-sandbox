@@ -75,10 +75,21 @@
     if (root.setAttribute) root.setAttribute("data-book-number", bookNumber);
     window.filmtvBook.render(root, { items: items, imageBase: data.imageBase || "" });
     setSwitcherNote(root, items.length ? "" : "找不到 BookNumber：" + bookNumber);
+    markActiveChip(bookNumber);
   }
 
   function baseOf(bn) {
     return String(bn == null ? "" : bn).replace(/[a-z]+$/, "");
+  }
+  // Distinct base BookNumbers present in the loaded sample (first-seen order).
+  function availableBooks(data) {
+    var seen = {}, out = [];
+    var items = data && Array.isArray(data.items) ? data.items : [];
+    for (var i = 0; i < items.length; i++) {
+      var b = baseOf(items[i].bookNumber);
+      if (b && !seen[b]) { seen[b] = 1; out.push(b); }
+    }
+    return out;
   }
 
   /* ---------- floating dev switcher ---------- */
@@ -88,15 +99,22 @@
     st.id = "filmtv-book-switcher-css";
     st.textContent =
       '.book-switcher{position:fixed;right:1rem;bottom:1rem;z-index:9999;display:flex;' +
-      'gap:.4rem;align-items:center;padding:.5rem .6rem;border-radius:10px;' +
+      'flex-direction:column;gap:.4rem;align-items:stretch;padding:.5rem .6rem;border-radius:10px;' +
       'background:rgba(28,26,24,.92);color:#fff;font:500 13px/1.2 system-ui,sans-serif;' +
       'box-shadow:0 4px 16px rgba(0,0,0,.25)}' +
+      '.book-switcher-books{display:flex;flex-wrap:wrap;gap:.3rem;align-items:center;max-width:20rem}' +
+      '.book-switcher-books .lbl{opacity:.6;font-weight:400}' +
+      '.book-switcher-chip{padding:.18rem .5rem;border:1px solid rgba(255,255,255,.3);border-radius:999px;' +
+      'background:transparent;color:#fff;font:inherit;font-size:12px;cursor:pointer}' +
+      '.book-switcher-chip:hover{background:rgba(255,255,255,.15)}' +
+      '.book-switcher-chip.is-active{background:#8a1c2b;border-color:#8a1c2b}' +
+      '.book-switcher-row{display:flex;gap:.4rem;align-items:center}' +
       '.book-switcher label{opacity:.75}' +
       '.book-switcher input{width:6.5rem;padding:.3rem .45rem;border:1px solid rgba(255,255,255,.25);' +
       'border-radius:6px;background:#fff;color:#1c1a18;font:inherit}' +
-      '.book-switcher button{padding:.32rem .7rem;border:0;border-radius:6px;cursor:pointer;' +
+      '.book-switcher-row button{padding:.32rem .7rem;border:0;border-radius:6px;cursor:pointer;' +
       'background:#8a1c2b;color:#fff;font:inherit}' +
-      '.book-switcher .book-switcher-note{opacity:.7;font-weight:400;max-width:11rem}';
+      '.book-switcher .book-switcher-note{opacity:.7;font-weight:400;max-width:20rem}';
     (document.head || document.documentElement).appendChild(st);
   }
 
@@ -106,11 +124,14 @@
     var box = document.createElement("div");
     box.className = "book-switcher";
     box.innerHTML =
+      '<div class="book-switcher-books"><span class="lbl">可選書號：</span></div>' +
+      '<div class="book-switcher-row">' +
       '<label for="book-switcher-input">BookNumber</label>' +
       '<input id="book-switcher-input" type="text" autocomplete="off" ' +
       'placeholder="CE_0648 / 25 / 956 / 2922" />' +
       '<button type="button">顯示</button>' +
-      '<span class="book-switcher-note"></span>';
+      '<span class="book-switcher-note"></span>' +
+      '</div>';
     var input = box.querySelector("input");
     var btn = box.querySelector("button");
     input.value = (root.getAttribute && root.getAttribute("data-book-number")) || DEFAULT_BOOK;
@@ -120,8 +141,27 @@
     }
     btn.addEventListener("click", go);
     input.addEventListener("keydown", function (e) { if (e.key === "Enter") go(); });
+
+    // Chips listing every BookNumber available in the loaded sample.
+    var booksBox = box.querySelector(".book-switcher-books");
+    availableBooks(root.__data).forEach(function (bn) {
+      var chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "book-switcher-chip";
+      chip.textContent = bn;
+      chip.addEventListener("click", function () { input.value = bn; show(root, bn); });
+      booksBox.appendChild(chip);
+    });
+
     document.body.appendChild(box);
     root.__switcher = box;
+  }
+  function markActiveChip(bookNumber) {
+    var base = baseOf(bookNumber);
+    var chips = document.querySelectorAll(".book-switcher-chip");
+    for (var i = 0; i < chips.length; i++) {
+      chips[i].classList.toggle("is-active", chips[i].textContent === base);
+    }
   }
   function setSwitcherNote(root, text) {
     var note = document.querySelector(".book-switcher-note");
