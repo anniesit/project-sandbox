@@ -80,6 +80,7 @@ var items = rows
       id: clean(r[col["id"]]),
       bookNumber: bookNumber,
       journal: clean(r[col["journal_zht"]]),
+      publisher: clean(r[col["publisher_zht"]]),
       journalIssue: clean(r[col["journalIssue"]]),
       datePublished: clean(r[col["datePublished"]]),
       year: clean(r[col["Year"]]),

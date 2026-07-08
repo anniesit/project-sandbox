@@ -45,7 +45,10 @@ var MOCK_ITEMS = [
     page: "1", type: "14", image: "CE_0648_001.jpg", publisher: "電影雙周刊出版社", href: "#" },
   { id: "CEP-064801", bookNumber: "CE_0648b", journal: "電影雙周刊", journalIssue: "648",
     datePublished: "2004-02-12", year: "2004", title: "隨書明信片", section: null, author: null,
-    page: "1", type: "24", image: "CE_0648b_001.jpg", publisher: "電影雙周刊出版社", href: "#" }
+    page: "1", type: "24", image: "CE_0648b_001.jpg", publisher: "電影雙周刊出版社", href: "#" },
+  { id: "CEP-064802", bookNumber: "CE_0648c", journal: "電影雙周刊", journalIssue: "648",
+    datePublished: "2004-02-12", year: "2004", title: "電影海報", section: null, author: null,
+    page: "1", type: "24", image: "CE_0648c_001.jpg", publisher: "電影雙周刊出版社", href: "#" }
 ];
 
 /* ---------- helpers ---------- */
@@ -117,7 +120,7 @@ CE_EXPORTS.forEach(function (f) {
   console.log("· " + f + ": " + rows.length + " rows");
 });
 items = items.concat(MOCK_ITEMS);
-console.log("· mock rows (CE_0648 正刊 + CE_0648b 附件): " + MOCK_ITEMS.length);
+console.log("· mock rows (CE_0648 正刊 + CE_0648b/c 附件): " + MOCK_ITEMS.length);
 
 // Keep the existing TVW/FMP sample so the switcher still previews them.
 try {
