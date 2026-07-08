@@ -29,11 +29,12 @@
       return s ? s.src : window.location.href;
     })();
 
-  /* >>> MOCK DATA URL <<< the combined sample (books 25 / 956 / 2922). */
-  var DATA_URL = new URL("./sample-data/2922.json", SELF).href;
+  /* >>> MOCK DATA URL <<< the combined sample (電影雙周刊 CE_0648a + 25 / 956 / 2922).
+     Rebuild it from the phpMyAdmin exports with sample-data/build-book-sample.js. */
+  var DATA_URL = new URL("./sample-data/book-sample.json", SELF).href;
 
-  /* Which BookNumber to show on load (a TVW 香港電視 book). */
-  var DEFAULT_BOOK = "956";
+  /* Which BookNumber to show on load (the new 電影雙周刊 DVD Magazine data). */
+  var DEFAULT_BOOK = "CE_0648";
 
   function roots() {
     var found = document.querySelectorAll("[data-book], [data-collection]");
@@ -107,7 +108,7 @@
     box.innerHTML =
       '<label for="book-switcher-input">BookNumber</label>' +
       '<input id="book-switcher-input" type="text" autocomplete="off" ' +
-      'placeholder="25 / 956 / 2922" />' +
+      'placeholder="CE_0648 / 25 / 956 / 2922" />' +
       '<button type="button">顯示</button>' +
       '<span class="book-switcher-note"></span>';
     var input = box.querySelector("input");
