@@ -36,18 +36,18 @@ var OUT = "book-sample.json";
  *   • CE_0648  正刊  — one 封面 (cover) article; its journal 電影雙周刊 is the book
  *     name shown in the header (data-field=journal).
  *   • CE_0648b / CE_0648c 附件 — attachments that are their OWN publication (journal
- *     明信片, title NULL), DISTINCT from 正刊 — so each tab shows its own name
- *     (明信片). CE_0648a differs too (DVD Magazine). The 附件 1/2… numbering in
+ *     明信片 / 海報, title + issue NULL), DISTINCT from 正刊 — so each tab shows its
+ *     own name. CE_0648a differs too (DVD Magazine). The 附件 1/2… numbering in
  *     book.js is now only a FALLBACK (attachment with no distinct publication).
  * Delete this block once real CE_0648 / CE_0648b data arrives. */
 var MOCK_ITEMS = [
   { id: "CEM-064801", bookNumber: "CE_0648", journal: "電影雙周刊", journalIssue: "648",
     datePublished: "2004-02-12", year: "2004", title: "", section: null, author: null,
     page: "1", type: "14", image: "CE_0648_001.jpg", publisher: "電影雙周刊出版社", href: "#" },
-  { id: "CEP-064801", bookNumber: "CE_0648b", journal: "明信片", journalIssue: "648",
+  { id: "CEP-064801", bookNumber: "CE_0648b", journal: "明信片", journalIssue: null,
     datePublished: "2004-02-12", year: "2004", title: "", section: null, author: null,
     page: "1", type: "24", image: "CE_0648b_001.jpg", publisher: "電影雙周刊出版社", href: "#" },
-  { id: "CEP-064802", bookNumber: "CE_0648c", journal: "明信片", journalIssue: "648",
+  { id: "CEP-064802", bookNumber: "CE_0648c", journal: "海報", journalIssue: null,
     datePublished: "2004-02-12", year: "2004", title: "", section: null, author: null,
     page: "1", type: "24", image: "CE_0648c_001.jpg", publisher: "電影雙周刊出版社", href: "#" }
 ];
@@ -153,6 +153,17 @@ try {
 } catch (e) { console.warn("! could not merge " + MERGE_SAMPLE + ": " + e.message); }
 
 applySpecialIssue(items);   // fill attachment "belongs to" labels
+
+// Order the sample by datePublished, then BookNumber — so a book's 正刊 precedes
+// its attachments (CE_0648 < CE_0648a < CE_0648b …) instead of the raw
+// export-then-mock order (which listed CE_0648a/DVD Magazine before CE_0648/正刊).
+// Array.sort is stable in Node, so articles within one book keep their order.
+// (Production ordering is backend-owned; results.js renders whatever it's given.)
+function cmp(a, b) { return a < b ? -1 : a > b ? 1 : 0; }
+items.sort(function (x, y) {
+  return cmp(String(x.datePublished || ""), String(y.datePublished || "")) ||
+         cmp(String(x.bookNumber || ""), String(y.bookNumber || ""));
+});
 
 // Preserve the search page's real-DB totals (from 2922.json) for the toggle; the
 // book page ignores counts (book.mock passes only items). Fall back to computed.

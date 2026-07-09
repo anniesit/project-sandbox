@@ -67,38 +67,38 @@
   /* Article-type code -> { label, variant }. Sourced from the "文章類別" filter
      accordion (the 3 dividers split it into 4 colour groups). Single source of truth. */
   var ARTICLE_TYPES = {
-    "21": { label: "電影故事、小說、本事", variant: "is-film" },
-    "19": { label: "電影對白、劇本、分鏡大綱", variant: "is-film" },
-    "9":  { label: "歌詞、歌譜", variant: "is-film" },
-    "6":  { label: "人物專訪、花絮", variant: "is-film" },
-    "4":  { label: "電影資訊及評論", variant: "is-film" },
-    "5":  { label: "電視節目資訊及評論", variant: "is-film" },
-    "25": { label: "電影節、影視文化活動", variant: "is-film" },
-    "26": { label: "電影獎項、頒獎典禮", variant: "is-film" },
-    "31": { label: "電影票房記錄", variant: "is-film" },
-    "11": { label: "電視節目表、活動日程", variant: "is-film" },
-    "18": { label: "職員表、演員表、人物表", variant: "is-film" },
-    "32": { label: "作品年表", variant: "is-film" },
-    "13": { label: "編輯的話、讀者來信、序言、後記", variant: "is-cultural" },
-    "15": { label: "唱片、音樂資訊及評論", variant: "is-cultural" },
-    "28": { label: "文學創作、書摘", variant: "is-cultural" },
-    "27": { label: "文學及藝術評論、書評", variant: "is-cultural" },
-    "20": { label: "現場表演、舞台藝術", variant: "is-cultural" },
-    "7":  { label: "消閒、資訊讀物、教學文章", variant: "is-cultural" },
-    "17": { label: "插畫、漫畫、小遊戲", variant: "is-cultural" },
-    "29": { label: "辭典、詞條", variant: "is-cultural" },
-    "23": { label: "公司通訊、資料", variant: "is-comm" },
-    "16": { label: "產品、商鋪", variant: "is-comm" },
-    "1":  { label: "廣告、優惠券", variant: "is-comm" },
-    "12": { label: "抽獎得獎名單", variant: "is-comm" },
-    "10": { label: "報名、意見調查、雜誌表格", variant: "is-comm" },
-    "3":  { label: "目錄、內容、片目索引", variant: "is-other" },
-    "14": { label: "封面、封底、版權頁", variant: "is-other" },
-    "2":  { label: "照片集", variant: "is-other" },
-    "24": { label: "海報、明信片", variant: "is-other" },
-    "30": { label: "缺頁", variant: "is-other" },
-    "22": { label: "外語文章", variant: "is-other" },
-    "33": { label: "其他類別", variant: "is-other" }
+    21: { label: "電影故事、小說、本事", variant: "is-film" },
+    19: { label: "電影對白、劇本、分鏡大綱", variant: "is-film" },
+    9: { label: "歌詞、歌譜", variant: "is-film" },
+    6: { label: "人物專訪、花絮", variant: "is-film" },
+    4: { label: "電影資訊及評論", variant: "is-film" },
+    5: { label: "電視節目資訊及評論", variant: "is-film" },
+    25: { label: "電影節、影視文化活動", variant: "is-film" },
+    26: { label: "電影獎項、頒獎典禮", variant: "is-film" },
+    31: { label: "電影票房記錄", variant: "is-film" },
+    11: { label: "電視節目表、活動日程", variant: "is-film" },
+    18: { label: "職員表、演員表、人物表", variant: "is-film" },
+    32: { label: "作品年表", variant: "is-film" },
+    13: { label: "編輯的話、讀者來信、序言、後記", variant: "is-cultural" },
+    15: { label: "唱片、音樂資訊及評論", variant: "is-cultural" },
+    28: { label: "文學創作、書摘", variant: "is-cultural" },
+    27: { label: "文學及藝術評論、書評", variant: "is-cultural" },
+    20: { label: "現場表演、舞台藝術", variant: "is-cultural" },
+    7: { label: "消閒、資訊讀物、教學文章", variant: "is-cultural" },
+    17: { label: "插畫、漫畫、小遊戲", variant: "is-cultural" },
+    29: { label: "辭典、詞條", variant: "is-cultural" },
+    23: { label: "公司通訊、資料", variant: "is-comm" },
+    16: { label: "產品、商鋪", variant: "is-comm" },
+    1: { label: "廣告、優惠券", variant: "is-comm" },
+    12: { label: "抽獎得獎名單", variant: "is-comm" },
+    10: { label: "報名、意見調查、雜誌表格", variant: "is-comm" },
+    3: { label: "目錄、內容、片目索引", variant: "is-other" },
+    14: { label: "封面、封底、版權頁", variant: "is-other" },
+    2: { label: "照片集", variant: "is-other" },
+    24: { label: "海報、明信片", variant: "is-other" },
+    30: { label: "缺頁", variant: "is-other" },
+    22: { label: "外語文章", variant: "is-other" },
+    33: { label: "其他類別", variant: "is-other" },
   };
   var TYPE_VARIANT_CLASSES = ["is-film", "is-cultural", "is-comm", "is-other"];
 
@@ -123,9 +123,7 @@
     if (document.getElementById("filmtv-results-css")) return;
     var st = document.createElement("style");
     st.id = "filmtv-results-css";
-    st.textContent =
-      '[data-results][data-view="article"] [data-view-panel="book"],' +
-      '[data-results][data-view="book"] [data-view-panel="article"]{display:none !important}';
+    st.textContent = '[data-results][data-view="article"] [data-view-panel="book"],' + '[data-results][data-view="book"] [data-view-panel="article"]{display:none !important}';
     (document.head || document.documentElement).appendChild(st);
   }
 
@@ -185,7 +183,8 @@
     var bTplEl = root.querySelector('[data-tpl="book-row"]');
 
     if (aTplEl) {
-      var aTpl = tplSource(aTplEl), aHost = aTplEl.parentNode;
+      var aTpl = tplSource(aTplEl),
+        aHost = aTplEl.parentNode;
       hideTemplate(aTplEl);
       removeClones(aHost);
       var af = document.createDocumentFragment();
@@ -193,7 +192,8 @@
       aHost.appendChild(af);
     }
     if (bTplEl) {
-      var bTpl = tplSource(bTplEl), bHost = bTplEl.parentNode;
+      var bTpl = tplSource(bTplEl),
+        bHost = bTplEl.parentNode;
       hideTemplate(bTplEl);
       removeClones(bHost);
       var groups = groupBy(items, "bookNumber");
@@ -417,9 +417,7 @@
     else tag.setAttribute("u-d", "none");
   }
   function placeholder() {
-    var svg =
-      '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="219">' +
-      '<rect width="100%" height="100%" fill="#e6e9ea"/></svg>';
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="219">' + '<rect width="100%" height="100%" fill="#e6e9ea"/></svg>';
     return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
   }
 
@@ -427,7 +425,7 @@
   function formatIssue(issue) {
     if (issue == null || String(issue).trim() === "") return "";
     var s = String(issue).trim();
-    return /期/.test(s) ? s : "第" + s + "期";
+    return /期/.test(s) ? s : "第 " + s + " 期";
   }
   function articlePublication(item) {
     var s = item.journal || "";
@@ -453,7 +451,8 @@
     else document.addEventListener("DOMContentLoaded", fn);
   }
   function groupBy(arr, key) {
-    var map = {}, order = [];
+    var map = {},
+      order = [];
     for (var i = 0; i < arr.length; i++) {
       var k = arr[i][key];
       if (!map[k]) {
