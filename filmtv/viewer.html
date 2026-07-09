@@ -70,15 +70,17 @@
     .zoom-100 .page-image, .zoom-150 .page-image { max-width: none; max-height: none; width: auto; height: auto; }
 
     /* ---- single-page SCROLL modes (vertical / horizontal strips) ----
-       flex so .scroll-reverse can flip direction: right-bound = right->left
-       (row-reverse), bottom-bound = bottom->top (column-reverse). */
-    #js-page-container.viewer-scroll { display: flex; padding: 12px; }
+       Normal flex-direction (viewer.js reverses the DOM order for right/bottom
+       binding). Reverse flex-direction is avoided — its overflow has a bug that
+       makes the far end unscrollable. */
+    /* justify-content:flex-start is CRITICAL: the base container centers content,
+       and a centered OVERFLOWING flex strip clips its start (page 1) and makes it
+       unscrollable. flex-start pins the strip to the top/left so the whole range scrolls. */
+    #js-page-container.viewer-scroll { display: flex; justify-content: flex-start; padding: 12px; }
     #js-page-container.viewer-scroll .page-image { flex: 0 0 auto; }
     #js-page-container.viewer-scroll.scroll-direction-vertical { flex-direction: column; align-items: center; overflow-x: hidden; overflow-y: auto; }
-    #js-page-container.viewer-scroll.scroll-direction-vertical.scroll-reverse { flex-direction: column-reverse; }
     #js-page-container.viewer-scroll.scroll-direction-vertical .page-image { width: auto; height: auto; max-width: min(100%, 780px); max-height: none; margin: 0 0 12px; }
     #js-page-container.viewer-scroll.scroll-direction-horizontal { flex-direction: row; align-items: center; overflow-x: auto; overflow-y: hidden; }
-    #js-page-container.viewer-scroll.scroll-direction-horizontal.scroll-reverse { flex-direction: row-reverse; }
     #js-page-container.viewer-scroll.scroll-direction-horizontal .page-image { height: 100%; width: auto; max-width: none; max-height: 100%; margin: 0 12px 0 0; }
 
     /* arrows */
@@ -126,13 +128,17 @@
     .thumbnail-image { width: 100%; aspect-ratio: 3/4; object-fit: cover; background: #10262e; border-radius: 3px; }
     .thumbnail-label { font-size: 12px; text-align: center; }
 
-    /* ocr layout */
-    #js-page-container:has(.ocr-panel) { align-items: stretch; width: 100%; }
-    .ocr-panel { display: flex; flex-direction: column; width: 46%; max-width: 620px; background: #f4efe6; color: #1c1a18; border-radius: 6px; padding: 12px; margin-right: 12px; max-height: calc(100vh - 150px); }
+    /* ocr layout — panel (fixed) + a clipping stage for the page image so zoom /
+       rotate can't spill over the text panel, and fit-width sizes to the stage. */
+    #js-page-container:has(.ocr-panel) { align-items: stretch; }
+    .ocr-panel { flex: 0 0 auto; display: flex; flex-direction: column; width: 46%; max-width: 620px; background: #f4efe6; color: #1c1a18; border-radius: 6px; padding: 12px; margin-right: 12px; max-height: 100%; }
+    .ocr-page-stage { flex: 1 1 0; min-width: 0; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
     .ocr-content { flex: 1 1 auto; overflow-y: auto; padding: 4px 6px; }
     .ocr-article-block { padding: 8px 0; border-bottom: 1px dotted rgba(0,0,0,.15); }
     .ocr-article-meta { font-weight: 600; margin-bottom: 6px; }
-    .ocr-article-body { white-space: pre-wrap; line-height: 1.8; }
+    .ocr-article-body { line-height: 1.8; }
+    .ocr-article-body p { margin: 0 0 .4em; }
+    .ocr-article-body [id="ocrHead"] { font-weight: 700; font-size: 1.12em; margin-bottom: .5em; }
     .ocr-font-small .ocr-article-body { font-size: 14px; }
     .ocr-font-medium .ocr-article-body { font-size: 16px; }
     .ocr-font-large .ocr-article-body { font-size: 20px; }
@@ -145,7 +151,6 @@
     #js-ocr-toc-list { list-style: none; margin: 0; padding: 0; }
     #js-ocr-toc-list li { padding: 4px 6px; border-radius: 4px; cursor: pointer; }
     #js-ocr-toc-list li:hover { background: rgba(0,72,92,.1); }
-    .ocr-panel .page-image { display: none; } /* image lives beside the panel, not in it */
 
     .is-hidden { display: none !important; }
 
@@ -266,7 +271,7 @@
         <button id="js-ocr-font-increase" type="button">＋</button>
       </div>
     </div>
-    <img class="page-image" alt="" draggable="false" />
+    <div class="ocr-page-stage"><img class="page-image" alt="" draggable="false" /></div>
   </template>
 
   <template id="tpl-layout-thumbnail">

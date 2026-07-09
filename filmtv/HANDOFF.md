@@ -89,9 +89,17 @@ filmtvResults.setView(rootEl, "article" | "book");
   "page": "1",
   "type": "14",              // article-type code -> ARTICLE_TYPES[code] in results.js
   "image": "https://…/2922_001.jpg", // full URL, or filename + imageBase; "---" picks first
+  "special_issue_belongs_to": null,  // attachment records only -> [data-field=attachment]; empty hides that element
   "href": "#"                // link target for the card
 }
 ```
+
+**Attachment label:** `special_issue_belongs_to` is a free-text "belongs to" label
+(e.g. `電影雙周刊第 648 期附件`) carried only by attachment records. `results.js`
+fills every `[data-field="attachment"]` element and **hides it when the value is
+empty** (so ordinary records show nothing). The mock now loads the combined
+`book-sample.json` (TVW/FMP + the 電影雙周刊 CE_0648 family) instead of `2922.json`,
+so the attachment records appear in the sample.
 
 **Access tag (id-prefix driven):** each card/book-row thumbnail has a Webflow
 `.access-tag` authored **hidden** (`u-d="none"`). `results.js` reveals it when the
@@ -199,9 +207,10 @@ zoom level, add one entry to `ZOOM_PRESETS` in `viewer.js` + one `<li>` option.
 The page number is an **editable numeric jump input** (`#js-page-input`).
 
 **Mock driver — `viewer.mock.js` (delete on integration):** points `dataBaseUrl`
-at `sample-data`, inits the viewer (default book **2048** = the opera-film pamphlet
-《花燈記》, a real 16-page book on the library CDN), and mounts a floating dev
-switcher (swap BookNumber + force any of the four `bookOrientation` values). In
+at `sample-data`, inits the viewer (default book **2922** = 《多情河歌集》 (1957),
+real article data from `sample-data/2922.json` + real page scans on the library
+CDN; book **2048** 《花燈記》 also available via the switcher), and mounts a floating
+dev switcher (swap BookNumber + force any of the four `bookOrientation` values). In
 production you `init()` once and let the viewer read the page URL — no switcher.
 
 **Backend asks (perf — the JS is cheap, images/data are not):** (1) provide

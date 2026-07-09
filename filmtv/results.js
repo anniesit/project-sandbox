@@ -42,6 +42,7 @@
  *   [data-field=title]         empty -> "無標題" (book article: only if section also empty)
  *   [data-field=section|author|page]  value only; empty -> hide its row + label
  *   [data-field=article-type]  ARTICLE_TYPES[code] -> label + colour variant; empty -> hide
+ *   [data-field=attachment]    special_issue_belongs_to (attachment records only); empty -> hide the element
  *   .access-tag                in the thumbnail; authored hidden (u-d=none). Shown
  *                              when id's 3-char prefix is in ACCESS_TAG_PREFIXES.
  *   .book-article-list > .book-row-article  (nested article template = first one)
@@ -58,8 +59,10 @@
     })();
 
   /* >>> MOCK DATA URL <<< the backend replaces this (or removes the self-fetch
-     and calls render() directly with live, paginated data). */
-  var DATA_URL = new URL("./sample-data/2922.json", SELF).href;
+     and calls render() directly with live, paginated data). book-sample.json is
+     the combined sample (TVW/FMP + the 電影雙周刊 CE_0648 family) so the search
+     page shows the attachment records too. */
+  var DATA_URL = new URL("./sample-data/book-sample.json", SELF).href;
 
   /* Article-type code -> { label, variant }. Sourced from the "文章類別" filter
      accordion (the 3 dividers split it into 4 colour groups). Single source of truth. */
@@ -223,6 +226,7 @@
     setMeta(card, "author", formatList(item.author));
     setMeta(card, "page", item.page);
     setArticleType(card, item.type);
+    setAttachment(card, item.special_issue_belongs_to);
     return card;
   }
 
@@ -234,6 +238,7 @@
     setAccessTag(row, first);
     setLeafField(row, "publication", bookTitle(first));
     setDate(row, first.datePublished);
+    setAttachment(row, first.special_issue_belongs_to);
     renderBookArticles(row, group.items);
     return row;
   }
@@ -376,6 +381,18 @@
         if (empty) row.setAttribute("u-d", "none");
         else row.removeAttribute("u-d");
       }
+    }
+  }
+  // Optional attachment / special-issue label (item.special_issue_belongs_to).
+  // Fills every [data-field="attachment"] leaf; hides the element when empty
+  // (only attachment records carry a value, e.g. "電影雙周刊第 648 期附件").
+  function setAttachment(scope, value) {
+    var els = leafFields(scope, "attachment");
+    var empty = value == null || String(value).trim() === "";
+    for (var i = 0; i < els.length; i++) {
+      els[i].textContent = empty ? "" : String(value);
+      if (empty) els[i].setAttribute("u-d", "none");
+      else els[i].removeAttribute("u-d");
     }
   }
   function setImg(img, image, imageBase, alt) {

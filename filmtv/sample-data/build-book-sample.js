@@ -35,19 +35,20 @@ var OUT = "book-sample.json";
  * for the CE_0648 family, alongside the real CE_0648a (DVD Magazine) export:
  *   • CE_0648  正刊  — one 封面 (cover) article; its journal 電影雙周刊 is the book
  *     name shown in the header (data-field=journal).
- *   • CE_0648b 附件  — one postcard (an attachment that is "not a book"); its
- *     journal 電影雙周刊 MATCHES 正刊, so it labels as 附件 1 (a 2nd such attachment
- *     would be 附件 2, …). CE_0648a differs (DVD Magazine) so it keeps that name.
+ *   • CE_0648b / CE_0648c 附件 — attachments that are their OWN publication (journal
+ *     明信片, title NULL), DISTINCT from 正刊 — so each tab shows its own name
+ *     (明信片). CE_0648a differs too (DVD Magazine). The 附件 1/2… numbering in
+ *     book.js is now only a FALLBACK (attachment with no distinct publication).
  * Delete this block once real CE_0648 / CE_0648b data arrives. */
 var MOCK_ITEMS = [
   { id: "CEM-064801", bookNumber: "CE_0648", journal: "電影雙周刊", journalIssue: "648",
     datePublished: "2004-02-12", year: "2004", title: "", section: null, author: null,
     page: "1", type: "14", image: "CE_0648_001.jpg", publisher: "電影雙周刊出版社", href: "#" },
-  { id: "CEP-064801", bookNumber: "CE_0648b", journal: "電影雙周刊", journalIssue: "648",
-    datePublished: "2004-02-12", year: "2004", title: "隨書明信片", section: null, author: null,
+  { id: "CEP-064801", bookNumber: "CE_0648b", journal: "明信片", journalIssue: "648",
+    datePublished: "2004-02-12", year: "2004", title: "", section: null, author: null,
     page: "1", type: "24", image: "CE_0648b_001.jpg", publisher: "電影雙周刊出版社", href: "#" },
-  { id: "CEP-064802", bookNumber: "CE_0648c", journal: "電影雙周刊", journalIssue: "648",
-    datePublished: "2004-02-12", year: "2004", title: "電影海報", section: null, author: null,
+  { id: "CEP-064802", bookNumber: "CE_0648c", journal: "明信片", journalIssue: "648",
+    datePublished: "2004-02-12", year: "2004", title: "", section: null, author: null,
     page: "1", type: "24", image: "CE_0648c_001.jpg", publisher: "電影雙周刊出版社", href: "#" }
 ];
 
@@ -84,6 +85,7 @@ function pageOf(r) {
   return p;
 }
 function baseOf(bn) { return String(bn == null ? "" : bn).replace(/[a-z]+$/, ""); }
+function suffixOf(bn) { var m = String(bn == null ? "" : bn).match(/([a-z]+)$/); return m ? m[1] : ""; }
 
 // One export row -> one frontend item (same shape as 2922.json items).
 function toItem(r) {
@@ -101,8 +103,25 @@ function toItem(r) {
     type: r.ArticleType != null ? String(r.ArticleType) : null,
     image: firstFile(r),
     publisher: nonEmpty(r["publisher_zh-Hant"]),
+    special_issue_belongs_to: nonEmpty(r.special_issue_belongs_to),  // free text; only attachments carry one
     href: nonEmpty(r.url_permalink, r.identifier) || "#"
   };
+}
+
+// "belongs to" label for attachments. Real backend inputs this per BookNumber;
+// for the mock we derive it from the family's MAIN book (its journal + issue) so
+// every attachment of a book shares one value (正刊 gets none). Only fills when
+// the row didn't already carry a value.
+function applySpecialIssue(items) {
+  var mainByBase = {};
+  items.forEach(function (it) {
+    if (suffixOf(it.bookNumber) === "") { var b = baseOf(it.bookNumber); if (!mainByBase[b]) mainByBase[b] = it; }
+  });
+  items.forEach(function (it) {
+    if (suffixOf(it.bookNumber) === "" || it.special_issue_belongs_to) return;   // 正刊, or already set
+    var m = mainByBase[baseOf(it.bookNumber)];
+    if (m && m.journal && m.journalIssue) it.special_issue_belongs_to = m.journal + "第 " + m.journalIssue + " 期附件";
+  });
 }
 function rowsOf(exportJson) {
   var table = Array.isArray(exportJson)
@@ -122,17 +141,24 @@ CE_EXPORTS.forEach(function (f) {
 items = items.concat(MOCK_ITEMS);
 console.log("· mock rows (CE_0648 正刊 + CE_0648b/c 附件): " + MOCK_ITEMS.length);
 
-// Keep the existing TVW/FMP sample so the switcher still previews them.
+// Keep the existing TVW/FMP sample so both pages (search + book) still show them.
+var baseCounts = null;
 try {
   var base = readJson(MERGE_SAMPLE);
   if (base && Array.isArray(base.items)) {
     items = base.items.concat(items);
+    baseCounts = base.counts || null;
     console.log("· merged " + base.items.length + " items from " + MERGE_SAMPLE);
   }
 } catch (e) { console.warn("! could not merge " + MERGE_SAMPLE + ": " + e.message); }
 
-var books = {};
-items.forEach(function (it) { books[baseOf(it.bookNumber)] = 1; });
-var out = { counts: { articles: items.length, books: Object.keys(books).length }, imageBase: IMAGE_BASE, items: items };
+applySpecialIssue(items);   // fill attachment "belongs to" labels
+
+// Preserve the search page's real-DB totals (from 2922.json) for the toggle; the
+// book page ignores counts (book.mock passes only items). Fall back to computed.
+var booksSet = {};
+items.forEach(function (it) { booksSet[baseOf(it.bookNumber)] = 1; });
+var counts = baseCounts || { articles: items.length, books: Object.keys(booksSet).length };
+var out = { counts: counts, imageBase: IMAGE_BASE, items: items };
 fs.writeFileSync(path.join(DIR, OUT), JSON.stringify(out));
-console.log("→ " + OUT + ": " + items.length + " items, " + Object.keys(books).length + " books, imageBase=" + JSON.stringify(IMAGE_BASE));
+console.log("→ " + OUT + ": " + items.length + " items, " + Object.keys(booksSet).length + " books, imageBase=" + JSON.stringify(IMAGE_BASE));

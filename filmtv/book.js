@@ -345,10 +345,11 @@
     order.sort(function (a, b) { return a === "" ? -1 : b === "" ? 1 : a < b ? -1 : 1; });
     return order.map(function (s) { return map[s]; });
   }
-  // Tab labels: the main book is 正刊; an attachment whose journal DIFFERS from the
-  // main's shows that journal (a distinct publication, e.g. "DVD Magazine"); an
-  // attachment SHARING the main's journal is a generic supplement -> 附件 1, 附件 2,
-  // … numbered in order. (journal = the item's published_in_zh-Hant, per the data.)
+  // Tab labels: the main book is 正刊; an attachment that is its OWN publication
+  // (journal differs from 正刊's) shows that journal, e.g. "DVD Magazine" / "明信片".
+  // FALLBACK — an attachment with no distinct publication (journal missing, or the
+  // same as 正刊's) is a generic supplement -> 附件 1, 附件 2, … numbered in order.
+  // (journal = the item's published_in_zh-Hant, per the data.)
   function labelGroups(groups) {
     var mainJournal = null;
     for (var i = 0; i < groups.length; i++) {
@@ -358,9 +359,8 @@
     for (var g = 0; g < groups.length; g++) {
       var grp = groups[g], j = journalOf(grp);
       if (grp.suffix === "") grp.label = "正刊";
-      else if (j && j === mainJournal) grp.label = "附件 " + (++supplement);
-      else if (j) grp.label = j;
-      else grp.label = "附件 " + grp.suffix.toUpperCase();   // fallback (no journal on the data)
+      else if (j && j !== mainJournal) grp.label = j;         // distinct publication
+      else grp.label = "附件 " + (++supplement);              // fallback: no distinct publication
     }
     return groups;
   }

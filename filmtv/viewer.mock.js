@@ -28,7 +28,7 @@
     (function () { var s = document.querySelector('script[src*="viewer.mock.js"]'); return s ? s.src : window.location.href; })();
 
   var DATA_BASE = new URL("./sample-data", SELF).href;   // {base}/{bookNumber}/book.json
-  var DEFAULT_BOOK = "2048";
+  var DEFAULT_BOOK = "2922";                              // 多情河歌集 (1957) — real data; 2048 花燈記 also available
 
   ready(function () {
     var root = document.querySelector("[data-viewer]") || document;
@@ -51,7 +51,7 @@
     var st = document.createElement("style");
     st.id = "filmtv-viewer-switcher-css";
     st.textContent =
-      '.viewer-switcher{position:fixed;right:1rem;bottom:4.5rem;z-index:9999;display:flex;' +
+      '.viewer-switcher{position:fixed;left:1rem;bottom:4.5rem;z-index:9999;display:flex;' +
       'flex-wrap:wrap;gap:.4rem;align-items:center;max-width:22rem;padding:.5rem .6rem;border-radius:10px;' +
       'background:rgba(28,26,24,.92);color:#fff;font:500 13px/1.2 system-ui,sans-serif;' +
       'box-shadow:0 4px 16px rgba(0,0,0,.25)}' +
@@ -71,7 +71,7 @@
     box.className = "viewer-switcher";
     box.innerHTML =
       '<label for="vs-book">Book</label>' +
-      '<input id="vs-book" type="text" autocomplete="off" placeholder="2048" />' +
+      '<input id="vs-book" type="text" autocomplete="off" placeholder="2922 / 2048" />' +
       '<button type="button" id="vs-go">顯示</button>' +
       '<label for="vs-ori">裝訂</label>' +
       '<select id="vs-ori">' +

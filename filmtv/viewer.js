@@ -498,8 +498,11 @@
   // rules can swap width/height constraints when the page is turned 90°/270°.
   function applyRotationVars() {
     var c = container(); if (!c) return;
-    c.style.setProperty("--vw", Math.max(0, c.clientWidth - 24) + "px");   // minus padding
-    c.style.setProperty("--vh", Math.max(0, c.clientHeight - 24) + "px");
+    // Measure the box that actually clips the page image — in OCR that's the
+    // narrower .ocr-page-stage, elsewhere the container — so rotated fit is correct.
+    var box = c.querySelector(".ocr-page-stage") || c;
+    c.style.setProperty("--vw", Math.max(0, box.clientWidth - 24) + "px");   // minus padding/margin
+    c.style.setProperty("--vh", Math.max(0, box.clientHeight - 24) + "px");
     c.classList.toggle("is-rot-90", state.rotation % 180 === 90);
   }
 
@@ -551,21 +554,25 @@
    * ============================================================ */
   function renderScrollStrip(c) {
     c.classList.add("viewer-scroll", "scroll-direction-" + state.scrollDirection);
-    // Reverse the strip to match binding: right-bound reads right->left (horizontal),
-    // bottom-bound reads bottom->top (vertical). CSS flips flex-direction on this class.
+    // Match reading direction to the binding by reversing the DOM ORDER (not
+    // flex-direction — reverse flex + overflow has a well-known bug where the far
+    // end isn't scrollable, which was pinning the strip mid-book). data-page-index
+    // still carries the TRUE page number, so the observer / jumps are unaffected.
+    // right-bound: horizontal reads right->left. bottom-bound: vertical reads bottom->top.
     var reverse = (state.scrollDirection === "horizontal" && orientation() === "right") ||
                   (state.scrollDirection === "vertical" && orientation() === "bottom");
-    c.classList.toggle("scroll-reverse", reverse);
+    var order = state.book.pages.map(function (page, i) { return { page: page, idx: i + 1 }; });
+    if (reverse) order.reverse();
     var frag = document.createDocumentFragment();
-    state.book.pages.forEach(function (page, i) {
+    order.forEach(function (o) {
       var img = document.createElement("img");
       img.className = "page-image";
       img.draggable = false;
-      img.setAttribute("data-page-index", String(i + 1));
+      img.setAttribute("data-page-index", String(o.idx));
       img.loading = "lazy";
-      img.alt = page.label || "";
-      applyAspect(img, page);
-      img.src = state.book.imageBaseUrl + page.file;
+      img.alt = o.page.label || "";
+      applyAspect(img, o.page);
+      img.src = state.book.imageBaseUrl + o.page.file;
       frag.appendChild(img);
     });
     c.appendChild(frag);
@@ -661,7 +668,10 @@
     articles.forEach(function (a) {
       var block = tpl("tpl-ocr-article-block"); if (!block) return;
       setText(block.querySelector(".ocr-article-meta"), a.title + (a.author ? "　—　" + a.author : ""));
-      setText(block.querySelector(".ocr-article-body"), a.articleBody || "");
+      // articleBody is backend OCR (the CSV `text_zht`), which carries HTML markup
+      // (<p>, ocrHead). It is trusted archive content, so render it as HTML.
+      var body = block.querySelector(".ocr-article-body");
+      if (body) body.innerHTML = a.articleBody || "";
       if (block.firstElementChild) block.firstElementChild.id = "js-ocr-article-" + a.id;
       content.appendChild(block);
     });
