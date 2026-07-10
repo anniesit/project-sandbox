@@ -77,8 +77,8 @@
   var PUBLICATIONS = [
     { key: "FMP", label: "電影小冊子", prefixes: ["FMP"] },
     { key: "TVW", label: "香港電視", prefixes: ["TVW"] },
-    { key: "CEM", label: "電影雙周刊", prefixes: ["CEM", "CEI", "CEY", "CED", "CEF", "CEV", "CEH", "CEP", "CEO"] },
-    { key: "CEB", label: "電影雙周刊出版書籍", prefixes: ["CEB"] },
+    { key: "CEM", label: "電影雙周刊", prefixes: ["CEM", "CEI", "CEY", "CED", "CEF", "CEV"] },
+    { key: "CEB", label: "電影雙周刊出版書籍", prefixes: ["CEB", "CEH", "CEP", "CEO"] },
   ];
   var PREFIX_MAP = {},
     GROUP_ORDER = {},
@@ -93,10 +93,11 @@
     });
   });
 
-  // 電影雙周刊 family id prefixes. Article view rolls them up into one CEM series
-  // (taxonomy colour-3); BOOK view sends each as its own series, coloured from its
-  // --filmtv-chart-ce-<prefix> token in chart.css. Same set as the CEM group.
-  var CE_FAMILY = GROUP_PREFIXES["CEM"] || ["CEM"];
+  // 電影雙周刊 (CEM) and 電影雙周刊出版書籍 (CEB) family id prefixes. Article view rolls
+  // each family up into one series (CEM -> taxonomy colour-3, CEB -> colour-4);
+  // BOOK view sends each prefix as its own series, coloured from its
+  // --filmtv-chart-ce-<prefix> token in chart.css. Union of both groups' prefixes.
+  var CE_FAMILY = (GROUP_PREFIXES["CEM"] || ["CEM"]).concat(GROUP_PREFIXES["CEB"] || ["CEB"]);
 
   // true on devices with a real hover+fine pointer (desktop): bar click commits
   // directly. Touch devices tap a bar to pin the tooltip, then tap its button.
@@ -668,13 +669,13 @@
     return out.length ? out : PALETTE.slice();
   }
 
-  // Colour for a 電影雙周刊 split sub-series, read from chart.css
+  // Colour for a 電影雙周刊 / 電影雙周刊出版書籍 split sub-series, read from chart.css
   // (--filmtv-chart-ce-<prefix>). Returns "" for anything that is NOT a split
-  // sub-series: non-family keys, and the MERGED CEM group (its prefixes cover the
-  // whole family) which keeps the taxonomy colour. Lets chart.css own these too.
+  // sub-series: non-family keys, and the MERGED CEM/CEB group series (its prefixes
+  // cover the whole family) which keeps the taxonomy colour. Lets chart.css own these too.
   function ceColor(root, key, prefixes) {
     if (!key || CE_FAMILY.indexOf(key) === -1) return "";
-    if (key === "CEM" && prefixes && prefixes.length > 1) return "";
+    if ((key === "CEM" || key === "CEB") && prefixes && prefixes.length > 1) return "";
     var v = window
       .getComputedStyle(root)
       .getPropertyValue("--filmtv-chart-ce-" + String(key).toLowerCase())

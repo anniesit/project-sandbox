@@ -27,19 +27,22 @@
   --filmtv-chart-color-7: #9c6b3f;
   --filmtv-chart-color-8: #5c6b34;
 
-  /* 電影雙周刊 family — BOOK view only. There the 9 CE* id prefixes are shown as
-     separate stacked series (chart.js CE_FAMILY); each keyed by its prefix so the
-     colour is order-independent. color-1..4 above stay the taxonomy colours; in
-     ARTICLE view these 9 merge back into 電影雙周刊 (color-3). */
+  /* 電影雙周刊 (CEM) + 電影雙周刊出版書籍 (CEB) families — BOOK view only. There each
+     family's id prefixes are shown as separate stacked series (chart.js
+     CE_FAMILY); each keyed by its prefix so the colour is order-independent.
+     color-1..4 above stay the taxonomy colours; in ARTICLE view a family's
+     prefixes merge back into its one taxonomy-coloured series (CEM -> color-3,
+     CEB -> color-4). */
   --filmtv-chart-ce-cem: #548a6d; /* 正刊 */
-  --filmtv-chart-ce-cei: #6990dc; /* 片目及索引 */
+  --filmtv-chart-ce-cei: #e6ab02; /* 片目及索引 */
   --filmtv-chart-ce-cey: #a765b0; /* 電影電視黃頁 */
   --filmtv-chart-ce-ced: #d97453; /* DVD Magazine */
-  --filmtv-chart-ce-cef: #e6ab02; /* Foreign Films Magazine */
+  --filmtv-chart-ce-cef: #6990dc; /* Foreign Films Magazine */
   --filmtv-chart-ce-cev: #89b764; /* Home Videos Magazine */
+  --filmtv-chart-ce-ceb: #c9973c; /* 正刊 (電影雙周刊出版書籍 flagship) */
   --filmtv-chart-ce-ceh: #43aaae; /* 荷里活映畫 */
   --filmtv-chart-ce-cep: #7f7ab6; /* 電影海報館 */
-  --filmtv-chart-ce-ceo: #f781bf; /* 電影海報精選 */
+  --filmtv-chart-ce-ceo: #59ac6c; /* 電影海報精選 */
 
   /* semantic UI colours */
   --filmtv-chart-ink: #1f3606; /* primary text */

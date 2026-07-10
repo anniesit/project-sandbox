@@ -97,7 +97,8 @@
         <!-- filter presets — one group per view; the view switch shows the matching
            group. ARTICLE: search-style result subsets on the STABLE 1926–1997 axis
            (project rule). BOOK: one per publication, axis fitted to that
-           publication's own year span, and 電影雙周刊 shown as its 9 CE* sub-series. -->
+           publication's own year span, and 電影雙周刊 / 電影雙周刊出版書籍 each shown split
+           into their CE* sub-series. -->
         <div class="presets" id="presets-article">
           <button class="preset is-active" data-preset="all">全部結果</button>
           <button class="preset" data-preset="early">小冊子年代（1926–1958）</button>
@@ -116,8 +117,8 @@
         <div data-chart data-height="360" data-src="sample-data/chart-sample.json"></div>
 
         <p class="hint">
-          桌面：滑過長條看該年明細，點按長條即以該年篩選結果。觸控：輕點長條後再點「查看此年結果 →」。點按圖例則以該刊物篩選。書刊（本）檢視：每個刊物依其起訖年份縮放年份軸，「電影雙周刊」以 9
-          個子刊分色堆疊。
+          桌面：滑過長條看該年明細，點按長條即以該年篩選結果。觸控：輕點長條後再點「查看此年結果 →」。點按圖例則以該刊物篩選。書刊（本）檢視：每個刊物依其起訖年份縮放年份軸，「電影雙周刊」以 6
+          個子刊、「電影雙周刊出版書籍」以 4 個子刊分色堆疊。
         </p>
         <p class="hint" id="demo-status" hidden></p>
       </div>
@@ -128,7 +129,8 @@
       // Demo-only driver — a stand-in for the backend. It holds TWO pre-aggregated
       // samples and feeds the chart the slice the current view+filter asks for,
       // mimicking result sets arriving from a query. The article and book views are
-      // DIFFERENT datasets: book view splits 電影雙周刊 into its 9 CE* sub-series and
+      // DIFFERENT datasets: book view splits 電影雙周刊 (6 sub-series) and
+      // 電影雙周刊出版書籍 (4 sub-series) each into their own CE* sub-series, and
       // fits the year axis to each publication's span.
       (function () {
         var chartEl = document.querySelector("[data-chart]");
@@ -145,8 +147,8 @@
         var PUBS = {
           FMP: { label: "電影小冊子", keys: ["FMP"] },
           TVW: { label: "香港電視", keys: ["TVW"] },
-          CE: { label: "電影雙周刊", keys: ["CEM", "CEI", "CEY", "CED", "CEF", "CEV", "CEH", "CEP", "CEO"] },
-          CEB: { label: "電影雙周刊出版書籍", keys: ["CEB"] },
+          CE: { label: "電影雙周刊", keys: ["CEM", "CEI", "CEY", "CED", "CEF", "CEV"] },
+          CEB: { label: "電影雙周刊出版書籍", keys: ["CEB", "CEH", "CEP", "CEO"] },
         };
 
         // ---- pre-aggregated slicing (a backend narrows a query the same way) ----

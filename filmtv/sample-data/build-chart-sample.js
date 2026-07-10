@@ -77,8 +77,8 @@ var APB = {
 var META = {
   FMP: { label: "電影小冊子", prefixes: ["FMP"] },
   TVW: { label: "香港電視", prefixes: ["TVW"] },
-  CEM: { label: "電影雙周刊", prefixes: ["CEM", "CEI", "CEY", "CED", "CEF", "CEV", "CEH", "CEP", "CEO"] },
-  CEB: { label: "電影雙周刊出版書籍", prefixes: ["CEB"] }
+  CEM: { label: "電影雙周刊", prefixes: ["CEM", "CEI", "CEY", "CED", "CEF", "CEV"] },
+  CEB: { label: "電影雙周刊出版書籍", prefixes: ["CEB", "CEH", "CEP", "CEO"] }
 };
 var ORDER = ["FMP", "TVW", "CEM", "CEB"]; // taxonomy order = stack + colour order
 
@@ -113,16 +113,18 @@ fs.writeFileSync(dest, JSON.stringify(out));
 /* ============================================================
  * chart-book-sample.json — the BOOK-VIEW demo dataset (chart.html)
  *
- * In book view the 電影雙周刊 family is NOT rolled up into one series — each of
- * its 9 id prefixes is its own stacked series with its own legend entry/colour.
- * (In article view they stay merged as one 電影雙周刊 — that's chart-sample.json.)
+ * In book view neither the 電影雙周刊 (CEM) nor 電影雙周刊出版書籍 (CEB) family is
+ * rolled up into one series — each of their id prefixes is its own stacked
+ * series with its own legend entry/colour. (In article view each family stays
+ * merged as one series — that's chart-sample.json.)
  *
- * CEM is the flagship magazine (reuses the CEM book figures above); the other 8
- * prefixes are small companion lines (book counts synthesised; real sub-line names).
- * Colours are NOT in this payload — they live in chart.css (--filmtv-chart-ce-<key>
- * for the family; color-1..4 for the taxonomy) and are applied by chart.js. Same
- * union years[]; the chart.html driver slices each publication to its own year span
- * ("fit the axis to the publication").
+ * CEM/CEB are each family's flagship (reuse the CEM/CEB book figures above);
+ * the remaining prefixes are small companion lines (book counts synthesised;
+ * real sub-line names). Colours are NOT in this payload — they live in
+ * chart.css (--filmtv-chart-ce-<key> for the family; color-1..4 for the
+ * taxonomy) and are applied by chart.js. Same union years[]; the chart.html
+ * driver slices each publication to its own year span ("fit the axis to the
+ * publication").
  * ============================================================ */
 function clampYr(t) { return t < 0 ? 0 : t > 1 ? 1 : t; }
 // small companion line: `base`→`peak` books/yr across [start,1997], deterministic
@@ -132,10 +134,10 @@ function minorBooks(start, base, peak) {
     return Math.max(0, Math.round(lerp(base, peak, clampYr((yr - start) / (1997 - start)))));
   });
 }
-// 電影雙周刊 (City Entertainment) family — 9 id prefixes shown as SEPARATE series in
+// 電影雙周刊 (City Entertainment) family — 6 id prefixes shown as SEPARATE series in
 // book view (in article view they stay merged as one 電影雙周刊). REAL sub-line names
 // (user-supplied, July 2026). CEM is the flagship magazine (reuses BOOKS.CEM figures
-// above); the other 8 are smaller companion lines with synthesised book counts
+// above); the other 5 are smaller companion lines with synthesised book counts
 // (start/base/peak tuned so the stack looks varied — swap for real figures when
 // known). COLOURS are NOT set here: they live in chart.css (--filmtv-chart-ce-<key>)
 // and are applied by chart.js, so this payload carries no colour at all.
@@ -145,31 +147,45 @@ var CE_FAMILY = [
   { key: "CEY", label: "電影電視黃頁", start: 1980, base: 1, peak: 1 },
   { key: "CED", label: "DVD Magazine", start: 1995, base: 1, peak: 3 },
   { key: "CEF", label: "Foreign Films Magazine", start: 1982, base: 1, peak: 4 },
-  { key: "CEV", label: "Home Videos Magazine", start: 1985, base: 1, peak: 3 },
+  { key: "CEV", label: "Home Videos Magazine", start: 1985, base: 1, peak: 3 }
+];
+// 電影雙周刊出版書籍 family — 4 id prefixes shown as SEPARATE series in book view
+// (moved here from the CEM family, July 2026 taxonomy change). CEB is the
+// flagship imprint (reuses BOOKS.CEB figures above); the other 3 are smaller
+// companion lines with synthesised book counts.
+var CEB_FAMILY = [
+  { key: "CEB", label: "電影雙周刊出版書籍" },                      // flagship
   { key: "CEH", label: "荷里活映畫", start: 1983, base: 2, peak: 5 },
   { key: "CEP", label: "電影海報館", start: 1986, base: 1, peak: 3 },
   { key: "CEO", label: "電影海報精選", start: 1988, base: 1, peak: 2 }
 ];
 function seriesOf(k) { return series.filter(function (s) { return s.key === k; })[0]; }
 
-var ceFamily = CE_FAMILY.map(function (m) {
-  if (m.key === "CEM") {                          // flagship — reuse computed CEM figures
-    var base = seriesOf("CEM");
-    return { key: "CEM", label: m.label, prefixes: ["CEM"], counts: base.counts, bookCounts: base.bookCounts };
-  }
-  var bc = minorBooks(m.start, m.base, m.peak);
-  var ct = bc.map(function (n, yi) { return n ? Math.round(n * APB.CEM(years[yi])) : 0; });
-  return { key: m.key, label: m.label, prefixes: [m.key], counts: ct, bookCounts: bc };
-});
+// build a family's book-view series: flagship reuses its own computed figures,
+// companions are synthesised from minorBooks() and the family's APB curve.
+function buildFamily(defs, flagshipKey, apb) {
+  return defs.map(function (m) {
+    if (m.key === flagshipKey) {
+      var base = seriesOf(flagshipKey);
+      return { key: m.key, label: m.label, prefixes: [m.key], counts: base.counts, bookCounts: base.bookCounts };
+    }
+    var bc = minorBooks(m.start, m.base, m.peak);
+    var ct = bc.map(function (n, yi) { return n ? Math.round(n * apb(years[yi])) : 0; });
+    return { key: m.key, label: m.label, prefixes: [m.key], counts: ct, bookCounts: bc };
+  });
+}
 
-// FMP/TVW/CEB keep their TAXONOMY colours (chart.css color-1/2/4 via chart.js
+var ceFamily = buildFamily(CE_FAMILY, "CEM", APB.CEM);
+var cebFamily = buildFamily(CEB_FAMILY, "CEB", APB.CEB);
+
+// FMP/TVW keep their TAXONOMY colours (chart.css color-1/2 via chart.js
 // GROUP_ORDER); no colours in this payload — chart.css is the single source.
-var bookSeries = [seriesOf("FMP"), seriesOf("TVW")].concat(ceFamily).concat([seriesOf("CEB")]);
+var bookSeries = [seriesOf("FMP"), seriesOf("TVW")].concat(ceFamily).concat(cebFamily);
 
 var bookOut = { counts: { articles: totalArticles, books: totalBooks }, years: years, series: bookSeries };
 var bookDest = path.join(__dirname, "chart-book-sample.json");
 fs.writeFileSync(bookDest, JSON.stringify(bookOut));
-console.log("wrote " + bookDest + "  (" + bookSeries.length + " series: 電影雙周刊 split into " + ceFamily.length + ")");
+console.log("wrote " + bookDest + "  (" + bookSeries.length + " series: 電影雙周刊 split into " + ceFamily.length + ", 電影雙周刊出版書籍 split into " + cebFamily.length + ")");
 
 console.log("wrote " + dest);
 console.log("years " + years[0] + "–" + years[years.length - 1] +
