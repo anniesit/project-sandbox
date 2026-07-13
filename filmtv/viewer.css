@@ -235,45 +235,29 @@
 #js-page-container:has(.ocr-panel) {
   align-items: stretch;
 }
-.ocr-article-body {
-  line-height: 1.8;
-}
-.ocr-article-body p {
-  margin: 0 0 0.4em;
-}
 .ocr-article-body [id="ocrHead"] {
-  font-weight: 700;
-  font-size: 1.12em;
-  margin-bottom: 0.5em;
+  font-family: var(--_typography---h4--font);
+  font-weight: var(--_typography---h4--font-weight);
+  font-size: var(--_typography---h4--font-size);
+  line-height: var(--_typography---h4--line-height);
+  margin-bottom: var(--_typography---h4--bottom-margin);
 }
 .ocr-font-small .ocr-article-body {
-  font-size: 14px;
+  font-size: var(--_typography---paragraph-body--font-size);
+  line-height: var(--_typography---paragraph-xl--line-height);
 }
 .ocr-font-medium .ocr-article-body {
-  font-size: 16px;
+  font-size: var(--_typography---paragraph-lg--font-size);
+  line-height: var(--_typography---paragraph-lg--line-height);
 }
 .ocr-font-large .ocr-article-body {
-  font-size: 20px;
-}
-.ocr-toc-popover {
-  position: absolute;
-  margin-top: 4px;
-  background: #fff;
-  color: #1c1a18;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  border-radius: 6px;
-  padding: 8px;
-  display: none;
-  z-index: 30;
-  max-width: 260px;
+  font-size: var(--_typography---paragraph-xl--font-size);
+  line-height: var(--_typography---paragraph-body--line-height);
 }
 .ocr-toc-popover.is-open {
   display: block;
 }
-.ocr-toc-header {
-  font-weight: 600;
-  margin-bottom: 6px;
-}
+
 #js-ocr-toc-list {
   list-style: none;
   margin: 0;
@@ -288,32 +272,21 @@
   background: rgba(0, 72, 92, 0.1);
 }
 /*
-.ocr-panel {
-  flex: 0 0 auto;
-  display: flex;
-  flex-direction: column;
-  width: 46%;
-  max-width: 620px;
-  background: #f4efe6;
+.ocr-toc-popover {
+  position: absolute;
+  margin-top: 4px;
+  background: #fff;
   color: #1c1a18;
+  border: 1px solid rgba(0, 0, 0, 0.2);
   border-radius: 6px;
-  padding: 12px;
-  margin-right: 12px;
-  max-height: 100%;
+  padding: 8px;
+  display: none;
+  z-index: 30;
+  max-width: 260px;
 }
-.ocr-page-stage {
-  flex: 1 1 0;
-  min-width: 0;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.ocr-content {
-  flex: 1 1 auto;
-  overflow-y: auto;
-  padding: 4px 6px;
+.ocr-toc-header {
+  font-weight: 600;
+  margin-bottom: 6px;
 }
 .ocr-article-block {
   padding: 8px 0;
@@ -322,6 +295,9 @@
 .ocr-article-meta {
   font-weight: 600;
   margin-bottom: 6px;
+}
+.ocr-article-body p {
+  margin: 0 0 0.4em;
 }
 .ocr-toc-trigger {
   align-self: flex-start;

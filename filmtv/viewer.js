@@ -770,7 +770,6 @@
     articles.forEach(function (a) {
       var block = tpl("tpl-ocr-article-block");
       if (!block) return;
-      setText(block.querySelector(".ocr-article-meta"), a.title + (a.author ? "　—　" + a.author : ""));
       // articleBody is backend OCR (the CSV `text_zht`), which carries HTML markup
       // (<p>, ocrHead). It is trusted archive content, so render it as HTML.
       var body = block.querySelector(".ocr-article-body");
