@@ -235,6 +235,59 @@
 #js-page-container:has(.ocr-panel) {
   align-items: stretch;
 }
+.ocr-article-body {
+  line-height: 1.8;
+}
+.ocr-article-body p {
+  margin: 0 0 0.4em;
+}
+.ocr-article-body [id="ocrHead"] {
+  font-weight: 700;
+  font-size: 1.12em;
+  margin-bottom: 0.5em;
+}
+.ocr-font-small .ocr-article-body {
+  font-size: 14px;
+}
+.ocr-font-medium .ocr-article-body {
+  font-size: 16px;
+}
+.ocr-font-large .ocr-article-body {
+  font-size: 20px;
+}
+.ocr-toc-popover {
+  position: absolute;
+  margin-top: 4px;
+  background: #fff;
+  color: #1c1a18;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  padding: 8px;
+  display: none;
+  z-index: 30;
+  max-width: 260px;
+}
+.ocr-toc-popover.is-open {
+  display: block;
+}
+.ocr-toc-header {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+#js-ocr-toc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+#js-ocr-toc-list li {
+  padding: 4px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+#js-ocr-toc-list li:hover {
+  background: rgba(0, 72, 92, 0.1);
+}
+/*
 .ocr-panel {
   flex: 0 0 auto;
   display: flex;
@@ -270,26 +323,6 @@
   font-weight: 600;
   margin-bottom: 6px;
 }
-.ocr-article-body {
-  line-height: 1.8;
-}
-.ocr-article-body p {
-  margin: 0 0 0.4em;
-}
-.ocr-article-body [id="ocrHead"] {
-  font-weight: 700;
-  font-size: 1.12em;
-  margin-bottom: 0.5em;
-}
-.ocr-font-small .ocr-article-body {
-  font-size: 14px;
-}
-.ocr-font-medium .ocr-article-body {
-  font-size: 16px;
-}
-.ocr-font-large .ocr-article-body {
-  font-size: 20px;
-}
 .ocr-toc-trigger {
   align-self: flex-start;
   margin-bottom: 8px;
@@ -317,39 +350,7 @@
   border-radius: 4px;
   cursor: pointer;
 }
-.ocr-toc-popover {
-  position: absolute;
-  margin-top: 4px;
-  background: #fff;
-  color: #1c1a18;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  border-radius: 6px;
-  padding: 8px;
-  display: none;
-  z-index: 30;
-  max-width: 260px;
-}
-.ocr-toc-popover.is-open {
-  display: block;
-}
-.ocr-toc-header {
-  font-weight: 600;
-  margin-bottom: 6px;
-}
-#js-ocr-toc-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-#js-ocr-toc-list li {
-  padding: 4px 6px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-#js-ocr-toc-list li:hover {
-  background: rgba(0, 72, 92, 0.1);
-}
-
+*/
 /* ---- placeholder / error (cloned when a slot is a wrapper instead of <img>) ---- */
 .page-placeholder {
   display: flex;
