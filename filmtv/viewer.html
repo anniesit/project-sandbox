@@ -272,50 +272,9 @@
       .dropdown-option[aria-selected="true"] .dropdown-option-check {
         opacity: 1;
       }
-
-      /* ---- scroll popover — a custom two-group menu (捲動方向 + 連接方向) that
-       reuses the DS .dropdown-list [WF: .dropdown-list.cc-viewer-bottom] for its
-       look. It isn't inside a [data-dropdown], so viewer.js toggles .is-open on
-       the list ITSELF; it opens via opacity + max-height (a transition), NOT
-       display. On the real site the Webflow .dropdown-list supplies the same
-       closed state + transition; these values mirror it (max-height .4s /
-       opacity .3s). ---- */
-      .scroll-wrap {
-        position: relative;
-      }
-      .dropdown-list.cc-viewer-bottom {
-        display: block;
-        min-width: 180px;
-        opacity: 0;
-        max-height: 0;
-        overflow: hidden;
-        pointer-events: none;
-        transition:
-          max-height 0.4s ease-in-out,
-          opacity 0.3s ease-in-out;
-      }
-      .dropdown-list.cc-viewer-bottom.is-open {
-        opacity: 1;
-        max-height: max(70svh, 14rem);
-        overflow: auto;
-        pointer-events: auto;
-      }
-      .dropdown-list.cc-viewer-bottom .dropdown-option:focus-visible {
-        outline: 2px solid var(--line);
-        outline-offset: -2px;
-      }
-      /* viewer.js sets .is-disabled (+ aria-disabled) on the group that doesn't apply */
-      .dropdown-list.cc-viewer-bottom .dropdown-option.is-disabled {
-        opacity: 0.35;
-        cursor: default;
-      }
-      .dropdown-list.cc-viewer-bottom .dropdown-option.is-disabled:hover {
-        background: none;
-      }
-      .scroll-popover-divider {
-        border-top: 1px solid rgba(173, 231, 247, 0.3);
-        margin: 4px 8px;
-      }
+      /* NB: the ⋯ scroll popover (.scroll-wrap / .dropdown-list.cc-viewer-bottom)
+         is NOT here — viewer.js drives its open state, so it ships in viewer.css
+         (Webflow/forms.js only open [data-dropdown] dropdowns). */
     </style>
   </head>
   <body>
