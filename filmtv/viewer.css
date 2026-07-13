@@ -427,41 +427,45 @@ body {
   opacity: 1;
 }
 
-/* scroll popover — a custom two-group menu (捲動方向 + 連接方向) that reuses the SAME
-   check-select pattern as the layout/zoom dropdowns: each option is a
-   .dropdown-option <button> whose aria-selected reveals the .dropdown-option-check
-   (rule above). No radios — viewer.js owns aria-selected and reads clicks, because
-   forms.js single-select handles only one group and this menu has two. */
+/* scroll popover — a custom two-group menu (捲動方向 + 連接方向) that reuses the DS
+   .dropdown-list (class `dropdown-list cc-viewer-bottom`) for its look, so Webflow
+   owns the styling. It isn't inside a [data-dropdown], so viewer.js toggles .is-open
+   on the list ITSELF; it opens the same way forms.js does — via opacity + max-height
+   (a transition), NOT display. The base .dropdown-list rule sets display:none for the
+   preview's layout/zoom lists, so re-assert display:block here and let opacity/
+   max-height drive show/hide. On the real site the Webflow .dropdown-list supplies the
+   same closed state + transition; these values mirror it (max-height .4s / opacity .3s).
+   Each option is a .dropdown-option <li> whose aria-selected reveals the check. */
 .scroll-wrap {
   position: relative;
 }
-.scroll-popover {
-  position: absolute;
-  bottom: calc(100% + 6px);
-  left: 0;
-  min-width: 180px;
-  margin: 0;
-  padding: 4px;
-  list-style: none; /* it's a <ul>, same as the DS .dropdown-list */
-  background: var(--teal);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  display: none;
-  z-index: 20;
-}
-.scroll-popover.is-open {
+.dropdown-list.cc-viewer-bottom {
   display: block;
+  min-width: 180px;
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transition:
+    max-height 0.4s ease-in-out,
+    opacity 0.3s ease-in-out;
 }
-.scroll-popover .dropdown-option:focus-visible {
+.dropdown-list.cc-viewer-bottom.is-open {
+  opacity: 1;
+  max-height: max(70svh, 14rem);
+  overflow: auto;
+  pointer-events: auto;
+}
+.dropdown-list.cc-viewer-bottom .dropdown-option:focus-visible {
   outline: 2px solid var(--line);
   outline-offset: -2px;
 }
 /* viewer.js sets .is-disabled (+ aria-disabled) on the group that doesn't apply */
-.scroll-popover .dropdown-option.is-disabled {
+.dropdown-list.cc-viewer-bottom .dropdown-option.is-disabled {
   opacity: 0.35;
   cursor: default;
 }
-.scroll-popover .dropdown-option.is-disabled:hover {
+.dropdown-list.cc-viewer-bottom .dropdown-option.is-disabled:hover {
   background: none;
 }
 .scroll-popover-divider {
