@@ -1,98 +1,21 @@
-/* ⚠️ PREVIEW CHROME ONLY. On the real site these blocks are authored in
- Webflow; this file mirrors the viewer page's id / data-* / <template>
- structure so viewer.js can be seen driving it. Colours follow the Figma:
- toolbars #00485c, stage #003240, accent line #ade7f7. Not part of handoff. */
-:root {
-  --teal: #00485c;
-  --teal-dark: #003240;
-  --line: #ade7f7;
-  --paper: #fff;
-  --primary: "GenRyuMin2 TC", "Songti TC", "Noto Serif TC", serif;
-}
-* {
-  box-sizing: border-box;
-}
-html,
-body {
-  margin: 0;
-  height: 100%;
-}
-body {
-  font-family: var(--primary);
-  color: #fff;
-  -webkit-font-smoothing: antialiased;
-}
+/* viewer.css — external stylesheet shipped WITH the live site (loaded next to
+   the Webflow CSS). It contains ONLY the selectors Webflow's Designer can't
+   author:
+     • the STAGE internals viewer.js clones from <template>s at runtime
+       (page images, spreads, thumbnails, OCR panel, placeholders) — Webflow
+       can't reach nodes that don't exist until JS builds them;
+     • the viewer ENGINE rules keyed off JS-toggled state — :has(), compound
+       multi-class combinators, runtime custom props (--vw/--vh), @keyframes.
 
-/* ---- root shell (flex column: nav / stage / controls) ---- */
-.viewer-root {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  background: var(--teal-dark);
-}
-.viewer-root.is-fullscreen {
-  height: 100vh;
-}
+   Everything else (top/bottom toolbars, nav, dropdowns, arrows, buttons,
+   inputs, dividers, the page shell) is basic chrome authored in Webflow, so it
+   is NOT here. The standalone preview keeps its own copy of that chrome in the
+   viewer.html <style> block.
 
-/* ---- top nav (later stages; static here for parity) ---- */
-.viewer-toolbar-top {
-  background: var(--teal);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 52px;
-  padding: 0 16px;
-}
-.viewer-toolbar-top .nav-group {
-  display: flex;
-  gap: 32px;
-  align-items: center;
-}
-.viewer-toolbar-top a,
-.viewer-toolbar-top button {
-  display: inline-flex;
-  gap: 6px;
-  align-items: center;
-  background: none;
-  border: 0;
-  color: #fff;
-  font: 500 16px/1.6 var(--primary);
-  cursor: pointer;
-}
-.nav-ico {
-  width: 24px;
-  height: 24px;
-  display: inline-block;
-  opacity: 0.9;
-}
+   Colours are inlined literals here (line #ade7f7, ink #10262e, teal #00485c)
+   because these rules target runtime nodes Webflow's variables don't reach. */
 
-/* ---- stage ---- */
-/* The container fills the stage (absolute inset:0) so it has a DEFINITE size —
- that's what makes the fit-page (max-*:100%) and fit-width (width:100%) rules
- responsive to the viewport. Overflow is clipped by the stage; the user pans. */
-.viewer-stage {
-  position: relative;
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: hidden;
-}
-#js-page-container {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px;
-  user-select: none;
-}
-#js-page-container.is-pannable {
-  cursor: grab;
-}
-#js-page-container.is-dragging {
-  cursor: grabbing;
-}
-
+/* ---- page image (cloned <img>) ---- */
 /* -webkit-user-drag:none stops the browser's native image drag (the ghost
  thumbnail + stuck grab on Mac trackpads); viewer.js also sets draggable=false. */
 .page-image {
@@ -130,6 +53,27 @@ body {
 .page-spread.spread-lone {
   gap: 0;
   justify-content: center;
+}
+
+/* ---- page container: engine states (base container layout is Webflow's
+ .viewer-page-container; these are the JS-toggled behaviours it can't express).
+ The container fills the stage so it has a DEFINITE size — that's what makes the
+ fit-page (max-*:100%) and fit-width (width:100%) rules responsive. ---- */
+#js-page-container {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  user-select: none;
+}
+#js-page-container.is-pannable {
+  cursor: grab;
+}
+#js-page-container.is-dragging {
+  cursor: grabbing;
 }
 
 /* ---- zoom sizing (numeric-preset scale is applied by viewer.js transform) ---- */
@@ -246,234 +190,7 @@ body {
   margin: 0 12px 0 0;
 }
 
-/* arrows */
-.viewer-arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 5;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 72, 92, 0.55);
-  color: #fff;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  cursor: pointer;
-  font-size: 20px;
-  line-height: 1;
-}
-.viewer-arrow:disabled {
-  opacity: 0.3;
-  cursor: default;
-}
-.viewer-arrow.is-hidden {
-  display: none !important;
-}
-#js-prev-page {
-  left: 16px;
-}
-#js-next-page {
-  right: 16px;
-}
-
-/* ---- bottom controls ---- */
-.viewer-toolbar-bottom {
-  background: var(--teal);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 16px;
-  min-height: 52px;
-  gap: 8px;
-}
-.page-indicator {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  font:
-    400 16px/1.1 Inter,
-    system-ui,
-    sans-serif;
-}
-#js-page-input {
-  width: 42px;
-  text-align: center;
-  padding: 3px 4px;
-  color: #fff;
-  background: transparent;
-  border: 1px solid var(--line);
-  border-radius: 4px;
-  font: inherit;
-}
-#js-page-input:disabled {
-  opacity: 0.4;
-}
-.controls {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-.controls .ctl-label {
-  font: 500 16px/1.6 var(--primary);
-}
-.divider {
-  color: var(--line);
-  padding: 0 8px;
-}
-
-.icon-btn {
-  width: 24px;
-  height: 24px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: 0;
-  color: #fff;
-  cursor: pointer;
-  font-size: 18px;
-  line-height: 1;
-}
-.icon-btn:disabled {
-  opacity: 0.35;
-  cursor: default;
-}
-
-/* dropdown component (design-system stand-in for forms.js) — mirrors the real
-   Webflow markup: [data-dropdown-trigger] with a .dropdown-trigger-label +
-   .dropdown-trigger-icon (SVG chevron), and .dropdown-option rows that carry a
-   .dropdown-option-label + a .dropdown-option-check (SVG) revealed on select.
-   The design-system CDN (forms.css) only ships the STATE rules; these
-   structural rules are Webflow-authored, restated here for the standalone
-   preview. Selection is driven by aria-selected (set by forms.js / the preview
-   script / viewer.js), NOT by a radio — matching the single-select component. */
-[data-dropdown] {
-  position: relative;
-}
-[data-dropdown-trigger] {
-  display: inline-flex;
-  gap: 8px;
-  align-items: center;
-  padding: 4px 8px 4px 12px;
-  background: none;
-  color: #fff;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  font: 500 16px/1.6 var(--primary);
-  cursor: pointer;
-}
-[data-dropdown-trigger]:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-.dropdown-trigger-label {
-  white-space: nowrap;
-}
-.dropdown-trigger-icon {
-  width: 14px;
-  height: 14px;
-  flex: 0 0 auto;
-  transition: transform 0.15s ease;
-}
-[data-dropdown].is-open .dropdown-trigger-icon {
-  transform: rotate(180deg);
-}
-.dropdown-list {
-  position: absolute;
-  bottom: calc(100% + 6px);
-  left: 0;
-  min-width: 100%;
-  margin: 0;
-  padding: 4px;
-  list-style: none;
-  background: var(--teal);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  display: none;
-  z-index: 20;
-}
-[data-dropdown].is-open .dropdown-list {
-  display: block;
-}
-/* option row: label grows, the check sits on whichever side the markup places
-   it (right for the DS layout/zoom lists, left for the scroll popover). */
-.dropdown-option {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
-  white-space: nowrap;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.dropdown-option:hover {
-  background: rgba(173, 231, 247, 0.15);
-}
-.dropdown-option-label {
-  flex: 1 1 auto;
-}
-.dropdown-option-check {
-  width: 18px;
-  height: 18px;
-  flex: 0 0 auto;
-  opacity: 0;
-  color: var(--line);
-}
-/* DS single-select shows the check on the aria-selected option */
-.dropdown-option[aria-selected="true"] .dropdown-option-check {
-  opacity: 1;
-}
-
-/* scroll popover — a custom two-group menu (捲動方向 + 連接方向) that reuses the DS
-   .dropdown-list (class `dropdown-list cc-viewer-bottom`) for its look, so Webflow
-   owns the styling. It isn't inside a [data-dropdown], so viewer.js toggles .is-open
-   on the list ITSELF; it opens the same way forms.js does — via opacity + max-height
-   (a transition), NOT display. The base .dropdown-list rule sets display:none for the
-   preview's layout/zoom lists, so re-assert display:block here and let opacity/
-   max-height drive show/hide. On the real site the Webflow .dropdown-list supplies the
-   same closed state + transition; these values mirror it (max-height .4s / opacity .3s).
-   Each option is a .dropdown-option <li> whose aria-selected reveals the check. */
-.scroll-wrap {
-  position: relative;
-}
-.dropdown-list.cc-viewer-bottom {
-  display: block;
-  min-width: 180px;
-  opacity: 0;
-  max-height: 0;
-  overflow: hidden;
-  pointer-events: none;
-  transition:
-    max-height 0.4s ease-in-out,
-    opacity 0.3s ease-in-out;
-}
-.dropdown-list.cc-viewer-bottom.is-open {
-  opacity: 1;
-  max-height: max(70svh, 14rem);
-  overflow: auto;
-  pointer-events: auto;
-}
-.dropdown-list.cc-viewer-bottom .dropdown-option:focus-visible {
-  outline: 2px solid var(--line);
-  outline-offset: -2px;
-}
-/* viewer.js sets .is-disabled (+ aria-disabled) on the group that doesn't apply */
-.dropdown-list.cc-viewer-bottom .dropdown-option.is-disabled {
-  opacity: 0.35;
-  cursor: default;
-}
-.dropdown-list.cc-viewer-bottom .dropdown-option.is-disabled:hover {
-  background: none;
-}
-.scroll-popover-divider {
-  border-top: 1px solid rgba(173, 231, 247, 0.3);
-  margin: 4px 8px;
-}
-
-/* thumbnail grid */
+/* ---- thumbnail grid (cloned from templates) ---- */
 #js-thumbnail-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -498,7 +215,7 @@ body {
   font: inherit;
 }
 .thumbnail-item.is-active {
-  border-color: var(--line);
+  border-color: #ade7f7;
 }
 .thumbnail-image {
   width: 100%;
@@ -512,8 +229,9 @@ body {
   text-align: center;
 }
 
-/* ocr layout — panel (fixed) + a clipping stage for the page image so zoom /
- rotate can't spill over the text panel, and fit-width sizes to the stage. */
+/* ---- OCR layout (cloned from templates) — panel (fixed) + a clipping stage
+ for the page image so zoom / rotate can't spill over the text panel, and
+ fit-width sizes to the stage. The :has() rule is why this must be external. ---- */
 #js-page-container:has(.ocr-panel) {
   align-items: stretch;
 }
@@ -576,9 +294,9 @@ body {
   align-self: flex-start;
   margin-bottom: 8px;
   padding: 4px 10px;
-  border: 1px solid var(--teal);
+  border: 1px solid #00485c;
   background: #fff;
-  color: var(--teal);
+  color: #00485c;
   border-radius: 999px;
   cursor: pointer;
   font: inherit;
@@ -593,9 +311,9 @@ body {
 .ocr-font-controls button {
   width: 26px;
   height: 26px;
-  border: 1px solid var(--teal);
+  border: 1px solid #00485c;
   background: #fff;
-  color: var(--teal);
+  color: #00485c;
   border-radius: 4px;
   cursor: pointer;
 }
@@ -632,11 +350,7 @@ body {
   background: rgba(0, 72, 92, 0.1);
 }
 
-.is-hidden {
-  display: none !important;
-}
-
-/* placeholder / error (used if slots are wrappers instead of <img>) */
+/* ---- placeholder / error (cloned when a slot is a wrapper instead of <img>) ---- */
 .page-placeholder {
   display: flex;
   flex-direction: column;
@@ -652,7 +366,7 @@ body {
   width: 26px;
   height: 26px;
   border: 3px solid rgba(173, 231, 247, 0.3);
-  border-top-color: var(--line);
+  border-top-color: #ade7f7;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -660,4 +374,10 @@ body {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* ---- utility: viewer.js toggles this on runtime nodes; !important keeps it a
+ hard override Webflow's base styles can't win against ---- */
+.is-hidden {
+  display: none !important;
 }

@@ -6,6 +6,317 @@
     <title>影視刊物資料庫 · 書刊閱讀器</title>
     <link rel="stylesheet" href="https://hkbuproject-sandbox.vercel.app/filmtv/font/genryumin-tc/genryumin-tc.css" />
     <link rel="stylesheet" href="viewer.css" />
+
+    <!-- ⚠️ PREVIEW CHROME ONLY — not part of the handoff. On the live site all of
+         this (page shell, top/bottom toolbars, nav, arrows, dropdowns, buttons,
+         inputs, dividers) is authored in Webflow and styled by the Webflow /
+         design-system CSS. It is restated here so the standalone viewer.html
+         mock renders faithfully without loading the Webflow stylesheet. The
+         real viewer engine CSS lives in viewer.css.
+         Selectors marked [WF] have a same-named rule in the Webflow export —
+         Webflow owns them on the live site; they only exist here for the mock. -->
+    <style>
+      :root {
+        --teal: #00485c;
+        --teal-dark: #003240;
+        --line: #ade7f7;
+        --paper: #fff;
+        --primary: "GenRyuMin2 TC", "Songti TC", "Noto Serif TC", serif;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+      }
+      body {
+        font-family: var(--primary);
+        color: #fff;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* ---- root shell (flex column: nav / stage / controls) ---- */
+      .viewer-root {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        background: var(--teal-dark);
+      }
+      .viewer-root.is-fullscreen {
+        height: 100vh;
+      }
+
+      /* ---- top nav ---- */
+      .viewer-toolbar-top {
+        background: var(--teal);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 52px;
+        padding: 0 16px;
+      }
+      .viewer-toolbar-top .nav-group {
+        display: flex;
+        gap: 32px;
+        align-items: center;
+      }
+      .viewer-toolbar-top a,
+      .viewer-toolbar-top button {
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+        background: none;
+        border: 0;
+        color: #fff;
+        font: 500 16px/1.6 var(--primary);
+        cursor: pointer;
+      }
+      .nav-ico {
+        width: 24px;
+        height: 24px;
+        display: inline-block;
+        opacity: 0.9;
+      }
+
+      /* ---- stage (Webflow: .page-main.viewer-stage{position:relative}; ensure
+       it also has a definite height + overflow:hidden so the absolutely-filled
+       #js-page-container clips and the fit rules stay responsive) ---- */
+      .viewer-stage {
+        position: relative;
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: hidden;
+      }
+
+      /* ---- arrows [WF: .viewer-arrow, :hover, .is-left, .is-right] ---- */
+      .viewer-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 5;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 72, 92, 0.55);
+        color: #fff;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        cursor: pointer;
+        font-size: 20px;
+        line-height: 1;
+      }
+      .viewer-arrow:disabled {
+        opacity: 0.3;
+        cursor: default;
+      }
+      .viewer-arrow.is-hidden {
+        display: none !important;
+      }
+      #js-prev-page {
+        left: 16px;
+      }
+      #js-next-page {
+        right: 16px;
+      }
+
+      /* ---- bottom controls ---- */
+      .viewer-toolbar-bottom {
+        background: var(--teal);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        min-height: 52px;
+        gap: 8px;
+      }
+      .page-indicator {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        font:
+          400 16px/1.1 Inter,
+          system-ui,
+          sans-serif;
+      }
+      /* [WF: .input.cc-viewer] */
+      #js-page-input {
+        width: 42px;
+        text-align: center;
+        padding: 3px 4px;
+        color: #fff;
+        background: transparent;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        font: inherit;
+      }
+      #js-page-input:disabled {
+        opacity: 0.4;
+      }
+      .controls {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .controls .ctl-label {
+        font: 500 16px/1.6 var(--primary);
+      }
+      /* [WF: .divider] */
+      .divider {
+        color: var(--line);
+        padding: 0 8px;
+      }
+
+      .icon-btn {
+        width: 24px;
+        height: 24px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: none;
+        border: 0;
+        color: #fff;
+        cursor: pointer;
+        font-size: 18px;
+        line-height: 1;
+      }
+      .icon-btn:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+
+      /* ---- dropdown component [WF: .dropdown, .dropdown-trigger (+ :hover/
+       :focus-visible), .dropdown-trigger-label, .dropdown-trigger-icon,
+       .dropdown-list, .dropdown-option (+ :hover/:focus-visible),
+       .dropdown-option-check]. Webflow authors all of this; restated for the
+       mock. Selection is driven by aria-selected (set by forms.js / the preview
+       script / viewer.js), NOT by a radio — matching the single-select
+       component. The mock uses the [data-dropdown*] attribute hooks; Webflow
+       uses the matching classes. ---- */
+      [data-dropdown] {
+        position: relative;
+      }
+      [data-dropdown-trigger] {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+        padding: 4px 8px 4px 12px;
+        background: none;
+        color: #fff;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        font: 500 16px/1.6 var(--primary);
+        cursor: pointer;
+      }
+      [data-dropdown-trigger]:disabled {
+        opacity: 0.4;
+        cursor: default;
+      }
+      .dropdown-trigger-label {
+        white-space: nowrap;
+      }
+      .dropdown-trigger-icon {
+        width: 14px;
+        height: 14px;
+        flex: 0 0 auto;
+        transition: transform 0.15s ease;
+      }
+      [data-dropdown].is-open .dropdown-trigger-icon {
+        transform: rotate(180deg);
+      }
+      .dropdown-list {
+        position: absolute;
+        bottom: calc(100% + 6px);
+        left: 0;
+        min-width: 100%;
+        margin: 0;
+        padding: 4px;
+        list-style: none;
+        background: var(--teal);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        display: none;
+        z-index: 20;
+      }
+      [data-dropdown].is-open .dropdown-list {
+        display: block;
+      }
+      /* option row: label grows, the check sits on whichever side the markup
+       places it (right for the DS layout/zoom lists, left for the scroll popover). */
+      .dropdown-option {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        white-space: nowrap;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .dropdown-option:hover {
+        background: rgba(173, 231, 247, 0.15);
+      }
+      .dropdown-option-label {
+        flex: 1 1 auto;
+      }
+      .dropdown-option-check {
+        width: 18px;
+        height: 18px;
+        flex: 0 0 auto;
+        opacity: 0;
+        color: var(--line);
+      }
+      /* DS single-select shows the check on the aria-selected option */
+      .dropdown-option[aria-selected="true"] .dropdown-option-check {
+        opacity: 1;
+      }
+
+      /* ---- scroll popover — a custom two-group menu (捲動方向 + 連接方向) that
+       reuses the DS .dropdown-list [WF: .dropdown-list.cc-viewer-bottom] for its
+       look. It isn't inside a [data-dropdown], so viewer.js toggles .is-open on
+       the list ITSELF; it opens via opacity + max-height (a transition), NOT
+       display. On the real site the Webflow .dropdown-list supplies the same
+       closed state + transition; these values mirror it (max-height .4s /
+       opacity .3s). ---- */
+      .scroll-wrap {
+        position: relative;
+      }
+      .dropdown-list.cc-viewer-bottom {
+        display: block;
+        min-width: 180px;
+        opacity: 0;
+        max-height: 0;
+        overflow: hidden;
+        pointer-events: none;
+        transition:
+          max-height 0.4s ease-in-out,
+          opacity 0.3s ease-in-out;
+      }
+      .dropdown-list.cc-viewer-bottom.is-open {
+        opacity: 1;
+        max-height: max(70svh, 14rem);
+        overflow: auto;
+        pointer-events: auto;
+      }
+      .dropdown-list.cc-viewer-bottom .dropdown-option:focus-visible {
+        outline: 2px solid var(--line);
+        outline-offset: -2px;
+      }
+      /* viewer.js sets .is-disabled (+ aria-disabled) on the group that doesn't apply */
+      .dropdown-list.cc-viewer-bottom .dropdown-option.is-disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+      .dropdown-list.cc-viewer-bottom .dropdown-option.is-disabled:hover {
+        background: none;
+      }
+      .scroll-popover-divider {
+        border-top: 1px solid rgba(173, 231, 247, 0.3);
+        margin: 4px 8px;
+      }
+    </style>
   </head>
   <body>
     <!-- [data-viewer] scopes every hook; .viewer-root carries orientation/fullscreen classes -->
