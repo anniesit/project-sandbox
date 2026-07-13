@@ -1,351 +1,255 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-Hant">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>影視刊物資料庫 · 書刊閱讀器</title>
-  <link rel="stylesheet" href="https://hkbuproject-sandbox.vercel.app/filmtv/font/genryumin-tc/genryumin-tc.css" />
-  <style>
-    /* ⚠️ PREVIEW CHROME ONLY. On the real site these blocks are authored in
-       Webflow; this file mirrors the viewer page's id / data-* / <template>
-       structure so viewer.js can be seen driving it. Colours follow the Figma:
-       toolbars #00485c, stage #003240, accent line #ade7f7. Not part of handoff. */
-    :root {
-      --teal: #00485c; --teal-dark: #003240; --line: #ade7f7; --paper: #fff;
-      --primary: 'GenRyuMin2 TC', 'Songti TC', 'Noto Serif TC', serif;
-    }
-    * { box-sizing: border-box; }
-    html, body { margin: 0; height: 100%; }
-    body { font-family: var(--primary); color: #fff; -webkit-font-smoothing: antialiased; }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>影視刊物資料庫 · 書刊閱讀器</title>
+    <link rel="stylesheet" href="https://hkbuproject-sandbox.vercel.app/filmtv/font/genryumin-tc/genryumin-tc.css" />
+    <link rel="stylesheet" href="viewer.css" />
+  </head>
+  <body>
+    <!-- [data-viewer] scopes every hook; .viewer-root carries orientation/fullscreen classes -->
+    <div class="viewer-root" data-viewer>
+      <!-- ============ TOP NAV (Navigation/Search/Metadata stages — static preview) ============ -->
+      <header class="viewer-toolbar-top">
+        <div class="nav-group">
+          <a href="#" id="js-back"><span class="nav-ico">←</span>返回</a>
+          <button id="js-toc-trigger"><span class="nav-ico">☰</span>刊物目錄</button>
+          <button id="js-search-trigger"><span class="nav-ico">🔍</span>搜尋內文</button>
+        </div>
+        <div class="nav-group">
+          <button id="js-article-info"><span class="nav-ico">ⓘ</span>文章資訊</button>
+          <button id="js-share"><span class="nav-ico">🔗</span></button>
+        </div>
+      </header>
 
-    /* ---- root shell (flex column: nav / stage / controls) ---- */
-    .viewer-root { display: flex; flex-direction: column; height: 100vh; background: var(--teal-dark); }
-    .viewer-root.is-fullscreen { height: 100vh; }
+      <!-- ============ STAGE ============ -->
+      <main class="viewer-stage">
+        <button class="viewer-arrow" id="js-prev-page" aria-label="上一頁">‹</button>
+        <div id="js-page-container" class="viewer-page-container"><!-- cloned from a template --></div>
+        <button class="viewer-arrow" id="js-next-page" aria-label="下一頁">›</button>
+      </main>
 
-    /* ---- top nav (later stages; static here for parity) ---- */
-    .viewer-toolbar-top { background: var(--teal); display: flex; align-items: center; justify-content: space-between; min-height: 52px; padding: 0 16px; }
-    .viewer-toolbar-top .nav-group { display: flex; gap: 32px; align-items: center; }
-    .viewer-toolbar-top a, .viewer-toolbar-top button { display: inline-flex; gap: 6px; align-items: center; background: none; border: 0; color: #fff; font: 500 16px/1.6 var(--primary); cursor: pointer; }
-    .nav-ico { width: 24px; height: 24px; display: inline-block; opacity: .9; }
-
-    /* ---- stage ---- */
-    /* The container fills the stage (absolute inset:0) so it has a DEFINITE size —
-       that's what makes the fit-page (max-*:100%) and fit-width (width:100%) rules
-       responsive to the viewport. Overflow is clipped by the stage; the user pans. */
-    .viewer-stage { position: relative; flex: 1 1 auto; min-height: 0; overflow: hidden; }
-    #js-page-container { position: absolute; inset: 0; z-index: 1; display: flex; align-items: center; justify-content: center; padding: 12px; user-select: none; }
-    #js-page-container.is-pannable { cursor: grab; }
-    #js-page-container.is-dragging { cursor: grabbing; }
-
-    /* -webkit-user-drag:none stops the browser's native image drag (the ghost
-       thumbnail + stuck grab on Mac trackpads); viewer.js also sets draggable=false. */
-    .page-image { display: block; background: #10262e; transform-origin: center center; -webkit-user-drag: none; user-select: none; }
-    .page-image.is-empty { display: none; }
-    .page-image.is-error { min-width: 220px; min-height: 300px; background: #10262e url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' fill='none' stroke='%23ade7f7' stroke-width='1.5'><rect x='6' y='6' width='36' height='36' rx='3'/><path d='M6 34l10-10 8 8 6-6 12 12'/></svg>") center/48px no-repeat; }
-
-    /* double spread — the wrapper is the rotation target so both pages turn as one */
-    .page-spread { display: flex; align-items: center; justify-content: center; gap: 4px; transform-origin: center center; }
-    .layout-orientation-top .page-spread, .layout-orientation-bottom .page-spread { flex-direction: column; }
-    .page-spread.spread-lone { gap: 0; }
-
-    /* ---- zoom sizing (numeric-preset scale is applied by viewer.js transform) ---- */
-    /* fit-page: whole image / spread visible within the viewer. The spread gets a
-       DEFINITE size (100% of the container) so the child images' percentage
-       max-width resolves against the CONTAINER, not the content-sized spread —
-       otherwise a lone page (spread width == its own width) shrank to 50% of itself. */
-    .zoom-fit-page .page-image { max-width: 100%; max-height: 100%; width: auto; height: auto; }
-    .zoom-fit-page .page-spread { width: 100%; height: 100%; }
-    .zoom-fit-page .page-spread .page-image { max-height: 100%; max-width: 50%; }
-    /* rotate-aware (single/OCR image is the rotation target): swap width/height
-       constraints so a 90deg-turned page still fits. --vw/--vh set by viewer.js. */
-    .is-rot-90.zoom-fit-page .page-image.rotation-target { max-width: var(--vh); max-height: var(--vw); }
-
-    /* fit-width: image / spread spans the viewer width; height overflows -> pan/scroll */
-    .zoom-fit-width .page-image { width: 100%; height: auto; max-width: none; max-height: none; }
-    .zoom-fit-width .page-spread { width: 100%; max-width: none; max-height: none; }
-    .zoom-fit-width .page-spread .page-image { width: 50%; height: auto; max-width: none; max-height: none; }
-    .is-rot-90.zoom-fit-width .page-image.rotation-target { width: auto; height: var(--vw); max-width: none; max-height: none; }
-
-    /* 100% / 150%: natural pixels (150 is scaled via the JS transform) */
-    .zoom-100 .page-image, .zoom-150 .page-image { max-width: none; max-height: none; width: auto; height: auto; }
-
-    /* ---- single-page SCROLL modes (vertical / horizontal strips) ----
-       Normal flex-direction (viewer.js reverses the DOM order for right/bottom
-       binding). Reverse flex-direction is avoided — its overflow has a bug that
-       makes the far end unscrollable. */
-    /* justify-content:flex-start is CRITICAL: the base container centers content,
-       and a centered OVERFLOWING flex strip clips its start (page 1) and makes it
-       unscrollable. flex-start pins the strip to the top/left so the whole range scrolls. */
-    #js-page-container.viewer-scroll { display: flex; justify-content: flex-start; padding: 12px; }
-    #js-page-container.viewer-scroll .page-image { flex: 0 0 auto; }
-    #js-page-container.viewer-scroll.scroll-direction-vertical { flex-direction: column; align-items: center; overflow-x: hidden; overflow-y: auto; }
-    #js-page-container.viewer-scroll.scroll-direction-vertical .page-image { width: auto; height: auto; max-width: min(100%, 780px); max-height: none; margin: 0 0 12px; }
-    #js-page-container.viewer-scroll.scroll-direction-horizontal { flex-direction: row; align-items: center; overflow-x: auto; overflow-y: hidden; }
-    #js-page-container.viewer-scroll.scroll-direction-horizontal .page-image { height: 100%; width: auto; max-width: none; max-height: 100%; margin: 0 12px 0 0; }
-
-    /* arrows */
-    .viewer-arrow { position: absolute; top: 50%; transform: translateY(-50%); z-index: 5; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: rgba(0,72,92,.55); color: #fff; border: 1px solid var(--line); border-radius: 999px; cursor: pointer; font-size: 20px; line-height: 1; }
-    .viewer-arrow:disabled { opacity: .3; cursor: default; }
-    .viewer-arrow.is-hidden { display: none !important; }
-    #js-prev-page { left: 16px; }
-    #js-next-page { right: 16px; }
-
-    /* ---- bottom controls ---- */
-    .viewer-toolbar-bottom { background: var(--teal); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; min-height: 52px; gap: 8px; }
-    .page-indicator { display: flex; gap: 8px; align-items: center; font: 400 16px/1.1 Inter, system-ui, sans-serif; }
-    #js-page-input { width: 42px; text-align: center; padding: 3px 4px; color: #fff; background: transparent; border: 1px solid var(--line); border-radius: 4px; font: inherit; }
-    #js-page-input:disabled { opacity: .4; }
-    .controls { display: flex; gap: 8px; align-items: center; }
-    .controls .ctl-label { font: 500 16px/1.6 var(--primary); }
-    .divider { color: var(--line); padding: 0 8px; }
-
-    .icon-btn { width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; background: none; border: 0; color: #fff; cursor: pointer; font-size: 18px; line-height: 1; }
-    .icon-btn:disabled { opacity: .35; cursor: default; }
-
-    /* dropdown component (design-system stand-in for forms.js) */
-    [data-dropdown] { position: relative; }
-    [data-dropdown-trigger] { display: inline-flex; gap: 8px; align-items: center; padding: 4px 4px 4px 12px; background: none; color: #fff; border: 1px solid var(--line); border-radius: 8px; font: 500 16px/1.6 var(--primary); cursor: pointer; }
-    [data-dropdown-trigger]:disabled { opacity: .4; cursor: default; }
-    .dropdown-trigger-icon { width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid #fff; }
-    .dropdown-list { position: absolute; bottom: calc(100% + 6px); left: 0; min-width: 100%; margin: 0; padding: 4px; list-style: none; background: var(--teal); border: 1px solid var(--line); border-radius: 8px; display: none; z-index: 20; }
-    [data-dropdown].is-open .dropdown-list { display: block; }
-    .dropdown-option { padding: 6px 12px; white-space: nowrap; border-radius: 4px; cursor: pointer; }
-    .dropdown-option:hover { background: rgba(173,231,247,.15); }
-    .dropdown-option.is-active { background: var(--line); color: var(--teal-dark); }
-
-    /* scroll popover (custom) */
-    .scroll-popover { position: absolute; bottom: calc(100% + 6px); left: 0; padding: 10px 12px; background: var(--teal); border: 1px solid var(--line); border-radius: 8px; display: none; z-index: 20; min-width: 160px; }
-    .scroll-popover.is-open { display: block; }
-    .scroll-popover .radio { display: flex; gap: 8px; align-items: center; padding: 4px 0; cursor: pointer; }
-    .scroll-popover input:disabled + .radio-control { opacity: .35; }
-    .scroll-popover-divider { border: 0; border-top: 1px solid rgba(173,231,247,.3); margin: 8px 0; }
-    .scroll-wrap { position: relative; }
-
-    /* thumbnail grid */
-    #js-thumbnail-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; width: 100%; align-self: stretch; height: 100%; overflow-y: auto; padding: 16px; align-content: start; }
-    .thumbnail-item { display: flex; flex-direction: column; gap: 4px; padding: 4px; background: none; border: 2px solid transparent; border-radius: 6px; cursor: pointer; color: #cfe9f2; font: inherit; }
-    .thumbnail-item.is-active { border-color: var(--line); }
-    .thumbnail-image { width: 100%; aspect-ratio: 3/4; object-fit: cover; background: #10262e; border-radius: 3px; }
-    .thumbnail-label { font-size: 12px; text-align: center; }
-
-    /* ocr layout — panel (fixed) + a clipping stage for the page image so zoom /
-       rotate can't spill over the text panel, and fit-width sizes to the stage. */
-    #js-page-container:has(.ocr-panel) { align-items: stretch; }
-    .ocr-panel { flex: 0 0 auto; display: flex; flex-direction: column; width: 46%; max-width: 620px; background: #f4efe6; color: #1c1a18; border-radius: 6px; padding: 12px; margin-right: 12px; max-height: 100%; }
-    .ocr-page-stage { flex: 1 1 0; min-width: 0; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-    .ocr-content { flex: 1 1 auto; overflow-y: auto; padding: 4px 6px; }
-    .ocr-article-block { padding: 8px 0; border-bottom: 1px dotted rgba(0,0,0,.15); }
-    .ocr-article-meta { font-weight: 600; margin-bottom: 6px; }
-    .ocr-article-body { line-height: 1.8; }
-    .ocr-article-body p { margin: 0 0 .4em; }
-    .ocr-article-body [id="ocrHead"] { font-weight: 700; font-size: 1.12em; margin-bottom: .5em; }
-    .ocr-font-small .ocr-article-body { font-size: 14px; }
-    .ocr-font-medium .ocr-article-body { font-size: 16px; }
-    .ocr-font-large .ocr-article-body { font-size: 20px; }
-    .ocr-toc-trigger { align-self: flex-start; margin-bottom: 8px; padding: 4px 10px; border: 1px solid var(--teal); background: #fff; color: var(--teal); border-radius: 999px; cursor: pointer; font: inherit; }
-    .ocr-font-controls { display: flex; gap: 6px; align-items: center; padding-top: 8px; border-top: 1px solid rgba(0,0,0,.1); }
-    .ocr-font-controls button { width: 26px; height: 26px; border: 1px solid var(--teal); background: #fff; color: var(--teal); border-radius: 4px; cursor: pointer; }
-    .ocr-toc-popover { position: absolute; margin-top: 4px; background: #fff; color: #1c1a18; border: 1px solid rgba(0,0,0,.2); border-radius: 6px; padding: 8px; display: none; z-index: 30; max-width: 260px; }
-    .ocr-toc-popover.is-open { display: block; }
-    .ocr-toc-header { font-weight: 600; margin-bottom: 6px; }
-    #js-ocr-toc-list { list-style: none; margin: 0; padding: 0; }
-    #js-ocr-toc-list li { padding: 4px 6px; border-radius: 4px; cursor: pointer; }
-    #js-ocr-toc-list li:hover { background: rgba(0,72,92,.1); }
-
-    .is-hidden { display: none !important; }
-
-    /* placeholder / error (used if slots are wrappers instead of <img>) */
-    .page-placeholder { display: flex; flex-direction: column; gap: 8px; align-items: center; justify-content: center; min-width: 220px; aspect-ratio: 3/4; background: #10262e; color: #9fc7d4; }
-    .page-placeholder-spinner { width: 26px; height: 26px; border: 3px solid rgba(173,231,247,.3); border-top-color: var(--line); border-radius: 50%; animation: spin 1s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-  </style>
-</head>
-<body>
-  <!-- [data-viewer] scopes every hook; .viewer-root carries orientation/fullscreen classes -->
-  <div class="viewer-root" data-viewer>
-
-    <!-- ============ TOP NAV (Navigation/Search/Metadata stages — static preview) ============ -->
-    <header class="viewer-toolbar-top">
-      <div class="nav-group">
-        <a href="#" id="js-back"><span class="nav-ico">←</span>返回</a>
-        <button id="js-toc-trigger"><span class="nav-ico">☰</span>刊物目錄</button>
-        <button id="js-search-trigger"><span class="nav-ico">🔍</span>搜尋內文</button>
-      </div>
-      <div class="nav-group">
-        <button id="js-article-info"><span class="nav-ico">ⓘ</span>文章資訊</button>
-        <button id="js-share"><span class="nav-ico">🔗</span></button>
-      </div>
-    </header>
-
-    <!-- ============ STAGE ============ -->
-    <main class="viewer-stage">
-      <button class="viewer-arrow" id="js-prev-page" aria-label="上一頁">‹</button>
-      <div id="js-page-container" class="viewer-page-container"><!-- cloned from a template --></div>
-      <button class="viewer-arrow" id="js-next-page" aria-label="下一頁">›</button>
-    </main>
-
-    <!-- ============ BOTTOM CONTROLS ============ -->
-    <footer class="viewer-toolbar-bottom">
-      <div class="page-indicator">
-        <span>頁</span>
-        <input id="js-page-input" type="text" inputmode="numeric" value="1" aria-label="頁碼" />
-        <span id="js-page-total"> / 16</span>
-      </div>
-
-      <div class="controls">
-        <span class="ctl-label">版面配置</span>
-        <!-- Layout dropdown (design-system dropdown component) -->
-        <div class="dropdown" data-dropdown id="js-layout-dropdown">
-          <button type="button" data-dropdown-trigger>
-            <span data-dropdown-value>雙頁</span>
-            <span class="dropdown-trigger-icon"></span>
-          </button>
-          <input type="hidden" name="layout" value="double" />
-          <ul class="dropdown-list">
-            <li class="dropdown-option is-active" data-value="double">雙頁</li>
-            <li class="dropdown-option" data-value="single">單頁</li>
-            <li class="dropdown-option" data-value="ocr">顯示純文字</li>
-            <li class="dropdown-option" data-value="thumbnail">縮圖</li>
-          </ul>
+      <!-- ============ BOTTOM CONTROLS ============ -->
+      <footer class="viewer-toolbar-bottom">
+        <div class="page-indicator">
+          <span>頁</span>
+          <input id="js-page-input" type="text" inputmode="numeric" value="1" aria-label="頁碼" />
+          <span>/</span>
+          <span id="js-page-total">16</span>
         </div>
 
-        <!-- "..." scroll popover -->
-        <div class="scroll-wrap">
-          <button type="button" class="icon-btn" id="js-scroll-popover-trigger" aria-label="捲動設定">⋯</button>
-          <div class="scroll-popover" id="js-scroll-popover">
-            <label class="radio"><input type="radio" name="scrollDirection" value="flip" checked class="radio-input" /><span class="radio-control"></span><span class="radio-label">翻頁</span></label>
-            <label class="radio"><input type="radio" name="scrollDirection" value="vertical" class="radio-input" /><span class="radio-control"></span><span class="radio-label">垂直捲動</span></label>
-            <label class="radio"><input type="radio" name="scrollDirection" value="horizontal" class="radio-input" /><span class="radio-control"></span><span class="radio-label">水平捲動</span></label>
-            <hr class="scroll-popover-divider" />
-            <label class="radio"><input type="radio" name="connectMode" value="next" checked class="radio-input" /><span class="radio-control"></span><span class="radio-label">連接下頁</span></label>
-            <label class="radio"><input type="radio" name="connectMode" value="previous" class="radio-input" /><span class="radio-control"></span><span class="radio-label">連接上頁</span></label>
+        <div class="controls">
+          <span class="ctl-label">版面配置</span>
+          <!-- Layout dropdown — design-system single-select (data-dropdown-option
+               + .dropdown-option-label + .dropdown-option-check, aria-selected). -->
+          <div class="dropdown" data-dropdown id="js-layout-dropdown">
+            <input type="hidden" name="layout" value="double" />
+            <button type="button" data-dropdown-trigger aria-haspopup="listbox" aria-expanded="false">
+              <span data-dropdown-value class="dropdown-trigger-label">雙頁</span>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-trigger-icon"><path d="M216.49,104.49l-80,80a12,12,0,0,1-17,0l-80-80a12,12,0,0,1,17-17L128,159l71.51-71.52a12,12,0,0,1,17,17Z"/></svg>
+            </button>
+            <ul role="listbox" class="dropdown-list">
+              <li role="option" aria-selected="true" data-value="double" data-dropdown-option class="dropdown-option">
+                <span data-dropdown-option-label class="dropdown-option-label">雙頁</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg>
+              </li>
+              <li role="option" aria-selected="false" data-value="single" data-dropdown-option class="dropdown-option">
+                <span data-dropdown-option-label class="dropdown-option-label">單頁</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg>
+              </li>
+              <li role="option" aria-selected="false" data-value="ocr" data-dropdown-option class="dropdown-option">
+                <span data-dropdown-option-label class="dropdown-option-label">顯示純文字</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg>
+              </li>
+              <li role="option" aria-selected="false" data-value="thumbnail" data-dropdown-option class="dropdown-option">
+                <span data-dropdown-option-label class="dropdown-option-label">縮圖</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg>
+              </li>
+            </ul>
           </div>
+
+          <!-- "⋯" scroll popover — two single-select groups (捲動方向 + 連接方向) using
+               the SAME check-select pattern + <li> structure as the layout/zoom dropdowns:
+               each option's aria-selected reveals the .dropdown-option-check. No radios —
+               viewer.js reads the click/keys (data-scroll-direction / data-connect-mode) and
+               owns aria-selected/aria-disabled, because forms.js single-select handles only
+               ONE group and this menu has two. -->
+          <div class="scroll-wrap">
+            <button type="button" class="icon-btn" id="js-scroll-popover-trigger" aria-label="捲動設定" aria-haspopup="menu" aria-expanded="false">⋯</button>
+            <ul class="scroll-popover" id="js-scroll-popover" role="menu">
+              <li class="dropdown-option" role="menuitemradio" tabindex="-1" data-scroll-direction="flip" aria-selected="true">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg>
+                <span class="dropdown-option-label">翻頁</span>
+              </li>
+              <li class="dropdown-option" role="menuitemradio" tabindex="-1" data-scroll-direction="vertical" aria-selected="false">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg>
+                <span class="dropdown-option-label">垂直捲動</span>
+              </li>
+              <li class="dropdown-option" role="menuitemradio" tabindex="-1" data-scroll-direction="horizontal" aria-selected="false">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg>
+                <span class="dropdown-option-label">水平捲動</span>
+              </li>
+              <li class="scroll-popover-divider" role="separator"></li>
+              <li class="dropdown-option" role="menuitemradio" tabindex="-1" data-connect-mode="next" aria-selected="true">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg>
+                <span class="dropdown-option-label">連接下頁</span>
+              </li>
+              <li class="dropdown-option" role="menuitemradio" tabindex="-1" data-connect-mode="previous" aria-selected="false">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg>
+                <span class="dropdown-option-label">連接上頁</span>
+              </li>
+            </ul>
+          </div>
+
+          <span class="divider">|</span>
+          <span class="ctl-label">縮放</span>
+          <!-- Zoom dropdown (no +/- buttons — D1) -->
+          <div class="dropdown" data-dropdown id="js-zoom-dropdown">
+            <input type="hidden" name="zoom" value="fit-page" />
+            <button type="button" data-dropdown-trigger aria-haspopup="listbox" aria-expanded="false">
+              <span data-dropdown-value class="dropdown-trigger-label">符合頁面</span>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-trigger-icon"><path d="M216.49,104.49l-80,80a12,12,0,0,1-17,0l-80-80a12,12,0,0,1,17-17L128,159l71.51-71.52a12,12,0,0,1,17,17Z"/></svg>
+            </button>
+            <ul role="listbox" class="dropdown-list">
+              <li role="option" aria-selected="false" data-value="fit-width" data-dropdown-option class="dropdown-option">
+                <span data-dropdown-option-label class="dropdown-option-label">符合頁寬</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg>
+              </li>
+              <li role="option" aria-selected="true" data-value="fit-page" data-dropdown-option class="dropdown-option">
+                <span data-dropdown-option-label class="dropdown-option-label">符合頁面</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg>
+              </li>
+              <li role="option" aria-selected="false" data-value="100" data-dropdown-option class="dropdown-option">
+                <span data-dropdown-option-label class="dropdown-option-label">100%</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg>
+              </li>
+              <li role="option" aria-selected="false" data-value="150" data-dropdown-option class="dropdown-option">
+                <span data-dropdown-option-label class="dropdown-option-label">150%</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg>
+              </li>
+            </ul>
+          </div>
+
+          <button type="button" class="icon-btn" id="js-fullscreen" aria-label="全螢幕">⛶</button>
+
+          <span class="divider">|</span>
+          <span class="ctl-label">旋轉</span>
+          <button type="button" class="icon-btn" id="js-rotate-ccw" aria-label="逆時針旋轉">⟲</button>
+          <button type="button" class="icon-btn" id="js-rotate-cw" aria-label="順時針旋轉">⟳</button>
         </div>
+      </footer>
+    </div>
 
-        <span class="divider">|</span>
-        <span class="ctl-label">縮放</span>
-        <!-- Zoom dropdown (no +/- buttons — D1) -->
-        <div class="dropdown" data-dropdown id="js-zoom-dropdown">
-          <button type="button" data-dropdown-trigger>
-            <span data-dropdown-value>符合頁面</span>
-            <span class="dropdown-trigger-icon"></span>
-          </button>
-          <input type="hidden" name="zoom" value="fit-page" />
-          <ul class="dropdown-list">
-            <li class="dropdown-option" data-value="fit-width">符合頁寬</li>
-            <li class="dropdown-option is-active" data-value="fit-page">符合頁面</li>
-            <li class="dropdown-option" data-value="100">100%</li>
-            <li class="dropdown-option" data-value="150">150%</li>
-          </ul>
+    <!-- ================= TEMPLATES (inert; cloned by viewer.js) ================= -->
+    <template id="tpl-layout-single">
+      <img class="page-image" alt="" draggable="false" />
+    </template>
+
+    <template id="tpl-layout-double">
+      <div class="page-spread">
+        <img class="page-image page-image--left" alt="" draggable="false" />
+        <img class="page-image page-image--right" alt="" draggable="false" />
+      </div>
+    </template>
+
+    <template id="tpl-layout-ocr">
+      <div class="ocr-panel">
+        <button class="ocr-toc-trigger is-hidden" id="js-ocr-toc-trigger" type="button">純文字目錄</button>
+        <div class="ocr-content" id="js-ocr-content"></div>
+        <div class="ocr-font-controls">
+          <span>字體大小</span>
+          <button id="js-ocr-font-decrease" type="button">−</button>
+          <button id="js-ocr-font-increase" type="button">＋</button>
         </div>
-
-        <button type="button" class="icon-btn" id="js-fullscreen" aria-label="全螢幕">⛶</button>
-
-        <span class="divider">|</span>
-        <span class="ctl-label">旋轉</span>
-        <button type="button" class="icon-btn" id="js-rotate-ccw" aria-label="逆時針旋轉">⟲</button>
-        <button type="button" class="icon-btn" id="js-rotate-cw" aria-label="順時針旋轉">⟳</button>
       </div>
-    </footer>
-  </div>
+      <div class="ocr-page-stage"><img class="page-image" alt="" draggable="false" /></div>
+    </template>
 
-  <!-- ================= TEMPLATES (inert; cloned by viewer.js) ================= -->
-  <template id="tpl-layout-single">
-    <img class="page-image" alt="" draggable="false" />
-  </template>
+    <template id="tpl-layout-thumbnail">
+      <div class="thumbnail-grid" id="js-thumbnail-grid"></div>
+    </template>
 
-  <template id="tpl-layout-double">
-    <div class="page-spread">
-      <img class="page-image page-image--left" alt="" draggable="false" />
-      <img class="page-image page-image--right" alt="" draggable="false" />
-    </div>
-  </template>
+    <template id="tpl-thumbnail-item">
+      <button class="thumbnail-item" type="button">
+        <img class="thumbnail-image" alt="" />
+        <span class="thumbnail-label"></span>
+      </button>
+    </template>
 
-  <template id="tpl-layout-ocr">
-    <div class="ocr-panel">
-      <button class="ocr-toc-trigger is-hidden" id="js-ocr-toc-trigger" type="button">純文字目錄</button>
-      <div class="ocr-content" id="js-ocr-content"></div>
-      <div class="ocr-font-controls">
-        <span>字體大小</span>
-        <button id="js-ocr-font-decrease" type="button">−</button>
-        <button id="js-ocr-font-increase" type="button">＋</button>
+    <template id="tpl-ocr-article-block">
+      <div class="ocr-article-block">
+        <div class="ocr-article-meta"></div>
+        <div class="ocr-article-body"></div>
       </div>
-    </div>
-    <div class="ocr-page-stage"><img class="page-image" alt="" draggable="false" /></div>
-  </template>
+    </template>
 
-  <template id="tpl-layout-thumbnail">
-    <div class="thumbnail-grid" id="js-thumbnail-grid"></div>
-  </template>
+    <template id="tpl-ocr-toc-popover">
+      <div class="ocr-toc-popover" id="js-ocr-toc-popover">
+        <div class="ocr-toc-header"></div>
+        <ul id="js-ocr-toc-list"></ul>
+      </div>
+    </template>
 
-  <template id="tpl-thumbnail-item">
-    <button class="thumbnail-item" type="button">
-      <img class="thumbnail-image" alt="" />
-      <span class="thumbnail-label"></span>
-    </button>
-  </template>
+    <template id="tpl-page-placeholder">
+      <div class="page-placeholder">
+        <div class="page-placeholder-spinner"></div>
+        <span class="page-placeholder-label"></span>
+      </div>
+    </template>
 
-  <template id="tpl-ocr-article-block">
-    <div class="ocr-article-block">
-      <div class="ocr-article-meta"></div>
-      <div class="ocr-article-body"></div>
-    </div>
-  </template>
+    <template id="tpl-page-error">
+      <div class="page-error">
+        <div class="page-error-icon"></div>
+        <span class="page-error-label"></span>
+      </div>
+    </template>
 
-  <template id="tpl-ocr-toc-popover">
-    <div class="ocr-toc-popover" id="js-ocr-toc-popover">
-      <div class="ocr-toc-header"></div>
-      <ul id="js-ocr-toc-list"></ul>
-    </div>
-  </template>
-
-  <template id="tpl-page-placeholder">
-    <div class="page-placeholder">
-      <div class="page-placeholder-spinner"></div>
-      <span class="page-placeholder-label"></span>
-    </div>
-  </template>
-
-  <template id="tpl-page-error">
-    <div class="page-error">
-      <div class="page-error-icon"></div>
-      <span class="page-error-label"></span>
-    </div>
-  </template>
-
-  <!-- Preview-only dropdown behavior: stands in for the design-system forms.js.
-       Toggles .is-open, sets the hidden input value on option click, dispatches
-       'input' (what viewer.js listens for), and reflects the chosen label. -->
-  <script>
-    (function () {
-      document.querySelectorAll("[data-dropdown]").forEach(function (dd) {
-        var trigger = dd.querySelector("[data-dropdown-trigger]");
-        var hidden = dd.querySelector('input[type="hidden"]');
-        var valueEl = dd.querySelector("[data-dropdown-value]");
-        trigger.addEventListener("click", function (e) {
-          e.stopPropagation();
-          if (trigger.disabled) return;
-          document.querySelectorAll("[data-dropdown].is-open").forEach(function (o) { if (o !== dd) o.classList.remove("is-open"); });
-          dd.classList.toggle("is-open");
-        });
-        dd.querySelectorAll(".dropdown-option").forEach(function (opt) {
-          opt.addEventListener("click", function () {
-            hidden.value = opt.getAttribute("data-value");
-            if (valueEl) valueEl.textContent = (opt.textContent || "").trim();
-            dd.classList.remove("is-open");
-            hidden.dispatchEvent(new Event("input", { bubbles: true }));
+    <!-- Preview-only dropdown behavior: stands in for the design-system forms.js
+       (the real site loads bundles/all.js). Toggles .is-open, and on option
+       click sets aria-selected + the hidden input value, reflects the label from
+       .dropdown-option-label, and dispatches 'input' (what viewer.js listens for). -->
+    <script>
+      (function () {
+        document.querySelectorAll("[data-dropdown]").forEach(function (dd) {
+          var trigger = dd.querySelector("[data-dropdown-trigger]");
+          var hidden = dd.querySelector('input[type="hidden"]');
+          var valueEl = dd.querySelector("[data-dropdown-value]");
+          var options = dd.querySelectorAll("[data-dropdown-option], .dropdown-option");
+          trigger.addEventListener("click", function (e) {
+            e.stopPropagation();
+            if (trigger.disabled) return;
+            document.querySelectorAll("[data-dropdown].is-open").forEach(function (o) {
+              if (o !== dd) o.classList.remove("is-open");
+            });
+            dd.classList.toggle("is-open");
+            trigger.setAttribute("aria-expanded", dd.classList.contains("is-open") ? "true" : "false");
+          });
+          options.forEach(function (opt) {
+            opt.addEventListener("click", function () {
+              if (hidden) hidden.value = opt.getAttribute("data-value");
+              var lab = opt.querySelector("[data-dropdown-option-label], .dropdown-option-label");
+              if (valueEl) valueEl.textContent = ((lab ? lab.textContent : opt.textContent) || "").trim();
+              options.forEach(function (o) {
+                o.setAttribute("aria-selected", o === opt ? "true" : "false");
+              });
+              dd.classList.remove("is-open");
+              trigger.setAttribute("aria-expanded", "false");
+              if (hidden) hidden.dispatchEvent(new Event("input", { bubbles: true }));
+            });
           });
         });
-      });
-      document.addEventListener("click", function () {
-        document.querySelectorAll("[data-dropdown].is-open").forEach(function (o) { o.classList.remove("is-open"); });
-      });
-    })();
-  </script>
+        document.addEventListener("click", function () {
+          document.querySelectorAll("[data-dropdown].is-open").forEach(function (o) {
+            o.classList.remove("is-open");
+          });
+        });
+      })();
+    </script>
 
-  <!-- viewer.js = the reusable viewer (stays after integration).
+    <!-- viewer.js = the reusable viewer (stays after integration).
        viewer.mock.js = the disposable sample-data loader + dev switcher. -->
-  <script src="viewer.js"></script>
-  <script src="viewer.mock.js"></script>
-</body>
+    <script src="viewer.js"></script>
+    <script src="viewer.mock.js"></script>
+  </body>
 </html>
