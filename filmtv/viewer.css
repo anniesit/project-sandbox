@@ -88,11 +88,15 @@
  DEFINITE size (100% of the container) so the child images' percentage
  max-width resolves against the CONTAINER, not the content-sized spread —
  otherwise a lone page (spread width == its own width) shrank to 50% of itself. */
-.zoom-fit-page .page-image {
-  max-width: 100%;
-  max-height: 100%;
-  width: auto;
-  height: auto;
+/* Single / OCR page (the image itself is the rotation target): FILL to fit —
+ the 100%/100% box + object-fit:contain scales the scan up or down to fill the
+ viewport while preserving aspect ratio, instead of max-* capping it at the
+ file's intrinsic pixel size. Spread children keep the content-sized rules below
+ (max-width:50%), so the two pages still meet at the spine. */
+.zoom-fit-page .page-image.rotation-target {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 .zoom-fit-page .page-spread {
   width: 100%;
@@ -109,11 +113,12 @@
   max-height: calc(50% - 4px);
   max-width: 100%;
 }
-/* rotate-aware (single/OCR image is the rotation target): swap width/height
- constraints so a 90deg-turned page still fits. --vw/--vh set by viewer.js. */
+/* rotate-aware (single/OCR image is the rotation target): swap the box dims via
+ --vw/--vh so a 90deg-turned page still FILLS the viewport. object-fit:contain
+ (inherited from the rule above) keeps it centered + aspect-correct. */
 .is-rot-90.zoom-fit-page .page-image.rotation-target {
-  max-width: var(--vh);
-  max-height: var(--vw);
+  width: var(--vh);
+  height: var(--vw);
 }
 
 /* fit-width: image / spread spans the viewer width; height overflows -> pan/scroll */
@@ -261,6 +266,12 @@
   font-size: var(--_typography---paragraph-xl--font-size);
   line-height: var(--_typography---paragraph-body--line-height);
 }
+/* Divider between stacked articles on a page; none under the last / only article. */
+.ocr-article-block:not(:last-child) {
+  border-bottom: 1px solid var(--_color---neutral--200);
+  padding-bottom: var(--_typography---h4--bottom-margin);
+  margin-bottom: var(--_typography---h4--bottom-margin);
+}
 .ocr-toc-popover.is-open {
   display: block;
 }
@@ -334,6 +345,7 @@
 }
 .dropdown-list.cc-viewer-bottom .dropdown-option.is-disabled:hover {
   background: none;
+  color: var(--_color---neutral--white);
 }
 .scroll-popover-divider {
   border-top: 1px solid rgba(173, 231, 247, 0.3);

@@ -65,7 +65,7 @@
     rotation: 0, // 0 | 90 | 180 | 270
     connectMode: "next", // next | previous (double only)
     isFullscreen: false,
-    ocrFontSize: "medium",
+    ocrFontSize: "small",
     panX: 0,
     panY: 0,
   };
@@ -756,6 +756,10 @@
       panel.classList.remove("ocr-font-small", "ocr-font-medium", "ocr-font-large");
       panel.classList.add("ocr-font-" + state.ocrFontSize);
     }
+    // Disable the +/− buttons at the ends of the size scale so the :disabled style applies.
+    var fontIdx = OCR_FONT_SIZES.indexOf(state.ocrFontSize);
+    setDisabled(byId("js-ocr-font-decrease"), fontIdx <= 0);
+    setDisabled(byId("js-ocr-font-increase"), fontIdx >= OCR_FONT_SIZES.length - 1);
     var content = byId("js-ocr-content");
     var trigger = byId("js-ocr-toc-trigger");
     if (!content) return;
