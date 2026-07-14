@@ -76,6 +76,13 @@
   cursor: grabbing;
 }
 
+/* ---- Viewer Arrow ---- */
+.viewer-arrow:disabled {
+  opacity: 0.2;
+  cursor: default;
+  background-color: transparent;
+}
+
 /* ---- zoom sizing (numeric-preset scale is applied by viewer.js transform) ---- */
 /* fit-page: whole image / spread visible within the viewer. The spread gets a
  DEFINITE size (100% of the container) so the child images' percentage
@@ -236,8 +243,8 @@
   align-items: stretch;
 }
 .ocr-article-body [id="ocrHead"] {
-  font-family: var(--_typography---h4--font);
-  font-weight: var(--_typography---h4--font-weight);
+  font-family: var(--_typography---paragraph-xl--font);
+  font-weight: 900;
   font-size: 1.6em;
   line-height: var(--_typography---h4--line-height);
   margin-bottom: var(--_typography---h4--bottom-margin);
@@ -257,6 +264,11 @@
 .ocr-toc-popover.is-open {
   display: block;
 }
+.ocr-font-btn:disabled {
+  opacity: 0.4;
+  background-color: var(--_color---neutral--white);
+}
+
 /* ---- placeholder / error (cloned when a slot is a wrapper instead of <img>) ---- */
 .page-placeholder {
   display: flex;
