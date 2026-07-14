@@ -306,6 +306,66 @@
         font-size: 12px;
         opacity: 0.7;
       }
+
+      /* ---- PREVIEW-ONLY: sharpen button + responsive layout drawer. On the live
+         site Webflow owns .viewer-nav-btn / .viewer-layout / .viewer-layout-trigger
+         (incl. the per-breakpoint translateY). Restated here so the mock exercises
+         viewer.js's .is-open / .is-active toggles. [WF] ---- */
+      .viewer-nav-btn.cc-sharpen {
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+        background: none;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        color: #fff;
+        padding: 4px 10px;
+        font: 500 15px/1.6 var(--primary);
+        cursor: pointer;
+      }
+      .viewer-nav-btn.cc-sharpen.is-active {
+        background: var(--line);
+        color: var(--teal-dark);
+      }
+      /* trigger hidden on desktop (drawer is always in-frame) */
+      .viewer-layout-trigger {
+        display: none;
+        gap: 6px;
+        align-items: center;
+        background: none;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        color: #fff;
+        padding: 4px 10px;
+        font: 500 15px/1.6 var(--primary);
+        cursor: pointer;
+      }
+      @media (max-width: 991px) {
+        .viewer-toolbar-bottom {
+          position: relative;
+        }
+        .viewer-layout-trigger {
+          display: inline-flex;
+        }
+        /* drawer floats above the footer, translated off-frame until .is-open.
+           viewer.css supplies `.viewer-layout.is-open{transform:translateY(0)}`. */
+        .viewer-layout {
+          position: absolute;
+          right: 8px;
+          bottom: calc(100% + 8px);
+          flex-direction: row;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+          max-width: min(92vw, 640px);
+          padding: 12px;
+          background: var(--teal);
+          border: 1px solid var(--line);
+          border-radius: 10px;
+          transform: translateY(160%);
+          transition: transform 0.3s ease;
+          z-index: 30;
+        }
+      }
     </style>
   </head>
   <body>
@@ -340,7 +400,11 @@
           <span id="js-page-total">16</span>
         </div>
 
-        <div class="controls">
+        <!-- PREVIEW: the trigger + .viewer-layout drawer mirror the live Webflow
+             footer. On tablet & below the drawer is translated off-frame and the
+             trigger reveals it (viewer.js toggles .is-open). -->
+        <button type="button" class="viewer-layout-trigger" aria-haspopup="true" aria-expanded="false">⚙ 版面配置</button>
+        <div class="viewer-layout controls">
           <span class="ctl-label">版面配置</span>
           <!-- Layout dropdown — design-system single-select (data-dropdown-option
                + .dropdown-option-label + .dropdown-option-check, aria-selected). -->
@@ -438,6 +502,10 @@
           <span class="ctl-label">旋轉</span>
           <button type="button" class="icon-btn" id="js-rotate-ccw" aria-label="逆時針旋轉">⟲</button>
           <button type="button" class="icon-btn" id="js-rotate-cw" aria-label="順時針旋轉">⟳</button>
+
+          <span class="divider">|</span>
+          <!-- 銳化 sharpen toggle — viewer.js adds .is-active when the filter is on -->
+          <button type="button" class="viewer-nav-btn cc-sharpen">✦ 銳化</button>
         </div>
       </footer>
     </div>

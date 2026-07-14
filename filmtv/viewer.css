@@ -20,7 +20,6 @@
  thumbnail + stuck grab on Mac trackpads); viewer.js also sets draggable=false. */
 .page-image {
   display: block;
-  background: #10262e;
   transform-origin: center center;
   -webkit-user-drag: none;
   user-select: none;
@@ -102,21 +101,56 @@
   width: 100%;
   height: 100%;
 }
+/* Each page FILLS its half of the spread: object-fit:contain scales the scan up
+ or down to the half-box without distortion (the old max-* capped it at intrinsic
+ size), and object-position hugs each page to the shared spine so the pair still
+ meets in the middle with any letterbox slack pushed to the outer edge.
+ (50% − 2px) ×2 + the 4px flex gap = 100%, so the boxes tile the container exactly. */
 .zoom-fit-page .page-spread .page-image {
-  max-height: 100%;
-  max-width: 50%;
+  width: calc(50% - 2px);
+  height: 100%;
+  object-fit: contain;
 }
-/* top/bottom bind = pages STACKED vertically -> each page half the HEIGHT (minus
- the 4px spread gap so both fit), full width */
+.zoom-fit-page .page-spread .page-image--left {
+  object-position: right center;
+}
+.zoom-fit-page .page-spread .page-image--right {
+  object-position: left center;
+}
+/* lone page (cover / singled-out end, empty companion): centered in the viewport
+ rather than hugged to one side. */
+.zoom-fit-page .page-spread.spread-lone .page-image {
+  object-position: center center;
+}
+/* top/bottom bind = pages STACKED vertically -> each page fills half the HEIGHT,
+ full width; hug the shared horizontal spine (bottom page meets it at its top,
+ top page at its bottom). */
 .layout-orientation-top .zoom-fit-page .page-spread .page-image,
 .layout-orientation-bottom .zoom-fit-page .page-spread .page-image {
-  max-height: calc(50% - 4px);
-  max-width: 100%;
+  width: 100%;
+  height: calc(50% - 2px);
+}
+.layout-orientation-top .zoom-fit-page .page-spread .page-image--left,
+.layout-orientation-bottom .zoom-fit-page .page-spread .page-image--left {
+  object-position: center bottom;
+}
+.layout-orientation-top .zoom-fit-page .page-spread .page-image--right,
+.layout-orientation-bottom .zoom-fit-page .page-spread .page-image--right {
+  object-position: center top;
 }
 /* rotate-aware (single/OCR image is the rotation target): swap the box dims via
  --vw/--vh so a 90deg-turned page still FILLS the viewport. object-fit:contain
  (inherited from the rule above) keeps it centered + aspect-correct. */
 .is-rot-90.zoom-fit-page .page-image.rotation-target {
+  width: var(--vh);
+  height: var(--vw);
+}
+/* Double spread: the WRAPPER is the rotation target, and it's container-sized
+ (100%/100%), so a 90deg turn would leave it landscape-in-a-portrait-hole and
+ overflow. Swap its box dims (like the single page above) so the turned spread
+ still fits — the child pages fill the swapped box and object-fit keeps them
+ aspect-correct. */
+.is-rot-90.zoom-fit-page .page-spread {
   width: var(--vh);
   height: var(--vw);
 }
@@ -268,9 +302,9 @@
 }
 /* Divider between stacked articles on a page; none under the last / only article. */
 .ocr-article-block:not(:last-child) {
-  border-bottom: 1px solid var(--_color---neutral--200);
-  padding-bottom: var(--_typography---h4--bottom-margin);
-  margin-bottom: var(--_typography---h4--bottom-margin);
+  border-bottom: 1px solid var(--primary--border);
+  padding-bottom: 1em;
+  margin-bottom: 2em;
 }
 .ocr-toc-popover.is-open {
   display: block;
@@ -350,6 +384,27 @@
 .scroll-popover-divider {
   border-top: 1px solid rgba(173, 231, 247, 0.3);
   margin: 4px 8px;
+}
+
+/* ---- sharpen (銳化): a single high-intensity convolution on the READING image
+ only. viewer.js toggles .is-sharpened on the root and injects the #sharpen-hi
+ <filter>. Keyed to .page-image so thumbnails (.thumbnail-image) are never
+ sharpened, and so it reaches every future-cloned page image for free. This is a
+ JS-state engine rule → it ships here, not in Webflow. ---- */
+.is-sharpened .page-image {
+  filter: url(#sharpen-hi);
+}
+
+/* ---- responsive layout drawer (tablet & below): Webflow translates
+ .viewer-layout off-frame (a different translateY per breakpoint); the
+ .viewer-layout-trigger toggles .is-open, which viewer.js drives. The open
+ override lives here (JS-state rule) — .viewer-layout.is-open outranks the
+ single-class breakpoint defaults on specificity, so it wins at every width
+ without disturbing the desktop (already translateY:0) layout. If you'd rather
+ own this in Webflow, author a `.viewer-layout.is-open` combo (transform:none)
+ and delete this rule. ---- */
+.viewer-layout.is-open {
+  transform: translateY(0);
 }
 
 /* ---- utility: viewer.js toggles this on runtime nodes; !important keeps it a

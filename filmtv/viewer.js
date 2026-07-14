@@ -34,6 +34,10 @@
  *     [data-dropdown]#js-zoom-dropdown    zoom (fit-page|fit-width|100|150)
  *     button#js-fullscreen
  *     button#js-rotate-cw / button#js-rotate-ccw
+ *     button.cc-sharpen (or #js-sharpen)  toggles the high sharpen filter
+ *   responsive layout drawer (tablet & below):
+ *     .viewer-layout-trigger (or #js-viewer-layout-trigger)  opens the drawer
+ *     .viewer-layout (or #js-viewer-layout)  the drawer (JS toggles .is-open)
  *   <template> hooks (inert; cloned by JS):
  *     #tpl-layout-single #tpl-layout-double #tpl-layout-ocr #tpl-layout-thumbnail
  *     #tpl-thumbnail-item #tpl-ocr-article-block #tpl-ocr-toc-popover
@@ -66,6 +70,7 @@
     connectMode: "next", // next | previous (double only)
     isFullscreen: false,
     ocrFontSize: "small",
+    sharpen: false, // high-intensity SVG sharpen filter on the reading image(s)
     panX: 0,
     panY: 0,
   };
@@ -87,6 +92,17 @@
   }
   function container() {
     return byId("js-page-container");
+  }
+  // Feature hooks that are plain Webflow chrome (no template clone): prefer a
+  // js- id if the author adds one, else fall back to the unique Webflow class.
+  function sharpenBtn() {
+    return byId("js-sharpen") || $(".cc-sharpen");
+  }
+  function layoutPanel() {
+    return byId("js-viewer-layout") || $(".viewer-layout");
+  }
+  function layoutPanelTrigger() {
+    return byId("js-viewer-layout-trigger") || $(".viewer-layout-trigger");
   }
   function rootEl() {
     return scope.querySelector(".viewer-root") || (scope.querySelector ? scope : document.body);
@@ -119,6 +135,7 @@
     scope = opts.root || document.querySelector("[data-viewer]") || document;
     dataBaseUrl = opts.dataBaseUrl || (scope.getAttribute && scope.getAttribute("data-src")) || DEFAULT_DATA_BASE;
 
+    ensureSharpenFilter();
     wireEvents();
 
     var url = readUrl();
@@ -138,6 +155,7 @@
         // reset per-book manual settings
         state.rotation = 0;
         state.zoom = "fit-page";
+        state.sharpen = false;
         state.panX = state.panY = 0;
         state.previousLayout = null;
         state.layout = defaultLayout();
@@ -267,6 +285,7 @@
     applyZoomClass();
     applyRotationVars();
     applyFullscreenClass();
+    applySharpenClass();
     applyTransform();
     updateUrlForPage();
     if (isFlipMode()) preloadAdjacent(state.currentPage);
@@ -622,6 +641,44 @@
     } else if (document.exitFullscreen) {
       document.exitFullscreen();
     }
+  }
+
+  /* ============================================================
+   * SHARPEN (銳化) — a single high-intensity convolution filter on the reading
+   * image(s). The <filter> primitive is a functional asset (not visual styling),
+   * so viewer.js injects it once if the page doesn't already define #sharpen-hi;
+   * the `filter:` application + .is-sharpened state live in viewer.css.
+   * ============================================================ */
+  function ensureSharpenFilter() {
+    if (document.getElementById("sharpen-hi")) return; // author may supply it in Webflow
+    var holder = document.createElement("div");
+    // High-level 3x3 sharpen kernel (from the demo): centre 9, orthogonal −2 each.
+    holder.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" ' +
+      'style="position:absolute;width:0;height:0;overflow:hidden;pointer-events:none">' +
+      '<filter id="sharpen-hi">' +
+      '<feConvolveMatrix order="3" preserveAlpha="true" kernelMatrix="0 -2 0 -2 9 -2 0 -2 0"/>' +
+      "</filter></svg>";
+    if (holder.firstChild) document.body.appendChild(holder.firstChild);
+  }
+  function toggleSharpen() {
+    state.sharpen = !state.sharpen;
+    applySharpenClass(); // no re-render needed — the class cascades via CSS
+  }
+
+  /* ============================================================
+   * RESPONSIVE LAYOUT DRAWER (tablet & below) — the .viewer-layout controls are
+   * translated off-frame at small breakpoints; .viewer-layout-trigger reveals
+   * them by toggling .is-open (translateY:0 override in viewer.css). Outside
+   * click / Esc close it (see wireEvents / onKeydown), same as the popovers.
+   * ============================================================ */
+  function toggleLayoutPanel(force) {
+    var panel = layoutPanel();
+    if (!panel) return;
+    var open = typeof force === "boolean" ? force : !panel.classList.contains("is-open");
+    panel.classList.toggle("is-open", open);
+    var trig = layoutPanelTrigger();
+    if (trig) trig.setAttribute("aria-expanded", open ? "true" : "false");
   }
 
   /* ============================================================
@@ -981,6 +1038,15 @@
     var r = rootEl();
     if (r) r.classList.toggle("is-fullscreen", state.isFullscreen);
   }
+  // Sharpen state lives on the ROOT (a stable node render() never wipes), so the
+  // filter cascades to every current AND future-cloned .page-image via one CSS
+  // rule — and never touches .thumbnail-image. The button mirrors it with .is-active.
+  function applySharpenClass() {
+    var r = rootEl();
+    if (r) r.classList.toggle("is-sharpened", state.sharpen);
+    var b = sharpenBtn();
+    if (b) b.classList.toggle("is-active", state.sharpen);
+  }
 
   /* ============================================================
    * EVENT WIRING  (once per init)
@@ -1059,6 +1125,16 @@
     on(byId("js-rotate-ccw"), "click", function () {
       rotate("ccw");
     });
+
+    // sharpen toggle (銳化)
+    on(sharpenBtn(), "click", toggleSharpen);
+
+    // responsive layout drawer trigger (stopPropagation so the document
+    // outside-click handler below doesn't immediately re-close it)
+    on(layoutPanelTrigger(), "click", function (e) {
+      e.stopPropagation();
+      toggleLayoutPanel();
+    });
     document.addEventListener("fullscreenchange", function () {
       state.isFullscreen = !!document.fullscreenElement;
       render();
@@ -1133,10 +1209,16 @@
     // keyboard
     document.addEventListener("keydown", onKeydown);
 
-    // close popovers on outside click / ESC
+    // close popovers / layout drawer on outside click / ESC
     document.addEventListener("click", function (e) {
       closeIfOutside(byId("js-scroll-popover"), byId("js-scroll-popover-trigger"), e.target);
       closeIfOutside(byId("js-ocr-toc-popover"), byId("js-ocr-toc-trigger"), e.target);
+      // layout drawer: click anywhere outside the drawer AND its trigger closes it
+      var panel = layoutPanel();
+      if (panel && panel.classList.contains("is-open") && !panel.contains(e.target)) {
+        var trig = layoutPanelTrigger();
+        if (!(trig && trig.contains(e.target))) toggleLayoutPanel(false);
+      }
     });
 
     window.addEventListener("popstate", onPopState);
@@ -1174,6 +1256,7 @@
         if (s) s.classList.remove("is-open");
         var o = byId("js-ocr-toc-popover");
         if (o) o.classList.remove("is-open");
+        toggleLayoutPanel(false);
         break;
       default:
         return;
