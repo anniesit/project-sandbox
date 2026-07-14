@@ -793,11 +793,17 @@
     }
     if (pop) pop.classList.toggle("is-open");
   }
+  // The Webflow-authored .ocr-toc-item (one row) is cached from the popover template
+  // and cloned per article — the "one template row, JS repeats it" pattern the search
+  // page's result-card list uses, so the row is styled in Webflow, not in viewer.css.
+  var ocrTocItemTpl = null;
   function buildOcrTocPopover() {
     var host = container().querySelector(".ocr-panel") || container();
     var frag = tpl("tpl-ocr-toc-popover");
     if (!frag) return;
     host.appendChild(frag);
+    var list = byId("js-ocr-toc-list");
+    ocrTocItemTpl = list ? list.querySelector(".ocr-toc-item") : null;
     refreshOcrTocList();
   }
   function refreshOcrTocList() {
@@ -808,11 +814,28 @@
     if (header) header.textContent = "本頁有 " + articles.length + " 篇文章純文字";
     list.innerHTML = "";
     articles.forEach(function (a) {
-      var li = document.createElement("li");
-      li.textContent = a.title;
+      var li = ocrTocItemTpl ? ocrTocItemTpl.cloneNode(true) : document.createElement("li");
       li.setAttribute("data-article-id", a.id);
+      if (li.querySelector("[data-field]")) {
+        // column = the article's section/rubric (backend field); hidden when absent
+        setTocField(li, "column", a.section != null ? a.section : a.column, true);
+        setTocField(li, "title", a.title || "無標題", false);
+        setTocField(li, "author", a.author, true);
+      } else {
+        setText(li, a.title || "無標題"); // plain <li> fallback (no [data-field] leaves)
+      }
       list.appendChild(li);
     });
+  }
+  // Fill a [data-field] leaf inside a TOC row. Multi-values are "---"-joined
+  // (design-system convention). hideWhenEmpty toggles .is-hidden so an absent
+  // column/author leaves no empty line — matching the result-card behaviour.
+  function setTocField(scope, name, value, hideWhenEmpty) {
+    var el = scope.querySelector('[data-field="' + name + '"]');
+    if (!el) return;
+    var txt = value == null ? "" : String(value).split("---").join("、").trim();
+    el.textContent = txt;
+    if (hideWhenEmpty) el.classList.toggle("is-hidden", txt === "");
   }
   function jumpToArticleInOcr(id) {
     var block = byId("js-ocr-article-" + id);
@@ -1052,7 +1075,7 @@
         toggleOcrTocPopover();
         return;
       }
-      var ocrLi = e.target.closest && e.target.closest("#js-ocr-toc-list li");
+      var ocrLi = e.target.closest && e.target.closest("#js-ocr-toc-list .ocr-toc-item");
       if (ocrLi) {
         jumpToArticleInOcr(ocrLi.getAttribute("data-article-id"));
         return;

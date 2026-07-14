@@ -9,27 +9,108 @@
   "imageBaseUrl": "https://storage.lib.hkbu.edu.hk/filmpamphlet/Image/2048/",
   "thumbnailBaseUrl": "https://storage.lib.hkbu.edu.hk/filmpamphlet/Thumbnail/2048/",
   "pages": [
-    { "label": "封面", "file": "2048_001.jpg", "width": 700, "height": 1000 },
-    { "label": "頁 2", "file": "2048_002.jpg", "width": 700, "height": 1000 },
-    { "label": "頁 3", "file": "2048_003.jpg", "width": 700, "height": 1000 },
-    { "label": "頁 4", "file": "2048_004.jpg", "width": 700, "height": 1000 },
-    { "label": "頁 5", "file": "2048_005.jpg", "width": 700, "height": 1000 },
-    { "label": "頁 6", "file": "2048_006.jpg", "width": 700, "height": 1000 },
-    { "label": "頁 7", "file": "2048_007.jpg", "width": 700, "height": 1000 },
-    { "label": "頁 8", "file": "2048_008.jpg", "width": 700, "height": 1000 },
-    { "label": "頁 9", "file": "2048_009.jpg", "width": 700, "height": 1000 },
-    { "label": "頁 10", "file": "2048_010.jpg", "width": 700, "height": 1000 },
-    { "label": "頁 11", "file": "2048_011.jpg", "width": 700, "height": 1000 },
-    { "label": "頁 12", "file": "2048_012.jpg", "width": 700, "height": 1000 },
-    { "label": "頁 13", "file": "2048_013.jpg", "width": 700, "height": 1000 },
-    { "label": "頁 14", "file": "2048_014.jpg", "width": 700, "height": 1000 },
-    { "label": "頁 15", "file": "2048_015.jpg", "width": 700, "height": 1000 },
-    { "label": "封底", "file": "2048_016.jpg", "width": 700, "height": 1000 }
+    {
+      "label": "封面",
+      "file": "2048_001.jpg",
+      "width": 700,
+      "height": 1000
+    },
+    {
+      "label": "頁 2",
+      "file": "2048_002.jpg",
+      "width": 700,
+      "height": 1000
+    },
+    {
+      "label": "頁 3",
+      "file": "2048_003.jpg",
+      "width": 700,
+      "height": 1000
+    },
+    {
+      "label": "頁 4",
+      "file": "2048_004.jpg",
+      "width": 700,
+      "height": 1000
+    },
+    {
+      "label": "頁 5",
+      "file": "2048_005.jpg",
+      "width": 700,
+      "height": 1000
+    },
+    {
+      "label": "頁 6",
+      "file": "2048_006.jpg",
+      "width": 700,
+      "height": 1000
+    },
+    {
+      "label": "頁 7",
+      "file": "2048_007.jpg",
+      "width": 700,
+      "height": 1000
+    },
+    {
+      "label": "頁 8",
+      "file": "2048_008.jpg",
+      "width": 700,
+      "height": 1000
+    },
+    {
+      "label": "頁 9",
+      "file": "2048_009.jpg",
+      "width": 700,
+      "height": 1000
+    },
+    {
+      "label": "頁 10",
+      "file": "2048_010.jpg",
+      "width": 700,
+      "height": 1000
+    },
+    {
+      "label": "頁 11",
+      "file": "2048_011.jpg",
+      "width": 700,
+      "height": 1000
+    },
+    {
+      "label": "頁 12",
+      "file": "2048_012.jpg",
+      "width": 700,
+      "height": 1000
+    },
+    {
+      "label": "頁 13",
+      "file": "2048_013.jpg",
+      "width": 700,
+      "height": 1000
+    },
+    {
+      "label": "頁 14",
+      "file": "2048_014.jpg",
+      "width": 700,
+      "height": 1000
+    },
+    {
+      "label": "頁 15",
+      "file": "2048_015.jpg",
+      "width": 700,
+      "height": 1000
+    },
+    {
+      "label": "封底",
+      "file": "2048_016.jpg",
+      "width": 700,
+      "height": 1000
+    }
   ],
   "articles": [
     {
       "id": "HDJ-0001",
       "title": "本事：《花燈記》劇情簡介",
+      "section": "本事",
       "author": "",
       "pageStart": 2,
       "pageEnd": 2,
@@ -38,6 +119,7 @@
     {
       "id": "HDJ-0002",
       "title": "《花燈記》全部曲詞",
+      "section": "曲詞",
       "author": "",
       "pageStart": 3,
       "pageEnd": 8,
@@ -46,7 +128,8 @@
     {
       "id": "HDJ-0003",
       "title": "演員與角色",
-      "author": "",
+      "section": "演員",
+      "author": "本刊記者",
       "pageStart": 9,
       "pageEnd": 9,
       "articleBody": "（純文字示例）介紹《花燈記》的主要演員及其扮演的角色。此為單頁文章，與《拍攝花絮》在第九頁重疊，用以測試同一頁存在多篇文章時的情況。"
@@ -54,6 +137,7 @@
     {
       "id": "HDJ-0004",
       "title": "拍攝花絮",
+      "section": "花絮",
       "author": "",
       "pageStart": 9,
       "pageEnd": 11,
@@ -62,7 +146,8 @@
     {
       "id": "HDJ-0005",
       "title": "戲曲電影漫談",
-      "author": "",
+      "section": "漫談",
+      "author": "石琪",
       "pageStart": 12,
       "pageEnd": 14,
       "articleBody": "（純文字示例）借《花燈記》一片，漫談戲曲電影如何在舞台程式與電影語言之間取得平衡。此段為預覽模擬內文。"

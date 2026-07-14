@@ -275,6 +275,37 @@
       /* NB: the ⋯ scroll popover (.scroll-wrap / .dropdown-list.cc-viewer-bottom)
          is NOT here — viewer.js drives its open state, so it ships in viewer.css
          (Webflow/forms.js only open [data-dropdown] dropdowns). */
+
+      /* OCR TOC list — now a Webflow-authored template row (.ocr-toc-item), like the
+         result cards. Preview copy of what you style in Webflow (replaces the old
+         #js-ocr-toc-list id rules that used to live in viewer.css). */
+      .ocr-toc-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .ocr-toc-item {
+        padding: 4px 6px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .ocr-toc-item:hover {
+        background: rgba(0, 72, 92, 0.1);
+      }
+      /* preview hierarchy for the 3 leaves (column / title / author) — your Webflow
+         design owns the real look; these just keep the mock legible. */
+      .ocr-toc-column {
+        font-size: 12px;
+        opacity: 0.7;
+      }
+      .ocr-toc-title {
+        font-size: 16px;
+        font-weight: 700;
+      }
+      .ocr-toc-author {
+        font-size: 12px;
+        opacity: 0.7;
+      }
     </style>
   </head>
   <body>
@@ -456,7 +487,18 @@
     <template id="tpl-ocr-toc-popover">
       <div class="ocr-toc-popover" id="js-ocr-toc-popover">
         <div class="ocr-toc-header"></div>
-        <ul id="js-ocr-toc-list"></ul>
+        <!-- .ocr-toc-list holds ONE .ocr-toc-item row = the Webflow-authored template
+             that viewer.js clones per article (same pattern as the result cards). -->
+        <ul class="ocr-toc-list" id="js-ocr-toc-list">
+          <!-- ONE template row = the Webflow-authored .ocr-toc-item. viewer.js fills
+               each [data-field] and hides the column/author leaf when its value is
+               empty (like the result cards). -->
+          <li class="ocr-toc-item">
+            <div class="ocr-toc-column" data-field="column"></div>
+            <div class="ocr-toc-title" data-field="title"></div>
+            <div class="ocr-toc-author" data-field="author"></div>
+          </li>
+        </ul>
       </div>
     </template>
 

@@ -238,7 +238,7 @@
 .ocr-article-body [id="ocrHead"] {
   font-family: var(--_typography---h4--font);
   font-weight: var(--_typography---h4--font-weight);
-  font-size: var(--_typography---h4--font-size);
+  font-size: 1.6em;
   line-height: var(--_typography---h4--line-height);
   margin-bottom: var(--_typography---h4--bottom-margin);
 }
