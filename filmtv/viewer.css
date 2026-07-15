@@ -236,7 +236,7 @@
   margin: 0 12px 0 0;
 }
 
-/* ---- thumbnail grid (cloned from templates) ---- */
+/* ---- thumbnail grid (cloned from templates) ---- 
 #js-thumbnail-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -260,9 +260,6 @@
   color: #cfe9f2;
   font: inherit;
 }
-.thumbnail-item.is-active {
-  border-color: #ade7f7;
-}
 .thumbnail-image {
   width: 100%;
   aspect-ratio: 3/4;
@@ -273,6 +270,10 @@
 .thumbnail-label {
   font-size: 12px;
   text-align: center;
+} */
+
+.thumbnail-item.is-active {
+  border-color: #ade7f7;
 }
 
 /* ---- OCR layout (cloned from templates) — panel (fixed) + a clipping stage
