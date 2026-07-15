@@ -72,6 +72,21 @@
   background-color: transparent;
 }
 
+/* ---- disabled toolbar controls (thumbnail view) — zoom trigger, rotation, sharpen.
+ viewer.js sets [disabled] on these when the layout offers nothing to act on; the
+ dimmed/default-cursor state ships here (next to .viewer-arrow:disabled) so it also
+ applies on the live site, where the preview's <style> disabled rules don't exist. */
+#js-zoom-dropdown [data-dropdown-trigger]:disabled,
+#js-rotate-cw:disabled,
+#js-rotate-ccw:disabled,
+#js-sharpen:disabled,
+.cc-sharpen:disabled,
+/* higher-specificity variant so it outranks the base .viewer-nav-btn.cc-sharpen cursor */
+.viewer-nav-btn.cc-sharpen:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
 /* ---- zoom sizing (numeric-preset scale is applied by viewer.js transform) ---- */
 /* fit-page: whole image / spread visible within the viewer. The spread gets a
  DEFINITE size (100% of the container) so the child images' percentage
@@ -294,6 +309,40 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+/* ---- loading spinner overlay (flip layouts) ----
+ A bare <img> slot keeps the OLD page painted until the new src decodes, so the
+ spinner must sit ON TOP of the reading area, not behind it. viewer.js adds
+ .is-loading to the container while a reading image is fetching (skipping cached
+ images) and removes it on load/error. The 0.15s reveal delay means a fast /
+ cached page never flashes the spinner; hiding is immediate. */
+#js-page-container {
+  position: relative; /* anchor the absolute overlay */
+}
+.ocr-page-stage {
+  position: relative; /* anchor the overlay over the OCR image, not the text panel */
+}
+.page-loading-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.2s ease,
+    visibility 0s linear 0.2s;
+}
+#js-page-container.is-loading .page-loading-overlay {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 0.2s ease 0.15s,
+    visibility 0s;
 }
 
 /* ---- scroll-settings popover (⋯) — a bespoke two-group menu (捲動方向 + 連接方向).

@@ -79,6 +79,7 @@
   var scope = document; // the [data-viewer] element (or document)
   var dataBaseUrl = DEFAULT_DATA_BASE;
   var imageCache = new Map();
+  var loadingSlots = new Set(); // reading-image slots currently fetching (drives the spinner)
   var scrollObserver = null;
   var lastStructureKey = null; // gates the expensive template re-clone
   var wired = false; // event listeners attached once per init
@@ -312,6 +313,7 @@
     }
     c.innerHTML = "";
     c.className = "viewer-page-container"; // reset (zoom/scroll classes re-applied below)
+    loadingSlots.clear(); // the old slots are gone; drop any pending spinner state
 
     if (state.layout === "thumbnail") {
       var tg = tpl("tpl-layout-thumbnail");
@@ -326,6 +328,7 @@
         var s = tpl("tpl-layout-single");
         if (s) c.appendChild(s);
         markRotationTarget(c.querySelector(".page-image"));
+        addLoadingOverlay(c);
       } else {
         renderScrollStrip(c);
       }
@@ -335,12 +338,14 @@
       var d = tpl("tpl-layout-double");
       if (d) c.appendChild(d);
       markRotationTarget(c.querySelector(".page-spread") || c.firstElementChild);
+      addLoadingOverlay(c);
       return;
     }
     if (state.layout === "ocr") {
       var o = tpl("tpl-layout-ocr");
       if (o) c.appendChild(o);
       markRotationTarget(c.querySelector(".page-image"));
+      addLoadingOverlay(c.querySelector(".ocr-page-stage") || c); // over the image, not the text
       return;
     }
   }
@@ -408,12 +413,19 @@
     if (slot.tagName === "IMG") {
       applyAspect(slot, page);
       slot.alt = page.label || "";
-      if (slot.getAttribute("src") !== url) slot.setAttribute("src", url);
+      if (slot.getAttribute("src") !== url) {
+        slot.setAttribute("src", url);
+        // Spinner only for a genuine fetch — a cached image reports complete
+        // synchronously (and the reveal delay covers anything else that's fast).
+        setSlotLoading(slot, !slot.complete);
+      }
       slot.onerror = function () {
         slot.classList.add("is-error");
+        setSlotLoading(slot, false);
       };
       slot.onload = function () {
         slot.classList.remove("is-error");
+        setSlotLoading(slot, false);
       };
       return;
     }
@@ -443,6 +455,28 @@
       if (er) slot.appendChild(er);
     });
     img.src = url;
+  }
+
+  // Spinner overlay (flip layouts). A bare <img> slot keeps the OLD page painted
+  // until the new src decodes, so the spinner sits ON TOP (absolute overlay), not
+  // behind. viewer.js toggles .is-loading on the container while any reading image
+  // is fetching; CSS reveals the overlay after a short delay so fast/cached pages
+  // never flash it. The overlay node is (re)added by renderLayout per structure.
+  function addLoadingOverlay(host) {
+    if (!host) return;
+    var ov = document.createElement("div");
+    ov.className = "page-loading-overlay";
+    ov.setAttribute("aria-hidden", "true");
+    var sp = document.createElement("div");
+    sp.className = "page-placeholder-spinner";
+    ov.appendChild(sp);
+    host.appendChild(ov);
+  }
+  function setSlotLoading(slot, on) {
+    if (on) loadingSlots.add(slot);
+    else loadingSlots.delete(slot);
+    var c = container();
+    if (c) c.classList.toggle("is-loading", loadingSlots.size > 0);
   }
 
   function applyAspect(el, page) {
@@ -515,7 +549,12 @@
   function setLayout(newLayout) {
     if (!newLayout || state.layout === newLayout) return;
     // currentPage carries over untouched — double derives the spread containing it.
-    if (newLayout === "thumbnail") state.previousLayout = state.layout;
+    if (newLayout === "thumbnail") {
+      state.previousLayout = state.layout;
+      // Close the responsive layout drawer (tablet & below) — otherwise it covers
+      // the thumbnails and is hard to dismiss without tapping one (which navigates away).
+      toggleLayoutPanel(false);
+    }
     if (state.layout !== "single") state.scrollDirection = "flip"; // reset when not single
     state.layout = newLayout;
     state.zoom = "fit-page";
@@ -679,6 +718,7 @@
     if (holder.firstChild) document.body.appendChild(holder.firstChild);
   }
   function toggleSharpen() {
+    if (state.layout === "thumbnail") return; // disabled in thumbnail (no reading image)
     state.sharpen = !state.sharpen;
     applySharpenClass(); // no re-render needed — the class cascades via CSS
   }
@@ -689,6 +729,17 @@
    * them by toggling .is-open (translateY:0 override in viewer.css). Outside
    * click / Esc close it (see wireEvents / onKeydown), same as the popovers.
    * ============================================================ */
+  // Close the design-system single-select dropdowns (layout / zoom). Their own
+  // triggers close each other via forms.js, but the bespoke scroll popover isn't a
+  // [data-dropdown], so it calls this to close them when it opens.
+  function closeDsDropdowns() {
+    scope.querySelectorAll("[data-dropdown].is-open").forEach(function (dd) {
+      dd.classList.remove("is-open");
+      var trig = dd.querySelector("[data-dropdown-trigger]");
+      if (trig) trig.setAttribute("aria-expanded", "false");
+    });
+  }
+
   function toggleLayoutPanel(force) {
     var panel = layoutPanel();
     if (!panel) return;
@@ -968,6 +1019,9 @@
     setDisabled(byId("js-rotate-cw"), isThumb);
     setDisabled(byId("js-rotate-ccw"), isThumb);
 
+    // Sharpen (銳化) — nothing to sharpen in thumbnail; reflect the disabled state
+    setDisabled(sharpenBtn(), isThumb);
+
     // Page input
     setDisabled(byId("js-page-input"), isThumb);
 
@@ -1101,6 +1155,9 @@
       e.stopPropagation();
       var pop = byId("js-scroll-popover");
       if (!pop) return;
+      // A [data-dropdown] trigger closes its sibling DS dropdowns; this popover is
+      // NOT a [data-dropdown], so it must close the layout/zoom menus itself to match.
+      closeDsDropdowns();
       var open = pop.classList.toggle("is-open");
       byId("js-scroll-popover-trigger").setAttribute("aria-expanded", open ? "true" : "false");
       if (open) {
