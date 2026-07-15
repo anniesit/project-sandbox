@@ -599,8 +599,14 @@
    * DRAG-TO-PAN  (§5.8) — fast path, bypasses full render()
    * ============================================================ */
   var dragStart = null;
-  function beginDrag(clientX, clientY) {
+  function beginDrag(clientX, clientY, target) {
     if (state.zoom === "fit-page" || !isFlipMode()) return false; // pan only when zoomed, flip modes
+    // Only pan when the gesture STARTS on the image's clip box. In OCR that box is
+    // the narrow .ocr-page-stage (panViewport), and the scrollable text panel is a
+    // sibling INSIDE the same container — without this guard, scrolling the OCR
+    // text on touch would drag the zoomed page underneath it.
+    var vp = panViewport();
+    if (vp && target && !vp.contains(target)) return false;
     dragStart = { x: clientX - state.panX, y: clientY - state.panY };
     toggleClass(container(), "is-dragging", true);
     return true; // signals caller to preventDefault (kills native img drag)
@@ -1191,7 +1197,7 @@
       e.preventDefault();
     });
     on(c, "mousedown", function (e) {
-      if (beginDrag(e.clientX, e.clientY)) e.preventDefault();
+      if (beginDrag(e.clientX, e.clientY, e.target)) e.preventDefault();
     });
     document.addEventListener("mousemove", function (e) {
       moveDrag(e.clientX, e.clientY);
@@ -1201,7 +1207,7 @@
       c,
       "touchstart",
       function (e) {
-        if (e.touches.length === 1) beginDrag(e.touches[0].clientX, e.touches[0].clientY);
+        if (e.touches.length === 1) beginDrag(e.touches[0].clientX, e.touches[0].clientY, e.target);
       },
       { passive: true },
     );
