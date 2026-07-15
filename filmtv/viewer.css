@@ -317,12 +317,6 @@
  .is-loading to the container while a reading image is fetching (skipping cached
  images) and removes it on load/error. The 0.15s reveal delay means a fast /
  cached page never flashes the spinner; hiding is immediate. */
-#js-page-container {
-  position: relative; /* anchor the absolute overlay */
-}
-.ocr-page-stage {
-  position: relative; /* anchor the overlay over the OCR image, not the text panel */
-}
 .page-loading-overlay {
   position: absolute;
   inset: 0;
