@@ -58,16 +58,6 @@
  .viewer-page-container; these are the JS-toggled behaviours it can't express).
  The container fills the stage so it has a DEFINITE size — that's what makes the
  fit-page (max-*:100%) and fit-width (width:100%) rules responsive. ---- */
-#js-page-container {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px;
-  user-select: none;
-}
 #js-page-container.is-pannable {
   cursor: grab;
 }
@@ -236,44 +226,9 @@
   margin: 0 12px 0 0;
 }
 
-/* ---- thumbnail grid (cloned from templates) ---- 
-#js-thumbnail-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 12px;
-  width: 100%;
-  align-self: stretch;
-  height: 100%;
-  overflow-y: auto;
-  padding: 16px;
-  align-content: start;
-}
-.thumbnail-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 4px;
-  background: none;
-  border: 2px solid transparent;
-  border-radius: 6px;
-  cursor: pointer;
-  color: #cfe9f2;
-  font: inherit;
-}
-.thumbnail-image {
-  width: 100%;
-  aspect-ratio: 3/4;
-  object-fit: cover;
-  background: #10262e;
-  border-radius: 3px;
-}
-.thumbnail-label {
-  font-size: 12px;
-  text-align: center;
-} */
-
+/* ---- thumbnail grid (cloned from templates) ---- */
 .thumbnail-item.is-active {
-  border-color: #ade7f7;
+  border-color: var(--_color---sky--200);
 }
 
 /* ---- OCR layout (cloned from templates) — panel (fixed) + a clipping stage
