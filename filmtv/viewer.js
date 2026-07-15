@@ -1078,6 +1078,15 @@
     if (!opt || opt.getAttribute("aria-disabled") === "true") return;
     if (opt.hasAttribute("data-scroll-direction")) setScrollDirection(opt.getAttribute("data-scroll-direction"));
     else if (opt.hasAttribute("data-connect-mode")) setConnectMode(opt.getAttribute("data-connect-mode"));
+    closeScrollPopover(); // dismiss on selection, like the DS layout/zoom dropdowns
+  }
+  // Close the bespoke scroll popover + reset its trigger's aria-expanded. (The DS
+  // dropdowns close themselves via forms.js; this menu is viewer.js-owned.)
+  function closeScrollPopover() {
+    var pop = byId("js-scroll-popover");
+    if (pop) pop.classList.remove("is-open");
+    var trig = byId("js-scroll-popover-trigger");
+    if (trig) trig.setAttribute("aria-expanded", "false");
   }
 
   function updateDropdownValues() {
