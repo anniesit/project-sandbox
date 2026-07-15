@@ -362,8 +362,10 @@
           border: 1px solid var(--line);
           border-radius: 10px;
           transform: translateY(160%);
-          transition: transform 0.3s ease;
           z-index: 30;
+          /* NB: no transition here — the live site's open/close animation is
+             authored in Webflow. viewer.css's .viewer-layout.is-open sets
+             transform:translateY(0) to reveal it. */
         }
       }
     </style>

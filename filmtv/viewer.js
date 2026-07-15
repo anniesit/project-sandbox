@@ -616,12 +616,23 @@
     dragStart = null;
     toggleClass(container(), "is-dragging", false);
   }
+  // The box that actually CLIPS the panned image = the pan viewport. In OCR the
+  // image lives in the narrower .ocr-page-stage (its own overflow:hidden box), so
+  // pan bounds must be measured against THAT, not the full container — otherwise
+  // the limit is computed from the wrong axis extent (too small horizontally when
+  // the stage is a row half, vertically when it's a column half). Elsewhere the
+  // container is the clip box. Mirrors applyRotationVars()'s stage-aware measure.
+  function panViewport() {
+    var c = container();
+    if (!c) return null;
+    return (state.layout === "ocr" && c.querySelector(".ocr-page-stage")) || c;
+  }
   function clampPan(v, axis) {
     var t = getRotationTarget();
-    var c = container();
-    if (!t || !c) return v;
+    var box = panViewport();
+    if (!t || !box) return v;
     var tr = t.getBoundingClientRect(),
-      cr = c.getBoundingClientRect();
+      cr = box.getBoundingClientRect();
     var overflow = axis === "x" ? tr.width - cr.width : tr.height - cr.height;
     if (overflow <= 0) return 0; // nothing to pan
     var limit = overflow / 2;
