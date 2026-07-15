@@ -57,6 +57,9 @@
   var PRELOAD_RADIUS = 2; // flip-mode preload window (current ± N)
   var DESKTOP_MIN_WIDTH = 1024; // >= this => default 'double', else 'single'
   var SCROLL_INSTANT_JUMP = 10; // pages: beyond this, jump instantly not smoothly
+  // 1×1 transparent GIF — swapped in for a failed image so the browser stops
+  // painting its native broken-image chrome (the .is-error CSS background shows the icon).
+  var TRANSPARENT_PX = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
 
   /* ---------------- state ---------------- */
   var state = {
@@ -414,6 +417,7 @@
       applyAspect(slot, page);
       slot.alt = page.label || "";
       if (slot.getAttribute("src") !== url) {
+        slot.classList.remove("is-error"); // clear a prior failure before retrying
         slot.setAttribute("src", url);
         // Spinner only for a genuine fetch — a cached image reports complete
         // synchronously (and the reveal delay covers anything else that's fast).
@@ -421,7 +425,15 @@
       }
       slot.onerror = function () {
         slot.classList.add("is-error");
+        slot.alt = "";
         setSlotLoading(slot, false);
+        // A broken <img> keeps drawing the browser's native broken-image chrome
+        // (icon + alt) OVER our .is-error background, even after the src is cleared.
+        // Swap in a valid transparent pixel so nothing is "broken" to paint; the
+        // CSS background then shows the icon alone. Detach the handlers first so
+        // this placeholder's load doesn't clear is-error.
+        slot.onload = slot.onerror = null;
+        slot.src = TRANSPARENT_PX;
       };
       slot.onload = function () {
         slot.classList.remove("is-error");

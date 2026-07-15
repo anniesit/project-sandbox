@@ -27,11 +27,26 @@
 .page-image.is-empty {
   display: none;
 }
+/* A failed image reports ZERO intrinsic size, so the fit-page/fit-width rules
+ (width/height:100%) can't constrain it — the box balloons and the centered icon
+ drops off-screen. Pin the error state to a bounded, self-contained framed box
+ (hard override so it beats the higher-specificity zoom rules in every layout),
+ and hide the alt text so it doesn't sit over the glyph (viewer.js also drops the
+ broken src, which kills the browser's native broken-image chrome). */
 .page-image.is-error {
-  min-width: 220px;
-  min-height: 300px;
-  background: #10262e
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' fill='none' stroke='%23ade7f7' stroke-width='1.5'><rect x='6' y='6' width='36' height='36' rx='3'/><path d='M6 34l10-10 8 8 6-6 12 12'/></svg>")
+  width: min(60%, 300px) !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  margin: auto !important; /* centre the box whether the container is block or flex */
+  aspect-ratio: 3 / 4;
+  object-fit: contain;
+  color: transparent;
+  font-size: 0;
+  border: 1px solid rgba(173, 231, 247, 0.3);
+  border-radius: 8px;
+  background: var(--_color---sky--700)
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256' fill='%23ade7f7'><path d='M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16h64a8,8,0,0,0,7.59-5.47l14.83-44.48L163,151.43a8.07,8.07,0,0,0,4.46-4.46l14.62-36.55,44.48-14.83A8,8,0,0,0,232,88V56A16,16,0,0,0,216,40ZM112.41,157.47,98.23,200H40V172l52-52,30.42,30.42L117,152.57A8,8,0,0,0,112.41,157.47ZM216,82.23,173.47,96.41a8,8,0,0,0-4.9,4.62l-14.72,36.82L138.58,144l-35.27-35.27a16,16,0,0,0-22.62,0L40,149.37V56H216Zm12.68,33a8,8,0,0,0-7.21-1.1l-23.8,7.94a8,8,0,0,0-4.9,4.61l-14.31,35.77-35.77,14.31a8,8,0,0,0-4.61,4.9l-7.94,23.8A8,8,0,0,0,137.73,216H216a16,16,0,0,0,16-16V121.73A8,8,0,0,0,228.68,115.24ZM216,200H148.83l3.25-9.75,35.51-14.2a8.07,8.07,0,0,0,4.46-4.46l14.2-35.51,9.75-3.25Z'/></svg>")
     center/48px no-repeat;
 }
 
@@ -83,6 +98,7 @@
 .cc-sharpen:disabled,
 /* higher-specificity variant so it outranks the base .viewer-nav-btn.cc-sharpen cursor */
 .viewer-nav-btn.cc-sharpen:disabled {
+  color: var(--_color---neutral--white);
   opacity: 0.4;
   cursor: default;
 }
@@ -286,22 +302,11 @@
 }
 
 /* ---- placeholder / error (cloned when a slot is a wrapper instead of <img>) ---- */
-.page-placeholder {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: center;
-  justify-content: center;
-  min-width: 220px;
-  aspect-ratio: 3/4;
-  background: #10262e;
-  color: #9fc7d4;
-}
 .page-placeholder-spinner {
-  width: 26px;
-  height: 26px;
-  border: 3px solid rgba(173, 231, 247, 0.3);
-  border-top-color: #ade7f7;
+  width: 3rem;
+  height: 3rem;
+  border: 0.25rem solid rgba(0, 50, 64, 0.3);
+  border-top-color: var(--_color---sky--400);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
