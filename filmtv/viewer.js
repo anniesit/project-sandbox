@@ -108,6 +108,13 @@
   function layoutPanelTrigger() {
     return byId("js-viewer-layout-trigger") || $(".viewer-layout-trigger");
   }
+  // Drawer handle (the grab bar at the top of the drawer) that closes it.
+  // Prefer a js- id, then the plain id, then the class — matches whichever hook
+  // the Webflow element carries (#js-viewer-layout-close / #viewer-layout-close /
+  // .viewer-layout-close).
+  function layoutPanelClose() {
+    return byId("js-viewer-layout-close") || byId("viewer-layout-close") || $(".viewer-layout-close");
+  }
   function rootEl() {
     return scope.querySelector(".viewer-root") || (scope.querySelector ? scope : document.body);
   }
@@ -1220,6 +1227,12 @@
     on(layoutPanelTrigger(), "click", function (e) {
       e.stopPropagation();
       toggleLayoutPanel();
+    });
+    // drawer handle: closes the drawer (it lives inside the panel, so the
+    // outside-click handler never sees it — the close must be explicit)
+    on(layoutPanelClose(), "click", function (e) {
+      e.stopPropagation();
+      toggleLayoutPanel(false);
     });
     document.addEventListener("fullscreenchange", function () {
       state.isFullscreen = !!document.fullscreenElement;

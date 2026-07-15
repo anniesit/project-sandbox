@@ -340,12 +340,30 @@
         font: 500 15px/1.6 var(--primary);
         cursor: pointer;
       }
+      /* drawer handle (grab bar) — hidden on desktop (drawer is inline); the live
+         site styles this in Webflow. [WF] */
+      .viewer-layout-close {
+        display: none;
+      }
       @media (max-width: 991px) {
         .viewer-toolbar-bottom {
           position: relative;
         }
         .viewer-layout-trigger {
           display: inline-flex;
+        }
+        /* full-width grab bar pinned to the top of the wrapping drawer */
+        .viewer-layout-close {
+          display: block;
+          flex: 0 0 100%;
+          width: 40px;
+          height: 4px;
+          margin: 0 auto 10px;
+          padding: 0;
+          border: none;
+          border-radius: 999px;
+          background: var(--line);
+          cursor: pointer;
         }
         /* drawer floats above the footer, translated off-frame until .is-open.
            viewer.css supplies `.viewer-layout.is-open{transform:translateY(0)}`. */
@@ -407,6 +425,9 @@
              trigger reveals it (viewer.js toggles .is-open). -->
         <button type="button" class="viewer-layout-trigger" aria-haspopup="true" aria-expanded="false">⚙ 版面配置</button>
         <div class="viewer-layout controls">
+          <!-- PREVIEW mirror of the Webflow drawer handle (grab bar). viewer.js
+               (layoutPanelClose) wires its click to close the drawer. [WF] -->
+          <button type="button" id="viewer-layout-close" class="viewer-layout-close" aria-label="關閉版面配置"></button>
           <span class="ctl-label">版面配置</span>
           <!-- Layout dropdown — design-system single-select (data-dropdown-option
                + .dropdown-option-label + .dropdown-option-check, aria-selected). -->
