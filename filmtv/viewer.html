@@ -423,11 +423,11 @@
         <!-- PREVIEW: the trigger + .viewer-layout drawer mirror the live Webflow
              footer. On tablet & below the drawer is translated off-frame and the
              trigger reveals it (viewer.js toggles .is-open). -->
-        <button type="button" class="viewer-layout-trigger" aria-haspopup="true" aria-expanded="false">⚙ 版面配置</button>
-        <div class="viewer-layout controls">
+        <button type="button" id="js-viewer-layout-trigger" class="viewer-layout-trigger" aria-haspopup="true" aria-expanded="false">⚙ 版面配置</button>
+        <div id="js-viewer-layout" class="viewer-layout controls">
           <!-- PREVIEW mirror of the Webflow drawer handle (grab bar). viewer.js
                (layoutPanelClose) wires its click to close the drawer. [WF] -->
-          <button type="button" id="viewer-layout-close" class="viewer-layout-close" aria-label="關閉版面配置"></button>
+          <button type="button" id="js-viewer-layout-close" class="viewer-layout-close" aria-label="關閉版面配置"></button>
           <span class="ctl-label">版面配置</span>
           <!-- Layout dropdown — design-system single-select (data-dropdown-option
                + .dropdown-option-label + .dropdown-option-check, aria-selected). -->
@@ -528,25 +528,25 @@
 
           <span class="divider">|</span>
           <!-- 銳化 sharpen toggle — viewer.js adds .is-active when the filter is on -->
-          <button type="button" class="viewer-nav-btn cc-sharpen">✦ 銳化</button>
+          <button type="button" id="js-sharpen" class="viewer-nav-btn cc-sharpen">✦ 銳化</button>
         </div>
       </footer>
     </div>
 
     <!-- ================= TEMPLATES (inert; cloned by viewer.js) ================= -->
     <template id="tpl-layout-single">
-      <img class="page-image" alt="" draggable="false" />
+      <img class="page-image" data-role="page-image" alt="" draggable="false" />
     </template>
 
     <template id="tpl-layout-double">
-      <div class="page-spread">
-        <img class="page-image page-image--left" alt="" draggable="false" />
-        <img class="page-image page-image--right" alt="" draggable="false" />
+      <div class="page-spread" data-role="page-spread">
+        <img class="page-image page-image--left" data-role="page-image" data-side="left" alt="" draggable="false" />
+        <img class="page-image page-image--right" data-role="page-image" data-side="right" alt="" draggable="false" />
       </div>
     </template>
 
     <template id="tpl-layout-ocr">
-      <div class="ocr-panel">
+      <div class="ocr-panel" data-role="ocr-panel">
         <button class="ocr-toc-trigger is-hidden" id="js-ocr-toc-trigger" type="button">純文字目錄</button>
         <div class="ocr-content" id="js-ocr-content"></div>
         <div class="ocr-font-controls">
@@ -555,7 +555,7 @@
           <button class="ocr-font-btn" id="js-ocr-font-increase" type="button">＋</button>
         </div>
       </div>
-      <div class="ocr-page-stage"><img class="page-image" alt="" draggable="false" /></div>
+      <div class="ocr-page-stage" data-role="ocr-page-stage"><img class="page-image" data-role="page-image" alt="" draggable="false" /></div>
     </template>
 
     <template id="tpl-layout-thumbnail">
@@ -563,47 +563,35 @@
     </template>
 
     <template id="tpl-thumbnail-item">
-      <button class="thumbnail-item" type="button">
-        <img class="thumbnail-image" alt="" />
-        <span class="thumbnail-label"></span>
+      <button class="thumbnail-item" data-role="thumbnail-item" type="button">
+        <img class="thumbnail-image" data-role="thumbnail-image" alt="" />
+        <span class="thumbnail-label" data-role="thumbnail-label"></span>
       </button>
     </template>
 
     <template id="tpl-ocr-article-block">
       <div class="ocr-article-block">
-        <div class="ocr-article-body"></div>
+        <div class="ocr-article-body" data-role="ocr-article-body"></div>
       </div>
     </template>
 
     <template id="tpl-ocr-toc-popover">
       <div class="ocr-toc-popover" id="js-ocr-toc-popover">
-        <div class="ocr-toc-header"></div>
-        <!-- .ocr-toc-list holds ONE .ocr-toc-item row = the Webflow-authored template
-             that viewer.js clones per article (same pattern as the result cards). -->
+        <div class="ocr-toc-header" data-role="ocr-toc-header"></div>
+        <!-- .ocr-toc-list holds ONE Webflow-authored row (hooked via
+             [data-tpl="ocr-toc-item"], styled via .ocr-toc-item) that viewer.js clones
+             per article (same pattern as the result cards). -->
         <ul class="ocr-toc-list" id="js-ocr-toc-list">
-          <!-- ONE template row = the Webflow-authored .ocr-toc-item. viewer.js fills
-               each [data-field] and hides the column/author leaf when its value is
-               empty (like the result cards). -->
-          <li class="ocr-toc-item">
+          <!-- ONE template row, hooked by [data-tpl="ocr-toc-item"] so renaming the
+               .ocr-toc-item style class in Webflow doesn't break viewer.js. Fills each
+               [data-field] and hides the column/author leaf when its value is empty
+               (like the result cards). -->
+          <li class="ocr-toc-item" data-tpl="ocr-toc-item">
             <div class="ocr-toc-column" data-field="column"></div>
             <div class="ocr-toc-title" data-field="title"></div>
             <div class="ocr-toc-author" data-field="author"></div>
           </li>
         </ul>
-      </div>
-    </template>
-
-    <template id="tpl-page-placeholder">
-      <div class="page-placeholder">
-        <div class="page-placeholder-spinner"></div>
-        <span class="page-placeholder-label"></span>
-      </div>
-    </template>
-
-    <template id="tpl-page-error">
-      <div class="page-error">
-        <div class="page-error-icon"></div>
-        <span class="page-error-label"></span>
       </div>
     </template>
 

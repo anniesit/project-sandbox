@@ -34,14 +34,14 @@
  *     [data-dropdown]#js-zoom-dropdown    zoom (fit-page|fit-width|100|150)
  *     button#js-fullscreen
  *     button#js-rotate-cw / button#js-rotate-ccw
- *     button.cc-sharpen (or #js-sharpen)  toggles the high sharpen filter
+ *     button#js-sharpen  toggles the high sharpen filter (.cc-sharpen styles it)
  *   responsive layout drawer (tablet & below):
- *     .viewer-layout-trigger (or #js-viewer-layout-trigger)  opens the drawer
- *     .viewer-layout (or #js-viewer-layout)  the drawer (JS toggles .is-open)
+ *     button#js-viewer-layout-trigger  opens the drawer
+ *     div#js-viewer-layout  the drawer (JS toggles .is-open)
+ *     button#js-viewer-layout-close  the grab-bar handle that closes it
  *   <template> hooks (inert; cloned by JS):
  *     #tpl-layout-single #tpl-layout-double #tpl-layout-ocr #tpl-layout-thumbnail
  *     #tpl-thumbnail-item #tpl-ocr-article-block #tpl-ocr-toc-popover
- *     #tpl-page-placeholder #tpl-page-error
  *
  * The Layout/Zoom dropdowns use the design-system dropdown component (forms.js):
  * this file reads them via the `input` event on their hidden <input>. No visual
@@ -97,26 +97,25 @@
   function container() {
     return byId("js-page-container");
   }
-  // Feature hooks that are plain Webflow chrome (no template clone): prefer a
-  // js- id if the author adds one, else fall back to the unique Webflow class.
+  // Feature hooks that are plain Webflow chrome (no template clone). Each is a
+  // singleton, so the hook is a stable js- id (the Webflow element must carry it);
+  // the .viewer-layout / .cc-sharpen classes are for styling only and can be
+  // renamed freely without touching this file.
   function sharpenBtn() {
-    return byId("js-sharpen") || $(".cc-sharpen");
+    return byId("js-sharpen");
   }
   function layoutPanel() {
-    return byId("js-viewer-layout") || $(".viewer-layout");
+    return byId("js-viewer-layout");
   }
   function layoutPanelTrigger() {
-    return byId("js-viewer-layout-trigger") || $(".viewer-layout-trigger");
+    return byId("js-viewer-layout-trigger");
   }
   // Drawer handle (the grab bar at the top of the drawer) that closes it.
-  // Prefer a js- id, then the plain id, then the class — matches whichever hook
-  // the Webflow element carries (#js-viewer-layout-close / #viewer-layout-close /
-  // .viewer-layout-close).
   function layoutPanelClose() {
-    return byId("js-viewer-layout-close") || byId("viewer-layout-close") || $(".viewer-layout-close");
+    return byId("js-viewer-layout-close");
   }
   function rootEl() {
-    return scope.querySelector(".viewer-root") || (scope.querySelector ? scope : document.body);
+    return scope === document ? document.body : scope;
   }
   function tpl(id) {
     var t = document.getElementById(id);
@@ -337,7 +336,7 @@
       if (state.scrollDirection === "flip") {
         var s = tpl("tpl-layout-single");
         if (s) c.appendChild(s);
-        markRotationTarget(c.querySelector(".page-image"));
+        markRotationTarget(c.querySelector('[data-role="page-image"]'));
         addLoadingOverlay(c);
       } else {
         renderScrollStrip(c);
@@ -347,15 +346,15 @@
     if (state.layout === "double") {
       var d = tpl("tpl-layout-double");
       if (d) c.appendChild(d);
-      markRotationTarget(c.querySelector(".page-spread") || c.firstElementChild);
+      markRotationTarget(c.querySelector('[data-role="page-spread"]') || c.firstElementChild);
       addLoadingOverlay(c);
       return;
     }
     if (state.layout === "ocr") {
       var o = tpl("tpl-layout-ocr");
       if (o) c.appendChild(o);
-      markRotationTarget(c.querySelector(".page-image"));
-      addLoadingOverlay(c.querySelector(".ocr-page-stage") || c); // over the image, not the text
+      markRotationTarget(c.querySelector('[data-role="page-image"]'));
+      addLoadingOverlay(c.querySelector('[data-role="ocr-page-stage"]') || c); // over the image, not the text
       return;
     }
   }
@@ -371,13 +370,13 @@
     var c = container();
     if (!c) return;
     if (state.layout === "single" && state.scrollDirection === "flip") {
-      renderPageImage(c.querySelector(".page-image"), pageAt(state.currentPage));
+      renderPageImage(c.querySelector('[data-role="page-image"]'), pageAt(state.currentPage));
     } else if (state.layout === "single") {
       highlightScrollPage();
     } else if (state.layout === "double") {
       renderDoubleContent(c);
     } else if (state.layout === "ocr") {
-      renderPageImage(c.querySelector(".page-image"), pageAt(state.currentPage));
+      renderPageImage(c.querySelector('[data-role="page-image"]'), pageAt(state.currentPage));
       renderOcrPanel();
     } else if (state.layout === "thumbnail") {
       highlightThumbnail();
@@ -390,9 +389,9 @@
 
   function renderDoubleContent(c) {
     var pages = getVisibleSpreadPages(state.currentPage, state.connectMode);
-    var slotLeft = c.querySelector(".page-image--left");
-    var slotRight = c.querySelector(".page-image--right");
-    toggleClass(c.querySelector(".page-spread") || c, "spread-lone", pages.length === 1);
+    var slotLeft = c.querySelector('[data-role="page-image"][data-side="left"]');
+    var slotRight = c.querySelector('[data-role="page-image"][data-side="right"]');
+    toggleClass(c.querySelector('[data-role="page-spread"]') || c, "spread-lone", pages.length === 1);
     if (pages.length === 1) {
       // lone first page — show it in the orientation-appropriate single slot
       renderPageImage(slotLeft, pageAt(pages[0]));
@@ -432,7 +431,11 @@
       }
       slot.onerror = function () {
         slot.classList.add("is-error");
-        slot.alt = "";
+        // Keep a descriptive alt so assistive tech announces the failure — the icon
+        // is a CSS background with no text of its own. It stays visually hidden (the
+        // .is-error rule zeroes font-size/colour) and the transparent-pixel swap below
+        // stops the browser's native broken-image chrome from painting it over the glyph.
+        slot.alt = "圖片無法載入：" + (page.label || page.file);
         setSlotLoading(slot, false);
         // A broken <img> keeps drawing the browser's native broken-image chrome
         // (icon + alt) OVER our .is-error background, even after the src is cleared.
@@ -446,34 +449,7 @@
         slot.classList.remove("is-error");
         setSlotLoading(slot, false);
       };
-      return;
     }
-
-    var ph = tpl("tpl-page-placeholder");
-    if (ph) {
-      setText(ph.querySelector(".page-placeholder-label"), page.label || "");
-      applyAspect(ph.firstElementChild, page);
-    }
-    slot.innerHTML = "";
-    if (ph) slot.appendChild(ph);
-
-    var img = new Image();
-    img.className = "page-image";
-    img.draggable = false;
-    img.alt = page.label || "";
-    applyAspect(img, page);
-    img.addEventListener("load", function () {
-      slot.innerHTML = "";
-      slot.appendChild(img);
-      markRotationTarget(img);
-    });
-    img.addEventListener("error", function () {
-      var er = tpl("tpl-page-error");
-      if (er) setText(er.querySelector(".page-error-label"), "無法載入：" + (page.label || page.file));
-      slot.innerHTML = "";
-      if (er) slot.appendChild(er);
-    });
-    img.src = url;
   }
 
   // Spinner overlay (flip layouts). A bare <img> slot keeps the OLD page painted
@@ -495,7 +471,14 @@
     if (on) loadingSlots.add(slot);
     else loadingSlots.delete(slot);
     var c = container();
-    if (c) c.classList.toggle("is-loading", loadingSlots.size > 0);
+    if (c) {
+      var loading = loadingSlots.size > 0;
+      c.classList.toggle("is-loading", loading);
+      // aria-busy tells assistive tech the reading area is fetching, so it holds off
+      // announcing the stale image until load/error clears the flag (the spinner
+      // itself is decorative / aria-hidden).
+      c.setAttribute("aria-busy", loading ? "true" : "false");
+    }
   }
 
   function applyAspect(el, page) {
@@ -647,7 +630,7 @@
     if (!c) return;
     // Measure the box that actually clips the page image — in OCR that's the
     // narrower .ocr-page-stage, elsewhere the container — so rotated fit is correct.
-    var box = c.querySelector(".ocr-page-stage") || c;
+    var box = c.querySelector('[data-role="ocr-page-stage"]') || c;
     c.style.setProperty("--vw", Math.max(0, box.clientWidth - 24) + "px"); // minus padding/margin
     c.style.setProperty("--vh", Math.max(0, box.clientHeight - 24) + "px");
     c.classList.toggle("is-rot-90", state.rotation % 180 === 90);
@@ -689,7 +672,7 @@
   function panViewport() {
     var c = container();
     if (!c) return null;
-    return (state.layout === "ocr" && c.querySelector(".ocr-page-stage")) || c;
+    return (state.layout === "ocr" && c.querySelector('[data-role="ocr-page-stage"]')) || c;
   }
   function clampPan(v, axis) {
     var t = getRotationTarget();
@@ -787,6 +770,7 @@
     order.forEach(function (o) {
       var img = document.createElement("img");
       img.className = "page-image";
+      img.setAttribute("data-role", "page-image");
       img.draggable = false;
       img.setAttribute("data-page-index", String(o.idx));
       img.loading = "lazy";
@@ -822,7 +806,7 @@
       { root: container(), threshold: [0, 0.25, 0.5, 0.75, 1] },
     );
     container()
-      .querySelectorAll(".page-image[data-page-index]")
+      .querySelectorAll('[data-role="page-image"][data-page-index]')
       .forEach(function (img) {
         scrollObserver.observe(img);
       });
@@ -831,7 +815,7 @@
   function highlightScrollPage() {
     var c = container();
     if (!c) return;
-    c.querySelectorAll(".page-image[data-page-index]").forEach(function (img) {
+    c.querySelectorAll('[data-role="page-image"][data-page-index]').forEach(function (img) {
       img.classList.toggle("is-active", parseInt(img.getAttribute("data-page-index"), 10) === state.currentPage);
     });
   }
@@ -855,9 +839,9 @@
     state.book.pages.forEach(function (page, i) {
       var item = tpl("tpl-thumbnail-item");
       if (!item) return;
-      var btn = item.querySelector(".thumbnail-item");
+      var btn = item.querySelector('[data-role="thumbnail-item"]');
       if (btn) btn.setAttribute("data-page-index", String(i + 1));
-      var img = item.querySelector(".thumbnail-image");
+      var img = item.querySelector('[data-role="thumbnail-image"]');
       if (img) {
         img.src = base + page.file;
         img.alt = page.label || "";
@@ -865,7 +849,7 @@
         img.draggable = false;
         applyAspect(img, page);
       }
-      setText(item.querySelector(".thumbnail-label"), page.label || "");
+      setText(item.querySelector('[data-role="thumbnail-label"]'), page.label || "");
       frag.appendChild(item);
     });
     grid.appendChild(frag);
@@ -875,14 +859,14 @@
   function highlightThumbnail() {
     var grid = byId("js-thumbnail-grid");
     if (!grid) return;
-    grid.querySelectorAll(".thumbnail-item").forEach(function (btn) {
+    grid.querySelectorAll('[data-role="thumbnail-item"]').forEach(function (btn) {
       btn.classList.toggle("is-active", parseInt(btn.getAttribute("data-page-index"), 10) === state.currentPage);
     });
   }
   function scrollThumbnailIntoView(idx) {
     var grid = byId("js-thumbnail-grid");
     if (!grid) return;
-    var el = grid.querySelector('.thumbnail-item[data-page-index="' + idx + '"]');
+    var el = grid.querySelector('[data-role="thumbnail-item"][data-page-index="' + idx + '"]');
     if (el) el.scrollIntoView({ block: "nearest" });
   }
 
@@ -895,7 +879,7 @@
     });
   }
   function renderOcrPanel() {
-    var panel = container().querySelector(".ocr-panel");
+    var panel = container().querySelector('[data-role="ocr-panel"]');
     if (panel) {
       panel.classList.remove("ocr-font-small", "ocr-font-medium", "ocr-font-large");
       panel.classList.add("ocr-font-" + state.ocrFontSize);
@@ -920,7 +904,7 @@
       if (!block) return;
       // articleBody is backend OCR (the CSV `text_zht`), which carries HTML markup
       // (<p>, ocrHead). It is trusted archive content, so render it as HTML.
-      var body = block.querySelector(".ocr-article-body");
+      var body = block.querySelector('[data-role="ocr-article-body"]');
       if (body) body.innerHTML = a.articleBody || "";
       if (block.firstElementChild) block.firstElementChild.id = "js-ocr-article-" + a.id;
       content.appendChild(block);
@@ -941,24 +925,25 @@
     }
     if (pop) pop.classList.toggle("is-open");
   }
-  // The Webflow-authored .ocr-toc-item (one row) is cached from the popover template
-  // and cloned per article — the "one template row, JS repeats it" pattern the search
-  // page's result-card list uses, so the row is styled in Webflow, not in viewer.css.
+  // The Webflow-authored row (one row, hooked via [data-tpl="ocr-toc-item"]) is cached
+  // from the popover template and cloned per article — the "one template row, JS
+  // repeats it" pattern the search page's result-card list uses, so the row is styled
+  // in Webflow, not in viewer.css.
   var ocrTocItemTpl = null;
   function buildOcrTocPopover() {
-    var host = container().querySelector(".ocr-panel") || container();
+    var host = container().querySelector('[data-role="ocr-panel"]') || container();
     var frag = tpl("tpl-ocr-toc-popover");
     if (!frag) return;
     host.appendChild(frag);
     var list = byId("js-ocr-toc-list");
-    ocrTocItemTpl = list ? list.querySelector(".ocr-toc-item") : null;
+    ocrTocItemTpl = list ? list.querySelector('[data-tpl="ocr-toc-item"]') : null;
     refreshOcrTocList();
   }
   function refreshOcrTocList() {
     var list = byId("js-ocr-toc-list");
     if (!list) return;
     var articles = articlesOnCurrentPage();
-    var header = scope.querySelector("#js-ocr-toc-popover .ocr-toc-header");
+    var header = scope.querySelector('#js-ocr-toc-popover [data-role="ocr-toc-header"]');
     if (header) header.textContent = "本頁有 " + articles.length + " 篇文章純文字";
     list.innerHTML = "";
     articles.forEach(function (a) {
@@ -1208,11 +1193,9 @@
       }
       if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
       e.preventDefault();
-      var opts = Array.prototype.slice
-        .call(byId("js-scroll-popover").querySelectorAll("[data-scroll-direction], [data-connect-mode]"))
-        .filter(function (o) {
-          return o.getAttribute("aria-disabled") !== "true";
-        });
+      var opts = Array.prototype.slice.call(byId("js-scroll-popover").querySelectorAll("[data-scroll-direction], [data-connect-mode]")).filter(function (o) {
+        return o.getAttribute("aria-disabled") !== "true";
+      });
       if (!opts.length) return;
       var i = opts.indexOf(cur);
       var dir = e.key === "ArrowDown" ? 1 : -1;
@@ -1251,7 +1234,7 @@
     // thumbnail click (delegated)
     var c = container();
     on(c, "click", function (e) {
-      var thumb = e.target.closest && e.target.closest(".thumbnail-item");
+      var thumb = e.target.closest && e.target.closest('[data-role="thumbnail-item"]');
       if (thumb) {
         var idx = parseInt(thumb.getAttribute("data-page-index"), 10);
         state.currentPage = idx;
@@ -1263,7 +1246,7 @@
         toggleOcrTocPopover();
         return;
       }
-      var ocrLi = e.target.closest && e.target.closest("#js-ocr-toc-list .ocr-toc-item");
+      var ocrLi = e.target.closest && e.target.closest('#js-ocr-toc-list [data-tpl="ocr-toc-item"]');
       if (ocrLi) {
         jumpToArticleInOcr(ocrLi.getAttribute("data-article-id"));
         return;

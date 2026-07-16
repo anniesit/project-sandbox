@@ -301,7 +301,7 @@
   background-color: var(--_color---neutral--white);
 }
 
-/* ---- placeholder / error (cloned when a slot is a wrapper instead of <img>) ---- */
+/* ---- loading spinner (used by the .page-loading-overlay below) ---- */
 .page-placeholder-spinner {
   width: 3rem;
   height: 3rem;
