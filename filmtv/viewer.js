@@ -85,40 +85,40 @@
   /* Article-type exclusion + labels — the SAME set the Book page (book.js) drops
    * from its TOC, mirrored here so the viewer's 文章目錄 hides ads/company pages.
    * Kept in sync with book.js / results.js. */
-  var EXCLUDE_TYPES = { "23": 1, "16": 1, "1": 1, "12": 1, "10": 1 };
+  var EXCLUDE_TYPES = { 23: 1, 16: 1, 1: 1, 12: 1, 10: 1 };
   var ARTICLE_TYPES = {
-    "21": { label: "電影故事、小說、本事", variant: "is-film" },
-    "19": { label: "電影對白、劇本、分鏡大綱", variant: "is-film" },
-    "9": { label: "歌詞、歌譜", variant: "is-film" },
-    "6": { label: "人物專訪、花絮", variant: "is-film" },
-    "4": { label: "電影資訊及評論", variant: "is-film" },
-    "5": { label: "電視節目資訊及評論", variant: "is-film" },
-    "25": { label: "電影節、影視文化活動", variant: "is-film" },
-    "26": { label: "電影獎項、頒獎典禮", variant: "is-film" },
-    "31": { label: "電影票房記錄", variant: "is-film" },
-    "11": { label: "電視節目表、活動日程", variant: "is-film" },
-    "18": { label: "職員表、演員表、人物表", variant: "is-film" },
-    "32": { label: "作品年表", variant: "is-film" },
-    "13": { label: "編輯的話、讀者來信、序言、後記", variant: "is-cultural" },
-    "15": { label: "唱片、音樂資訊及評論", variant: "is-cultural" },
-    "28": { label: "文學創作、書摘", variant: "is-cultural" },
-    "27": { label: "文學及藝術評論、書評", variant: "is-cultural" },
-    "20": { label: "現場表演、舞台藝術", variant: "is-cultural" },
-    "7": { label: "消閒、資訊讀物、教學文章", variant: "is-cultural" },
-    "17": { label: "插畫、漫畫、小遊戲", variant: "is-cultural" },
-    "29": { label: "辭典、詞條", variant: "is-cultural" },
-    "23": { label: "公司通訊、資料", variant: "is-comm" },
-    "16": { label: "產品、商鋪", variant: "is-comm" },
-    "1": { label: "廣告、優惠券", variant: "is-comm" },
-    "12": { label: "抽獎得獎名單", variant: "is-comm" },
-    "10": { label: "報名、意見調查、雜誌表格", variant: "is-comm" },
-    "3": { label: "目錄、內容、片目索引", variant: "is-other" },
-    "14": { label: "封面、封底、版權頁", variant: "is-other" },
-    "2": { label: "照片集", variant: "is-other" },
-    "24": { label: "海報、明信片", variant: "is-other" },
-    "30": { label: "缺頁", variant: "is-other" },
-    "22": { label: "外語文章", variant: "is-other" },
-    "33": { label: "其他類別", variant: "is-other" },
+    21: { label: "電影故事、小說、本事", variant: "is-film" },
+    19: { label: "電影對白、劇本、分鏡大綱", variant: "is-film" },
+    9: { label: "歌詞、歌譜", variant: "is-film" },
+    6: { label: "人物專訪、花絮", variant: "is-film" },
+    4: { label: "電影資訊及評論", variant: "is-film" },
+    5: { label: "電視節目資訊及評論", variant: "is-film" },
+    25: { label: "電影節、影視文化活動", variant: "is-film" },
+    26: { label: "電影獎項、頒獎典禮", variant: "is-film" },
+    31: { label: "電影票房記錄", variant: "is-film" },
+    11: { label: "電視節目表、活動日程", variant: "is-film" },
+    18: { label: "職員表、演員表、人物表", variant: "is-film" },
+    32: { label: "作品年表", variant: "is-film" },
+    13: { label: "編輯的話、讀者來信、序言、後記", variant: "is-cultural" },
+    15: { label: "唱片、音樂資訊及評論", variant: "is-cultural" },
+    28: { label: "文學創作、書摘", variant: "is-cultural" },
+    27: { label: "文學及藝術評論、書評", variant: "is-cultural" },
+    20: { label: "現場表演、舞台藝術", variant: "is-cultural" },
+    7: { label: "消閒、資訊讀物、教學文章", variant: "is-cultural" },
+    17: { label: "插畫、漫畫、小遊戲", variant: "is-cultural" },
+    29: { label: "辭典、詞條", variant: "is-cultural" },
+    23: { label: "公司通訊、資料", variant: "is-comm" },
+    16: { label: "產品、商鋪", variant: "is-comm" },
+    1: { label: "廣告、優惠券", variant: "is-comm" },
+    12: { label: "抽獎得獎名單", variant: "is-comm" },
+    10: { label: "報名、意見調查、雜誌表格", variant: "is-comm" },
+    3: { label: "目錄、內容、片目索引", variant: "is-other" },
+    14: { label: "封面、封底、版權頁", variant: "is-other" },
+    2: { label: "照片集", variant: "is-other" },
+    24: { label: "海報、明信片", variant: "is-other" },
+    30: { label: "缺頁", variant: "is-other" },
+    22: { label: "外語文章", variant: "is-other" },
+    33: { label: "其他類別", variant: "is-other" },
   };
   var TYPE_VARIANT_CLASSES = ["is-film", "is-cultural", "is-comm", "is-other"];
   var DESKTOP_MIN_WIDTH = 1024; // >= this => default 'double', else 'single'
@@ -967,7 +967,7 @@
     content.innerHTML = "";
     var articles = articlesOnCurrentPage();
     if (!articles.length) {
-      content.textContent = "無內文";
+      content.textContent = "本頁並無純文字內容";
       if (trigger) trigger.classList.add("is-hidden");
       return;
     }
@@ -1639,10 +1639,7 @@
   }
   function issueNumber(issue) {
     if (issue == null || String(issue).trim() === "") return "";
-    return String(issue)
-      .replace(/^第/, "")
-      .replace(/期$/, "")
-      .trim();
+    return String(issue).replace(/^第/, "").replace(/期$/, "").trim();
   }
   // The article TOC — same type-exclusion as the Book page (drops ads/company
   // pages), sorted by page. Rows navigate to the article's first page on click.
@@ -1701,10 +1698,7 @@
   function searchArticles(q) {
     var needle = q.toLowerCase();
     return (state.book.articles || []).filter(function (a) {
-      var hay = [a.title, a.author, articleColumn(a), a.keywords, stripHtml(a.articleBody)]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
+      var hay = [a.title, a.author, articleColumn(a), a.keywords, stripHtml(a.articleBody)].filter(Boolean).join(" ").toLowerCase();
       return hay.indexOf(needle) !== -1;
     });
   }
@@ -1760,6 +1754,15 @@
   }
   function fillArticleInfoItem(item, a) {
     fillLeaf(item, "title", a.title || "無標題", false);
+    // Name each <article> by its title. The authored template carries an EMPTY
+    // aria-labelledby (points at nothing); give the title a unique id per clone
+    // (a.id is unique + valid) and point the article at it, so a double-page
+    // spread's two articles are announced as "文章，等情郎" / "…，河上相思".
+    var titleEl = item.querySelector('[data-field="title"]');
+    if (titleEl && a.id != null) {
+      titleEl.id = "js-article-info-title-" + a.id;
+      item.setAttribute("aria-labelledby", titleEl.id);
+    }
     fillInfoRow(item, "author", a.author);
     fillInfoRow(item, "column", articleColumn(a));
     fillInfoRow(item, "page", a.page != null ? a.page : a.pageStart);

@@ -95,6 +95,7 @@
 #js-rotate-cw:disabled,
 #js-rotate-ccw:disabled,
 #js-sharpen:disabled,
+#js-article-info:disabled,
 .cc-sharpen:disabled,
 /* higher-specificity variant so it outranks the base .viewer-nav-btn.cc-sharpen cursor */
 .viewer-nav-btn.cc-sharpen:disabled {
@@ -445,6 +446,18 @@
 .viewer-link-alert.is-visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* ---- reduced motion: users who ask their OS to minimise motion get instant
+ panel show/hide + toast (no .7s slide / fade). !important overrides both the
+ Webflow-authored transition on .viewer-meta/.viewer-search/.viewer-article-info
+ and the [data-viewer-panel] rule above. The visibility toggle still applies, so
+ the inert-when-closed behaviour is unchanged — only the animation is dropped. ---- */
+@media (prefers-reduced-motion: reduce) {
+  [data-viewer-panel],
+  .viewer-link-alert {
+    transition: none !important;
+  }
 }
 
 /* ---- utility: viewer.js toggles this on runtime nodes; !important keeps it a
