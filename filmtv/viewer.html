@@ -386,6 +386,225 @@
              transform:translateY(0) to reveal it. */
         }
       }
+
+      /* ---- SIDE PANELS [WF] — the live site authors position / off-canvas
+           translate / background / .7s transform transition in Webflow; the
+           visibility + .is-open reveal ship in viewer.css. Restated here so the
+           mock slides + populates. ---- */
+      .viewer-meta,
+      .viewer-search,
+      .viewer-article-info {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        z-index: 5;
+        width: 100%;
+        max-width: 360px;
+        display: flex;
+        flex-direction: column;
+        padding: 20px 20px 0;
+        background: var(--teal);
+        box-shadow: 0 0 16px #060e2540;
+      }
+      .viewer-meta,
+      .viewer-search {
+        left: 0;
+        transform: translateX(-110%);
+      }
+      .viewer-article-info {
+        right: 0;
+        transform: translateX(110%);
+      }
+      .panel-scroll {
+        overflow: auto;
+        flex: 1;
+      }
+      .panel-title {
+        font-size: 22px;
+        margin: 0;
+      }
+      .panel-issue {
+        margin: 0 0 8px;
+      }
+      .viewer-meta-details {
+        margin: 8px 0;
+        padding: 0;
+      }
+      .viewer-meta-details > div {
+        display: flex;
+        gap: 8px;
+      }
+      .viewer-meta-details dt {
+        opacity: 0.8;
+      }
+      .viewer-meta-details dd {
+        margin: 0;
+      }
+      .viewer-meta-links {
+        list-style: none;
+        padding: 0;
+        margin: 8px 0;
+      }
+      .divider {
+        height: 1px;
+        background: rgba(173, 231, 247, 0.3);
+        margin: 12px 0;
+      }
+      .viewer-article-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .viewer-article-list.can-scroll {
+        overflow: auto;
+      }
+      .viewer-article-item {
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(173, 231, 247, 0.25);
+        cursor: pointer;
+      }
+      .viewer-article-item:hover {
+        color: var(--line);
+      }
+      .art-col {
+        font-size: 12px;
+        opacity: 0.8;
+      }
+      .art-title {
+        font-size: 18px;
+        margin: 2px 0;
+      }
+      .art-author {
+        font-size: 12px;
+        opacity: 0.8;
+      }
+      .panel-head {
+        padding-bottom: 8px;
+      }
+      .article-info-item {
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(173, 231, 247, 0.25);
+      }
+      .art-label {
+        font-size: 12px;
+        opacity: 0.8;
+        margin: 0 0 4px;
+      }
+      .article-info-list {
+        margin: 8px 0;
+        padding: 0;
+      }
+      .article-info-row {
+        display: flex;
+        gap: 8px;
+        align-items: baseline;
+        margin: 4px 0;
+      }
+      .article-info-row.cc-keyword {
+        align-items: flex-start;
+      }
+      .article-info-row dt {
+        font-size: 12px;
+        opacity: 0.8;
+        flex-shrink: 0;
+      }
+      .article-info-row dd {
+        margin: 0;
+      }
+      [data-field="article-type"] {
+        display: inline-block;
+        padding: 1px 8px;
+        border-radius: 10px;
+        background: rgba(173, 231, 247, 0.2);
+        font-size: 12px;
+      }
+      .ul {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .viewer-meta-extlink {
+        position: relative;
+        color: var(--line);
+        text-decoration: underline;
+      }
+      .viewer-search-form {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .input-clear-wrapper {
+        position: relative;
+        flex: 1;
+      }
+      .viewer-search-input {
+        width: 100%;
+        padding: 8px 28px 8px 0;
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid var(--line);
+        color: #fff;
+        font-family: inherit;
+      }
+      .input-clear-btn {
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #fff;
+        cursor: pointer;
+      }
+      .viewer-search-btn {
+        background: none;
+        border: none;
+        color: #fff;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      .viewer-search-empty {
+        padding: 12px 0;
+        opacity: 0.8;
+      }
+      .viewer-close-wrap {
+        padding: 12px 0;
+      }
+      .viewer-close-btn {
+        background: none;
+        border: 1px solid var(--line);
+        color: #fff;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        cursor: pointer;
+      }
+      .viewer-close-spacer {
+        height: 24px;
+      }
+      .u-link-cover {
+        position: absolute;
+        inset: 0;
+      }
+
+      /* ---- copy-link toast [WF] ---- */
+      .viewer-link-alert {
+        position: absolute;
+        z-index: 20;
+        top: calc(100% + 8px);
+        right: 12px;
+        padding: 8px 10px;
+        border: 2px solid var(--line);
+        border-radius: 8px;
+        background: var(--teal);
+        opacity: 0;
+        transition:
+          transform 0.2s ease,
+          opacity 0.2s ease;
+      }
     </style>
   </head>
   <body>
@@ -398,9 +617,11 @@
           <button id="js-toc-trigger"><span class="nav-ico">☰</span>刊物目錄</button>
           <button id="js-search-trigger"><span class="nav-ico">🔍</span>搜尋內文</button>
         </div>
-        <div class="nav-group">
-          <button id="js-article-info"><span class="nav-ico">ⓘ</span>文章資訊</button>
+        <div class="nav-group" style="position: relative">
+          <button id="js-article-info" aria-haspopup="dialog" aria-expanded="false"><span class="nav-ico">ⓘ</span>文章資訊</button>
           <button id="js-share"><span class="nav-ico">🔗</span></button>
+          <!-- copy-link toast — viewer.js reveals it ~4s after #js-share copies the URL -->
+          <div class="viewer-link-alert" data-viewer-alert role="status" aria-live="polite"><div class="paragraph-sm">已複製此頁連結</div></div>
         </div>
       </header>
 
@@ -409,6 +630,99 @@
         <button class="viewer-arrow" id="js-prev-page" aria-label="上一頁">‹</button>
         <div id="js-page-container" class="viewer-page-container"><!-- cloned from a template --></div>
         <button class="viewer-arrow" id="js-next-page" aria-label="下一頁">›</button>
+
+        <!-- ============ SIDE PANELS (populated by viewer.js from state.book) ============
+             Hooks (author these data-* in Webflow; keep ONE [data-tpl] row per list
+             and delete the extra sample rows). Triggers keep their js- ids. -->
+
+        <!-- 1. Book Metadata Panel — #js-toc-trigger -->
+        <div class="viewer-meta" data-viewer-panel="meta">
+          <div class="panel-scroll">
+            <hgroup>
+              <h1 class="panel-title" data-field="journal">—</h1>
+              <div class="panel-issue h4">第 <span data-field="journal-issue"></span> 期</div>
+            </hgroup>
+            <dl class="viewer-meta-details">
+              <div u-flex="row-left-center"><dt>出版商　：</dt><dd data-field="publisher"></dd></div>
+              <div><dt>全冊頁數：</dt><dd data-field="page-count">xx 頁</dd></div>
+              <div><dt>出版日期：</dt><dd data-field="book-date"><time datetime=""></time></dd></div>
+            </dl>
+            <ul class="viewer-meta-links">
+              <li class="viewer-meta-extlink"><div>浸大圖書館目錄</div><a href="#" class="u-link-cover"></a></li>
+              <li class="viewer-meta-extlink"><div>電影相關連結</div><a href="#" class="u-link-cover"></a></li>
+            </ul>
+            <div class="divider"></div>
+            <section aria-labelledby="book-toc-heading">
+              <h2 id="book-toc-heading" class="h5">文章目錄</h2>
+              <!-- ONE [data-tpl="toc-item"] row; viewer.js clones it per (type-filtered) article -->
+              <ul class="viewer-article-list" data-viewer-toc-list>
+                <li class="viewer-article-item" data-tpl="toc-item">
+                  <div data-field="column" class="art-col"></div>
+                  <div data-field="title" class="art-title"></div>
+                  <div data-field="author" class="art-author"></div>
+                </li>
+              </ul>
+            </section>
+            <div class="viewer-close-spacer"></div>
+          </div>
+          <div class="viewer-close-wrap"><button class="viewer-close-btn" data-viewer-close aria-label="關閉">✕</button></div>
+        </div>
+
+        <!-- 2. Search Panel — #js-search-trigger -->
+        <div class="viewer-search" data-viewer-panel="search">
+          <form class="viewer-search-form" data-viewer-search-form>
+            <div class="input-clear-wrapper">
+              <input type="search" class="viewer-search-input" data-viewer-search-input placeholder="搜尋內文" aria-label="搜尋內文" />
+              <button type="button" data-input-clear aria-label="Clear" class="input-clear-btn">✕</button>
+            </div>
+            <button class="viewer-search-btn" type="submit" aria-label="搜尋">🔍</button>
+          </form>
+          <div class="divider"></div>
+          <!-- shown only after a search with no matches -->
+          <div class="viewer-search-empty is-hidden" data-viewer-search-empty>沒有查詢結果</div>
+          <!-- shown only when there are matches; ONE [data-tpl="search-item"] row -->
+          <ul class="viewer-article-list can-scroll is-hidden" data-viewer-search-results>
+            <li class="viewer-article-item" data-tpl="search-item">
+              <div data-field="column" class="art-col"></div>
+              <div data-field="title" class="art-title"></div>
+              <div data-field="author" class="art-author"></div>
+            </li>
+            <div class="viewer-close-spacer"></div>
+          </ul>
+          <div class="viewer-close-wrap"><button class="viewer-close-btn" data-viewer-close aria-label="關閉">✕</button></div>
+        </div>
+
+        <!-- 3. Article Metadata Panel — #js-article-info (disabled in thumbnail view) -->
+        <section class="viewer-article-info" data-viewer-panel="article" aria-labelledby="article-info-heading">
+          <div class="panel-head">
+            <h2 id="article-info-heading" class="h5">文章資訊 (第 <span data-field="page-list"></span> 頁)</h2>
+          </div>
+          <!-- ONE [data-tpl="article-info-item"] article; viewer.js clones it per visible article -->
+          <div class="panel-scroll" data-viewer-article-list>
+            <article class="article-info-item" data-tpl="article-info-item">
+              <p class="art-label">文章標題：</p>
+              <h3 data-field="title" class="art-title"></h3>
+              <dl class="article-info-list">
+                <div class="article-info-row"><dt>作者　　：</dt><dd data-field="author"></dd></div>
+                <div class="article-info-row"><dt>專欄　　：</dt><dd data-field="column"></dd></div>
+                <div class="article-info-row"><dt>頁碼　　：</dt><dd data-field="page"></dd></div>
+                <div class="article-info-row"><dt>文章類別：</dt><dd data-field="article-type"></dd></div>
+                <!-- whole row hides when the article has no keywords -->
+                <div class="article-info-row cc-keyword" data-viewer-keyword-row>
+                  <dt>文章關鍵字：</dt>
+                  <dd>
+                    <ul class="ul" data-viewer-keyword-list>
+                      <li class="viewer-meta-extlink" data-tpl="keyword-item"><div data-field="keyword"></div><a href="#" class="u-link-cover"></a></li>
+                    </ul>
+                  </dd>
+                </div>
+              </dl>
+              <div class="viewer-meta-extlink art-permalink"><div>本文永久連結</div><a href="#" class="u-link-cover"></a></div>
+            </article>
+            <div class="viewer-close-spacer"></div>
+          </div>
+          <div class="viewer-close-wrap"><button class="viewer-close-btn" data-viewer-close aria-label="關閉">✕</button></div>
+        </section>
       </main>
 
       <!-- ============ BOTTOM CONTROLS ============ -->

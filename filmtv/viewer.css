@@ -411,6 +411,42 @@
   transform: translateY(0);
 }
 
+/* ---- side panels (目錄 / 搜尋 / 文章資訊): open/close + inert-when-closed ----
+ Webflow authors each [data-viewer-panel] absolutely positioned and translated
+ off-canvas (translate(∓38rem)) with a .7s transform transition. viewer.js
+ toggles .is-open; the translate:0 override ships HERE (JS-state rule) so it
+ outranks the single-class base without a Webflow combo class.
+
+ A panel that is only translated off-screen is still in the tab order and read by
+ screen readers, so a keyboard user would tab into an invisible drawer. We add
+ visibility:hidden while closed — DELAYED until the slide-out finishes — which
+ makes the closed panel inert without killing the transition (display:none would).
+ This is why the panels are hidden-before-showing rather than always-present. */
+[data-viewer-panel] {
+  visibility: hidden;
+  transition-property: transform, visibility;
+  transition-duration: 0.7s, 0s;
+  transition-delay: 0s, 0.7s; /* hide only AFTER the slide-out completes */
+  transition-timing-function: cubic-bezier(0.34, 0.14, 0.43, 0.97), linear;
+}
+[data-viewer-panel].is-open {
+  transform: translate(0);
+  visibility: visible;
+  transition-delay: 0s, 0s; /* reveal immediately as it slides in */
+}
+
+/* ---- copy-link toast (本頁連結): opacity + translateY, shown ~4s by viewer.js.
+ Webflow authors it opacity:0 / absolutely placed; the closed nudge + visible
+ state ship here so the reveal composes both properties. ---- */
+.viewer-link-alert {
+  transform: translateY(-0.5rem);
+  pointer-events: none;
+}
+.viewer-link-alert.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 /* ---- utility: viewer.js toggles this on runtime nodes; !important keeps it a
  hard override Webflow's base styles can't win against ---- */
 .is-hidden {

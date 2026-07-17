@@ -42,6 +42,26 @@
  *   <template> hooks (inert; cloned by JS):
  *     #tpl-layout-single #tpl-layout-double #tpl-layout-ocr #tpl-layout-thumbnail
  *     #tpl-thumbnail-item #tpl-ocr-article-block #tpl-ocr-toc-popover
+ *   SIDE PANELS (目錄 / 搜尋 / 文章資訊) — author these data-* in Webflow. Each
+ *   list keeps ONE authored [data-tpl] row (delete the extra sample rows); JS
+ *   clones it. Triggers keep their js- ids (PANEL_TRIGGERS maps id -> panel):
+ *     [data-viewer-panel="meta|search|article"]  the three drawers
+ *     [data-viewer-close]                 a ✕ button inside a panel (closes it)
+ *     [data-viewer-alert]                 the "link copied" toast (#js-share)
+ *     Book Metadata (meta):
+ *       [data-field=journal|journal-issue|publisher|book-date]  header fields
+ *       [data-viewer-toc-list] > [data-tpl="toc-item"]  TOC (type-filtered);
+ *         row leaves [data-field=column|title|author]
+ *     Search (search):
+ *       [data-viewer-search-form] [data-viewer-search-input]  (form + input)
+ *       [data-viewer-search-empty]        沒有查詢結果 (shown only on 0 matches)
+ *       [data-viewer-search-results] > [data-tpl="search-item"]  (column/title/author)
+ *     Article Info (article):
+ *       [data-field=page-list]            visible page number(s) in the heading
+ *       [data-viewer-article-list] > [data-tpl="article-info-item"]  one per
+ *         visible article; leaves [data-field=title|author|column|page|article-type]
+ *       [data-viewer-keyword-row] (hidden when none) > [data-viewer-keyword-list]
+ *         > [data-tpl="keyword-item"] with [data-field=keyword]
  *
  * The Layout/Zoom dropdowns use the design-system dropdown component (forms.js):
  * this file reads them via the `input` event on their hidden <input>. No visual
@@ -54,7 +74,53 @@
   var DEFAULT_DATA_BASE = "./sample-data"; // {base}/{bookNumber}/book.json
   var ZOOM_PRESETS = ["fit-page", "fit-width", "100", "150"]; // add "75" here + a Webflow <li> to extend
   var OCR_FONT_SIZES = ["small", "medium", "large"];
+  var LINK_ALERT_MS = 4000; // how long the "link copied" toast stays visible
   var PRELOAD_RADIUS = 2; // flip-mode preload window (current ± N)
+
+  /* Side-panel triggers -> the panel each one opens. The triggers keep their
+   * existing js- ids (Webflow chrome); each panel carries [data-viewer-panel=<name>].
+   * Only ONE panel is open at a time (opening one closes the others). */
+  var PANEL_TRIGGERS = { "js-toc-trigger": "meta", "js-search-trigger": "search", "js-article-info": "article" };
+
+  /* Article-type exclusion + labels — the SAME set the Book page (book.js) drops
+   * from its TOC, mirrored here so the viewer's 文章目錄 hides ads/company pages.
+   * Kept in sync with book.js / results.js. */
+  var EXCLUDE_TYPES = { "23": 1, "16": 1, "1": 1, "12": 1, "10": 1 };
+  var ARTICLE_TYPES = {
+    "21": { label: "電影故事、小說、本事", variant: "is-film" },
+    "19": { label: "電影對白、劇本、分鏡大綱", variant: "is-film" },
+    "9": { label: "歌詞、歌譜", variant: "is-film" },
+    "6": { label: "人物專訪、花絮", variant: "is-film" },
+    "4": { label: "電影資訊及評論", variant: "is-film" },
+    "5": { label: "電視節目資訊及評論", variant: "is-film" },
+    "25": { label: "電影節、影視文化活動", variant: "is-film" },
+    "26": { label: "電影獎項、頒獎典禮", variant: "is-film" },
+    "31": { label: "電影票房記錄", variant: "is-film" },
+    "11": { label: "電視節目表、活動日程", variant: "is-film" },
+    "18": { label: "職員表、演員表、人物表", variant: "is-film" },
+    "32": { label: "作品年表", variant: "is-film" },
+    "13": { label: "編輯的話、讀者來信、序言、後記", variant: "is-cultural" },
+    "15": { label: "唱片、音樂資訊及評論", variant: "is-cultural" },
+    "28": { label: "文學創作、書摘", variant: "is-cultural" },
+    "27": { label: "文學及藝術評論、書評", variant: "is-cultural" },
+    "20": { label: "現場表演、舞台藝術", variant: "is-cultural" },
+    "7": { label: "消閒、資訊讀物、教學文章", variant: "is-cultural" },
+    "17": { label: "插畫、漫畫、小遊戲", variant: "is-cultural" },
+    "29": { label: "辭典、詞條", variant: "is-cultural" },
+    "23": { label: "公司通訊、資料", variant: "is-comm" },
+    "16": { label: "產品、商鋪", variant: "is-comm" },
+    "1": { label: "廣告、優惠券", variant: "is-comm" },
+    "12": { label: "抽獎得獎名單", variant: "is-comm" },
+    "10": { label: "報名、意見調查、雜誌表格", variant: "is-comm" },
+    "3": { label: "目錄、內容、片目索引", variant: "is-other" },
+    "14": { label: "封面、封底、版權頁", variant: "is-other" },
+    "2": { label: "照片集", variant: "is-other" },
+    "24": { label: "海報、明信片", variant: "is-other" },
+    "30": { label: "缺頁", variant: "is-other" },
+    "22": { label: "外語文章", variant: "is-other" },
+    "33": { label: "其他類別", variant: "is-other" },
+  };
+  var TYPE_VARIANT_CLASSES = ["is-film", "is-cultural", "is-comm", "is-other"];
   var DESKTOP_MIN_WIDTH = 1024; // >= this => default 'double', else 'single'
   var SCROLL_INSTANT_JUMP = 10; // pages: beyond this, jump instantly not smoothly
   // 1×1 transparent GIF — swapped in for a failed image so the browser stops
@@ -85,6 +151,8 @@
   var loadingSlots = new Set(); // reading-image slots currently fetching (drives the spinner)
   var scrollObserver = null;
   var lastStructureKey = null; // gates the expensive template re-clone
+  var lastMetaBook = null; // gates the (book-level) metadata panel rebuild
+  var linkAlertTimer = null; // pending hide of the "link copied" toast
   var wired = false; // event listeners attached once per init
 
   /* ---------------- tiny DOM helpers ---------------- */
@@ -171,6 +239,9 @@
         state.layout = defaultLayout();
         state.currentPage = resolveInitialPage(book, nav);
         lastStructureKey = null; // force structural rebuild for the new book
+        lastMetaBook = null; // force the metadata panel + TOC to rebuild
+        closeAllPanels(); // a fresh book starts with every side panel closed
+        resetSearch(); // clear any prior search results / query
         render();
       })
       .catch(function (err) {
@@ -298,6 +369,8 @@
     applySharpenClass();
     applyTransform();
     updateUrlForPage();
+    renderMetaPanel(); // book-level; self-gates on book change
+    if (isPanelOpen("article")) renderArticleInfo(); // keep in sync while paging with it open
     if (isFlipMode()) preloadAdjacent(state.currentPage);
   }
 
@@ -1029,6 +1102,11 @@
     // Page input
     setDisabled(byId("js-page-input"), isThumb);
 
+    // Article-info panel trigger — nothing to describe in thumbnail (no reading
+    // page), so disable it and close the panel if it was open.
+    setDisabled(byId("js-article-info"), isThumb);
+    if (isThumb && isPanelOpen("article")) closePanel("article");
+
     // Scroll popover (捲動方向 + 連接方向) — check-select options, reflect state + availability
     updateScrollPopover();
   }
@@ -1214,6 +1292,9 @@
     // sharpen toggle (銳化)
     on(sharpenBtn(), "click", toggleSharpen);
 
+    // side panels (目錄 / 搜尋 / 文章資訊) + copy-link toast
+    wirePanels();
+
     // responsive layout drawer trigger (stopPropagation so the document
     // outside-click handler below doesn't immediately re-close it)
     on(layoutPanelTrigger(), "click", function (e) {
@@ -1310,6 +1391,13 @@
         var trig = layoutPanelTrigger();
         if (!(trig && trig.contains(e.target))) toggleLayoutPanel(false);
       }
+      // side panels: an open panel closes when the click is outside it AND its trigger
+      ["meta", "search", "article"].forEach(function (name) {
+        var p = panelEl(name);
+        if (!p || !p.classList.contains("is-open") || p.contains(e.target)) return;
+        var t = triggerFor(name);
+        if (!(t && t.contains(e.target))) closePanel(name);
+      });
     });
 
     window.addEventListener("popstate", onPopState);
@@ -1348,6 +1436,7 @@
         var o = byId("js-ocr-toc-popover");
         if (o) o.classList.remove("is-open");
         toggleLayoutPanel(false);
+        closeAllPanels();
         break;
       default:
         return;
@@ -1358,6 +1447,447 @@
     if (!pop || !pop.classList.contains("is-open")) return;
     if (pop.contains(target) || (trigger && trigger.contains(target))) return;
     pop.classList.remove("is-open");
+  }
+
+  /* ============================================================
+   * SIDE PANELS  — Book Metadata (目錄), Search (搜尋內文), Article Info (文章資訊)
+   *
+   * Three drawers authored in Webflow, each translated off-canvas and carrying
+   * [data-viewer-panel="meta|search|article"]. viewer.js toggles .is-open (the
+   * translate:0 + inert-when-closed rules live in viewer.css). Only ONE panel is
+   * open at a time; a click outside, the ✕ close button, or Esc closes it. The
+   * nav triggers keep their existing js- ids (PANEL_TRIGGERS maps id -> panel).
+   *
+   * Content is DATA-DRIVEN from state.book (same source as the reader): the meta
+   * panel mirrors the Book page's header + type-filtered TOC; search filters the
+   * articles; article-info describes the article(s) on the visible page(s)
+   * (spread- and connect-mode-aware). Rows are cloned from a single authored
+   * [data-tpl] template per list (the result-card / OCR-TOC pattern).
+   * ============================================================ */
+  function panelEl(name) {
+    return scope.querySelector('[data-viewer-panel="' + name + '"]');
+  }
+  function triggerFor(name) {
+    for (var id in PANEL_TRIGGERS) if (PANEL_TRIGGERS[id] === name) return byId(id);
+    return null;
+  }
+  function isPanelOpen(name) {
+    var p = panelEl(name);
+    return !!(p && p.classList.contains("is-open"));
+  }
+  function openPanel(name) {
+    ["meta", "search", "article"].forEach(function (n) {
+      if (n !== name) closePanel(n);
+    }); // one at a time
+    var p = panelEl(name);
+    if (!p) return;
+    p.classList.add("is-open");
+    var t = triggerFor(name);
+    if (t) t.setAttribute("aria-expanded", "true");
+    if (name === "article") renderArticleInfo();
+    if (name === "search") {
+      var i = p.querySelector("[data-viewer-search-input]");
+      if (i) i.focus();
+    }
+  }
+  function closePanel(name) {
+    var p = panelEl(name);
+    if (!p) return;
+    p.classList.remove("is-open");
+    var t = triggerFor(name);
+    if (t) t.setAttribute("aria-expanded", "false");
+  }
+  function togglePanel(name) {
+    if (isPanelOpen(name)) closePanel(name);
+    else openPanel(name);
+  }
+  function closeAllPanels() {
+    ["meta", "search", "article"].forEach(closePanel);
+  }
+
+  /* ---- shared row/template helpers ---- */
+  // Clone a list's ONE authored [data-tpl] row per item. The template is captured
+  // (and detached) on first use so re-renders clone from the cache; prior clones
+  // ([data-clone]) are cleared each pass. New rows land before the panel's
+  // .viewer-close-spacer (bottom padding) when present, else at the end.
+  function renderRows(listEl, tplSel, items, fillFn) {
+    if (!listEl) return;
+    if (!listEl.__tpl) {
+      var t = listEl.querySelector(tplSel);
+      listEl.__tpl = t ? t.cloneNode(true) : null;
+      if (t && t.parentNode) t.parentNode.removeChild(t);
+    }
+    clearClones(listEl);
+    var tpl = listEl.__tpl;
+    if (!tpl) return;
+    var anchor = listEl.querySelector(".viewer-close-spacer");
+    for (var i = 0; i < items.length; i++) {
+      var row = tpl.cloneNode(true);
+      row.setAttribute("data-clone", "");
+      row.removeAttribute("data-tpl");
+      fillFn(row, items[i], i);
+      if (anchor) listEl.insertBefore(row, anchor);
+      else listEl.appendChild(row);
+    }
+  }
+  function clearClones(listEl) {
+    if (!listEl) return;
+    listEl.querySelectorAll("[data-clone]").forEach(function (n) {
+      if (n.parentNode) n.parentNode.removeChild(n);
+    });
+  }
+  // Fill a [data-field] leaf (multi-values "---"-joined -> 、). hideWhenEmpty
+  // toggles .is-hidden so an absent column/author leaves no blank line. Same
+  // contract as setTocField (reused for the panel rows).
+  function fillLeaf(scope_, name, value, hideWhenEmpty) {
+    setTocField(scope_, name, value, hideWhenEmpty);
+  }
+  function setArticleBadge(scope_, code) {
+    var el = scope_.querySelector('[data-field="article-type"]');
+    if (!el) return;
+    var info = code != null && String(code).trim() !== "" ? ARTICLE_TYPES[code] || { label: String(code), variant: "" } : null;
+    TYPE_VARIANT_CLASSES.forEach(function (v) {
+      el.classList.remove(v);
+    });
+    if (!info) {
+      el.textContent = "";
+      el.classList.add("is-hidden");
+      return;
+    }
+    el.classList.remove("is-hidden");
+    el.textContent = info.label;
+    if (info.variant) el.classList.add(info.variant);
+  }
+  // Leading integer of a page value; blank/unparseable sorts last (mirrors book.js).
+  function pageNum(p) {
+    var m = String(p == null ? "" : p).match(/\d+/);
+    return m ? parseInt(m[0], 10) : Infinity;
+  }
+  function stableSort(arr, cmp) {
+    return arr
+      .map(function (v, i) {
+        return { v: v, i: i };
+      })
+      .sort(function (a, b) {
+        return cmp(a.v, b.v) || a.i - b.i;
+      })
+      .map(function (x) {
+        return x.v;
+      });
+  }
+  function articleColumn(a) {
+    return a.section != null ? a.section : a.column;
+  }
+  function articleNav(id) {
+    var a = findArticle(state.book, id);
+    if (!a) return;
+    setPage(a.pageStart);
+    closeAllPanels();
+  }
+
+  /* ---- 1. Book Metadata Panel (目錄) — book-level; rebuilt only on book change ---- */
+  function renderMetaPanel() {
+    if (!state.book || lastMetaBook === state.book.bookNumber) return;
+    var panel = panelEl("meta");
+    if (panel) {
+      fillMetaHeader(panel);
+      buildMetaToc(panel);
+    }
+    lastMetaBook = state.book.bookNumber;
+  }
+  function fillMetaHeader(panel) {
+    var b = state.book;
+    var jr = panel.querySelector('[data-field="journal"]');
+    if (jr) jr.textContent = b.title || "";
+    // 第 N 期 — hide the whole heading line when there is no issue.
+    var issueEl = panel.querySelector('[data-field="journal-issue"]');
+    if (issueEl) {
+      var iss = issueNumber(b.issue);
+      issueEl.textContent = iss;
+      var head = issueEl.closest("h1,h2,h3,h4,.h4") || issueEl.parentElement;
+      if (head) head.classList.toggle("is-hidden", iss === "");
+    }
+    // publisher — querySelector hits the real publisher dd (first match), so the
+    // duplicate-field 全冊頁數 row is left untouched. Empty -> hide the row.
+    setMetaDetailRow(panel, "publisher", b.publisher);
+    // 出版日期
+    var dateEl = panel.querySelector('[data-field="book-date"]');
+    if (dateEl) {
+      var timeEl = dateEl.querySelector("time") || dateEl;
+      var d = b.date || "";
+      timeEl.textContent = d;
+      if (timeEl.tagName === "TIME" && d) timeEl.setAttribute("datetime", d);
+      var wrap = dateEl.closest("[u-flex]") || dateEl.parentElement;
+      if (wrap) wrap.classList.toggle("is-hidden", d === "");
+    }
+  }
+  function setMetaDetailRow(panel, name, value) {
+    var el = panel.querySelector('[data-field="' + name + '"]');
+    if (!el) return;
+    var empty = value == null || String(value).trim() === "";
+    var row = el.closest("[u-flex]") || el.parentElement;
+    el.textContent = empty ? "" : String(value);
+    if (row) row.classList.toggle("is-hidden", empty);
+  }
+  function issueNumber(issue) {
+    if (issue == null || String(issue).trim() === "") return "";
+    return String(issue)
+      .replace(/^第/, "")
+      .replace(/期$/, "")
+      .trim();
+  }
+  // The article TOC — same type-exclusion as the Book page (drops ads/company
+  // pages), sorted by page. Rows navigate to the article's first page on click.
+  function buildMetaToc(panel) {
+    var list = panel.querySelector("[data-viewer-toc-list]");
+    if (!list) return;
+    var pool = (state.book.articles || []).filter(function (a) {
+      return !EXCLUDE_TYPES[String(a.type)];
+    });
+    pool = stableSort(pool, function (a, b) {
+      return pageNum(a.page != null ? a.page : a.pageStart) - pageNum(b.page != null ? b.page : b.pageStart);
+    });
+    renderRows(list, '[data-tpl="toc-item"]', pool, fillArticleRow);
+  }
+  // Shared filler for the meta-TOC and search-result rows (column / title / author + nav id).
+  function fillArticleRow(row, a) {
+    fillLeaf(row, "column", articleColumn(a), true);
+    fillLeaf(row, "title", a.title || "無標題", false);
+    fillLeaf(row, "author", a.author, true);
+    row.setAttribute("data-article-id", a.id);
+  }
+
+  /* ---- 2. Search Panel (搜尋內文) ---- */
+  function resetSearch() {
+    var panel = panelEl("search");
+    if (!panel) return;
+    var input = panel.querySelector("[data-viewer-search-input]");
+    if (input) input.value = "";
+    showSearchState(panel, "idle", []);
+  }
+  function runSearch(q) {
+    var panel = panelEl("search");
+    if (!panel) return;
+    q = (q || "").trim();
+    if (!q) return showSearchState(panel, "idle", []);
+    var matches = searchArticles(q);
+    showSearchState(panel, matches.length ? "results" : "empty", matches);
+  }
+  // idle: nothing shown · empty: 沒有查詢結果 · results: the list.
+  function showSearchState(panel, mode, matches) {
+    var results = panel.querySelector("[data-viewer-search-results]");
+    var empty = panel.querySelector("[data-viewer-search-empty]");
+    if (empty) empty.classList.toggle("is-hidden", mode !== "empty");
+    if (results) {
+      results.classList.toggle("is-hidden", mode !== "results");
+      if (mode === "results") renderRows(results, '[data-tpl="search-item"]', matches, fillArticleRow);
+      else clearClones(results);
+    }
+  }
+  function searchArticles(q) {
+    var needle = q.toLowerCase();
+    return (state.book.articles || []).filter(function (a) {
+      var hay = [a.title, a.author, articleColumn(a), a.keywords, stripHtml(a.articleBody)]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return hay.indexOf(needle) !== -1;
+    });
+  }
+  function stripHtml(s) {
+    return s == null ? "" : String(s).replace(/<[^>]*>/g, " ");
+  }
+
+  /* ---- 3. Article Metadata Panel (文章資訊) — the article(s) on the visible
+   * page(s). Double-page shows both pages' articles; connect-mode decides which
+   * pages are visible (連接上頁/下頁). Disabled in thumbnail (updateToolbarControls). ---- */
+  function visiblePages() {
+    if (state.layout === "double") return getVisibleSpreadPages(state.currentPage, state.connectMode);
+    return [state.currentPage];
+  }
+  function visibleArticles() {
+    var pages = visiblePages();
+    var lo = Math.min.apply(null, pages),
+      hi = Math.max.apply(null, pages);
+    return (state.book.articles || []).filter(function (a) {
+      return a.pageStart <= hi && a.pageEnd >= lo;
+    });
+  }
+  function renderArticleInfo() {
+    var panel = panelEl("article");
+    if (!panel) return;
+    var pageList = panel.querySelector('[data-field="page-list"]');
+    if (pageList) pageList.textContent = visiblePages().join("、");
+    var list = panel.querySelector("[data-viewer-article-list]");
+    if (!list) return;
+    renderArticleEmpty(list, false);
+    var arts = visibleArticles();
+    if (!arts.length) {
+      clearClones(list);
+      renderArticleEmpty(list, true);
+      return;
+    }
+    renderRows(list, '[data-tpl="article-info-item"]', arts, fillArticleInfoItem);
+  }
+  // A tiny inline empty-state (no authored node for it); toggled, not cloned.
+  function renderArticleEmpty(list, show) {
+    var msg = list.querySelector("[data-viewer-article-empty]");
+    if (show && !msg) {
+      msg = document.createElement("p");
+      msg.setAttribute("data-viewer-article-empty", "");
+      msg.className = "paragraph-lg";
+      msg.textContent = "本頁沒有文章資訊";
+      var anchor = list.querySelector(".viewer-close-spacer");
+      if (anchor) list.insertBefore(msg, anchor);
+      else list.appendChild(msg);
+    } else if (!show && msg) {
+      msg.parentNode.removeChild(msg);
+    }
+  }
+  function fillArticleInfoItem(item, a) {
+    fillLeaf(item, "title", a.title || "無標題", false);
+    fillInfoRow(item, "author", a.author);
+    fillInfoRow(item, "column", articleColumn(a));
+    fillInfoRow(item, "page", a.page != null ? a.page : a.pageStart);
+    setArticleBadge(item, a.type);
+    hideRowIfLeafHidden(item, "article-type"); // badge hidden (unknown type) -> hide its row
+    fillKeywords(item, a.keywords);
+  }
+  // Fill a value leaf (multi-values "---"-joined -> 、) and hide the WHOLE
+  // article-info row (label + value) when the value is empty — so an absent
+  // 專欄/作者 leaves no dangling label.
+  function fillInfoRow(item, name, value) {
+    var el = item.querySelector('[data-field="' + name + '"]');
+    if (!el) return;
+    var txt = value == null ? "" : String(value).split("---").join("、").trim();
+    el.textContent = txt;
+    var row = el.closest(".article-info-row") || el.parentElement;
+    if (row) row.classList.toggle("is-hidden", txt === "");
+  }
+  function hideRowIfLeafHidden(item, name) {
+    var el = item.querySelector('[data-field="' + name + '"]');
+    if (!el) return;
+    var row = el.closest(".article-info-row");
+    if (row) row.classList.toggle("is-hidden", el.classList.contains("is-hidden"));
+  }
+  // Keyword chips — one authored [data-tpl="keyword-item"] li cloned per keyword.
+  // The whole [data-viewer-keyword-row] hides when the article has no keywords.
+  function fillKeywords(item, keywords) {
+    var list = item.querySelector("[data-viewer-keyword-list]");
+    var row = item.querySelector("[data-viewer-keyword-row]") || (list && list.closest(".article-info-row"));
+    var kws = keywords
+      ? String(keywords)
+          .split("---")
+          .map(function (s) {
+            return s.trim();
+          })
+          .filter(Boolean)
+      : [];
+    if (row) row.classList.toggle("is-hidden", kws.length === 0);
+    if (!list) return;
+    renderRows(list, '[data-tpl="keyword-item"]', kws, function (li, kw) {
+      var t = li.querySelector('[data-field="keyword"]') || li.querySelector("div");
+      if (t) t.textContent = kw;
+    });
+  }
+
+  /* ---- 4. Copy page link to clipboard (#js-share) ---- */
+  function copyPageLink() {
+    var url = window.location.href;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(showLinkAlert, function () {
+        legacyCopy(url);
+        showLinkAlert();
+      });
+    } else {
+      legacyCopy(url);
+      showLinkAlert();
+    }
+  }
+  function legacyCopy(text) {
+    try {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    } catch (e) {
+      /* clipboard unavailable — the toast still confirms the attempt */
+    }
+  }
+  // Reveal the toast (opacity + translateY via .is-visible in CSS), auto-hide after LINK_ALERT_MS.
+  function showLinkAlert() {
+    var alert = scope.querySelector("[data-viewer-alert]");
+    if (!alert) return;
+    alert.classList.add("is-visible");
+    if (linkAlertTimer) clearTimeout(linkAlertTimer);
+    linkAlertTimer = setTimeout(function () {
+      alert.classList.remove("is-visible");
+      linkAlertTimer = null;
+    }, LINK_ALERT_MS);
+  }
+
+  /* ---- panel event wiring (called from wireEvents) ---- */
+  function wirePanels() {
+    // triggers (stopPropagation so the document outside-click handler doesn't
+    // immediately re-close the panel it just opened)
+    Object.keys(PANEL_TRIGGERS).forEach(function (id) {
+      on(byId(id), "click", function (e) {
+        e.stopPropagation();
+        togglePanel(PANEL_TRIGGERS[id]);
+      });
+    });
+    // per-panel delegated clicks: ✕ close button + result-row navigation
+    ["meta", "search", "article"].forEach(function (name) {
+      var p = panelEl(name);
+      if (!p) return;
+      on(p, "click", function (e) {
+        if (e.target.closest && e.target.closest("[data-viewer-close]")) {
+          closePanel(name);
+          return;
+        }
+        var row = e.target.closest && e.target.closest("[data-article-id]");
+        if (row) articleNav(row.getAttribute("data-article-id"));
+      });
+    });
+    // share / copy link
+    on(byId("js-share"), "click", function (e) {
+      e.stopPropagation();
+      copyPageLink();
+    });
+    // search: submit (form / 🔍 button) + Enter, and live-reset when the field is cleared
+    var searchPanel = panelEl("search");
+    if (searchPanel) {
+      var input = searchPanel.querySelector("[data-viewer-search-input]");
+      var form = searchPanel.querySelector("[data-viewer-search-form]") || (input && input.closest("form"));
+      if (form)
+        on(form, "submit", function (e) {
+          e.preventDefault();
+          if (input) runSearch(input.value);
+        });
+      if (input) {
+        on(input, "input", function () {
+          if (input.value.trim() === "") runSearch("");
+        });
+        on(input, "keydown", function (e) {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            runSearch(input.value);
+          }
+        });
+      }
+      var clear = searchPanel.querySelector("[data-input-clear]");
+      if (clear)
+        on(clear, "click", function () {
+          // forms.js empties the field on its own click; reset results next tick
+          setTimeout(function () {
+            runSearch("");
+          }, 0);
+        });
+    }
   }
 
   /* ---------------- expose ---------------- */

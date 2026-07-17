@@ -192,9 +192,16 @@ filmtvViewer.render();                            // re-render current state
   "imageBaseUrl":"https://…/2048/",               // full URL = imageBaseUrl + page.file
   "thumbnailBaseUrl":"https://…/",                // optional; falls back to imageBaseUrl
   "pages":[ { "label":"封面", "file":"2048_001.jpg", "width":700, "height":1000 } ],
-  "articles":[ { "id":"…","title":"…","author":"","pageStart":3,"pageEnd":8,"articleBody":"…" } ] }
+  "articles":[ { "id":"…","title":"…","author":"","pageStart":3,"pageEnd":8,"articleBody":"…",
+    "type":"9","page":"3","section":"曲詞","keywords":"a---b---c","externalLink":"https://…" } ] }
 ```
-`pageStart`/`pageEnd` are **1-based indices into `pages[]`** (reading position), NOT
+The first six article keys drive the reader (OCR + navigation); the last five feed
+the **side panels** and are the same catalogue fields the Book page already shows —
+all OPTIONAL (each degrades gracefully when absent): `type` (ArticleType code ->
+label + the meta-TOC type-exclusion, same set as the Book page), `page` (printed
+page shown as 頁碼), `section` (專欄; the reader also reads this for OCR), `keywords`
+(`---`-joined chips), `externalLink` (catalogue/film-DB URL). `pageStart`/`pageEnd`
+are **1-based indices into `pages[]`** (reading position), NOT
 printed page numbers. `label` is a pre-formatted display string (backend maps
 special cases like 封面/封底); the viewer never sees raw numeric page values.
 
