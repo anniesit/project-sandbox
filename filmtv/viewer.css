@@ -263,6 +263,13 @@
   border-color: var(--_color---sky--200);
 }
 
+/* ---- Book Metadata Panel TOC (cloned rows) — the article(s) showing on the
+ current visible page(s), same rule as the Article Info panel. Scoped to the
+ TOC list so it doesn't also match the search-results list (same row class). ---- */
+[data-viewer-toc-list] .viewer-article-item.is-active {
+  color: var(--_color---grass--200);
+}
+
 /* ---- OCR layout (cloned from templates) — panel (fixed) + a clipping stage
  for the page image so zoom / rotate can't spill over the text panel, and
  fit-width sizes to the stage. The :has() rule is why this must be external. ---- */

@@ -370,6 +370,7 @@
     applyTransform();
     updateUrlForPage();
     renderMetaPanel(); // book-level; self-gates on book change
+    if (isPanelOpen("meta")) updateMetaTocActive(); // keep .is-active in sync while paging with it open
     if (isPanelOpen("article")) renderArticleInfo(); // keep in sync while paging with it open
     if (isFlipMode()) preloadAdjacent(state.currentPage);
   }
@@ -946,9 +947,13 @@
   /* ============================================================
    * OCR  (§5.11)
    * ============================================================ */
+  // Some pages have an article RECORD covering them (e.g. a cover/back-cover
+  // entry) whose articleBody is empty — no text was actually OCR'd for that
+  // page. Those must NOT count as "has OCR text" (book 2922's page 1 / 16 are
+  // exactly this: an article spans the page but articleBody === "").
   function articlesOnCurrentPage() {
     return (state.book.articles || []).filter(function (a) {
-      return state.currentPage >= a.pageStart && state.currentPage <= a.pageEnd;
+      return state.currentPage >= a.pageStart && state.currentPage <= a.pageEnd && stripHtml(a.articleBody).trim() !== "";
     });
   }
   function renderOcrPanel() {
@@ -1488,6 +1493,7 @@
     p.classList.add("is-open");
     var t = triggerFor(name);
     if (t) t.setAttribute("aria-expanded", "true");
+    if (name === "meta") updateMetaTocActive();
     if (name === "article") renderArticleInfo();
     if (name === "search") {
       var i = p.querySelector("[data-viewer-search-input]");
@@ -1653,6 +1659,23 @@
       return pageNum(a.page != null ? a.page : a.pageStart) - pageNum(b.page != null ? b.page : b.pageStart);
     });
     renderRows(list, '[data-tpl="toc-item"]', pool, fillArticleRow);
+  }
+  // Highlight the TOC row(s) whose article is showing on the current visible
+  // page(s) — SAME "showing" rule as the Article Info panel (visibleArticles(),
+  // §3 below). Separate from buildMetaToc() above: the TOC rows are built once
+  // per book, but which one is "active" changes on every page turn.
+  function updateMetaTocActive() {
+    var panel = panelEl("meta");
+    if (!panel) return;
+    var list = panel.querySelector("[data-viewer-toc-list]");
+    if (!list) return;
+    var visibleIds = {};
+    visibleArticles().forEach(function (a) {
+      visibleIds[a.id] = true;
+    });
+    list.querySelectorAll("[data-article-id]").forEach(function (row) {
+      row.classList.toggle("is-active", !!visibleIds[row.getAttribute("data-article-id")]);
+    });
   }
   // Shared filler for the meta-TOC and search-result rows (column / title / author + nav id).
   // The rows navigate on click, so make them keyboard-operable (button role + tab stop);
