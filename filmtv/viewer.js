@@ -1415,6 +1415,18 @@
   }
 
   function onKeydown(e) {
+    // Escape closes popovers / drawer / panels — handled BEFORE the input guard so
+    // it still fires while the search field (auto-focused on open) or page input
+    // holds focus. (A type=search field also clears on Esc; closing takes priority.)
+    if (e.key === "Escape") {
+      var s = byId("js-scroll-popover");
+      if (s) s.classList.remove("is-open");
+      var o = byId("js-ocr-toc-popover");
+      if (o) o.classList.remove("is-open");
+      toggleLayoutPanel(false);
+      closeAllPanels();
+      return;
+    }
     var tag = (document.activeElement && document.activeElement.tagName) || "";
     if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
     switch (e.key) {
@@ -1429,14 +1441,6 @@
         break;
       case "PageDown":
         turnPage("next");
-        break;
-      case "Escape":
-        var s = byId("js-scroll-popover");
-        if (s) s.classList.remove("is-open");
-        var o = byId("js-ocr-toc-popover");
-        if (o) o.classList.remove("is-open");
-        toggleLayoutPanel(false);
-        closeAllPanels();
         break;
       default:
         return;
@@ -1493,9 +1497,13 @@
   function closePanel(name) {
     var p = panelEl(name);
     if (!p) return;
+    var hadFocus = p.contains(document.activeElement);
     p.classList.remove("is-open");
     var t = triggerFor(name);
     if (t) t.setAttribute("aria-expanded", "false");
+    // The panel is now visibility:hidden (inert), so focus can't stay inside it —
+    // return it to the trigger, else the keyboard user is stranded on <body>.
+    if (hadFocus && t) t.focus();
   }
   function togglePanel(name) {
     if (isPanelOpen(name)) closePanel(name);
@@ -1650,11 +1658,17 @@
     renderRows(list, '[data-tpl="toc-item"]', pool, fillArticleRow);
   }
   // Shared filler for the meta-TOC and search-result rows (column / title / author + nav id).
+  // The rows navigate on click, so make them keyboard-operable (button role + tab stop);
+  // wirePanels wires Enter/Space to the same articleNav the click uses.
   function fillArticleRow(row, a) {
     fillLeaf(row, "column", articleColumn(a), true);
     fillLeaf(row, "title", a.title || "無標題", false);
     fillLeaf(row, "author", a.author, true);
     row.setAttribute("data-article-id", a.id);
+    if (row.tagName !== "A" && row.tagName !== "BUTTON") {
+      row.setAttribute("role", "button");
+      row.setAttribute("tabindex", "0");
+    }
   }
 
   /* ---- 2. Search Panel (搜尋內文) ---- */
@@ -1833,17 +1847,30 @@
   /* ---- panel event wiring (called from wireEvents) ---- */
   function wirePanels() {
     // triggers (stopPropagation so the document outside-click handler doesn't
-    // immediately re-close the panel it just opened)
+    // immediately re-close the panel it just opened). aria-haspopup advertises the
+    // drawer to assistive tech (aria-expanded is kept in sync by open/closePanel).
     Object.keys(PANEL_TRIGGERS).forEach(function (id) {
-      on(byId(id), "click", function (e) {
+      var trig = byId(id);
+      if (trig && !trig.hasAttribute("aria-haspopup")) trig.setAttribute("aria-haspopup", "dialog");
+      on(trig, "click", function (e) {
         e.stopPropagation();
         togglePanel(PANEL_TRIGGERS[id]);
       });
     });
-    // per-panel delegated clicks: ✕ close button + result-row navigation
+    // per-panel delegated clicks + keyboard: ✕ close button + result-row navigation
     ["meta", "search", "article"].forEach(function (name) {
       var p = panelEl(name);
       if (!p) return;
+      // Give the panel an accessible name + each ✕ button one, if the author didn't
+      // (the button is icon-only, so without this a screen reader announces just "button").
+      if (!p.getAttribute("aria-label") && !p.getAttribute("aria-labelledby")) {
+        var t = triggerFor(name);
+        var lbl = t ? t.textContent.replace(/​/g, "").trim() : name;
+        if (lbl) p.setAttribute("aria-label", lbl);
+      }
+      p.querySelectorAll("[data-viewer-close]").forEach(function (btn) {
+        if (!btn.getAttribute("aria-label")) btn.setAttribute("aria-label", "關閉");
+      });
       on(p, "click", function (e) {
         if (e.target.closest && e.target.closest("[data-viewer-close]")) {
           closePanel(name);
@@ -1852,8 +1879,23 @@
         var row = e.target.closest && e.target.closest("[data-article-id]");
         if (row) articleNav(row.getAttribute("data-article-id"));
       });
+      // keyboard activation for the button-role result/TOC rows (Enter / Space)
+      on(p, "keydown", function (e) {
+        if (e.key !== "Enter" && e.key !== " " && e.key !== "Spacebar") return;
+        var row = e.target.closest && e.target.closest("[data-article-id]");
+        if (row) {
+          e.preventDefault();
+          articleNav(row.getAttribute("data-article-id"));
+        }
+      });
     });
-    // share / copy link
+    // share / copy link — make the toast a polite live region so a screen reader
+    // announces the copy (4.1.3 Status Messages) instead of it being silent.
+    var alertEl = scope.querySelector("[data-viewer-alert]");
+    if (alertEl) {
+      if (!alertEl.getAttribute("role")) alertEl.setAttribute("role", "status");
+      if (!alertEl.hasAttribute("aria-live")) alertEl.setAttribute("aria-live", "polite");
+    }
     on(byId("js-share"), "click", function (e) {
       e.stopPropagation();
       copyPageLink();
