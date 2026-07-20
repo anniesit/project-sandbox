@@ -675,7 +675,7 @@
    * ============================================================ */
   function rotate(direction) {
     // 'cw' | 'ccw'
-    if (state.layout === "thumbnail") return;
+    if (!isFlipMode()) return; // no .rotation-target in thumbnail or single's scroll strip
     var delta = direction === "cw" ? 90 : -90;
     state.rotation = (state.rotation + delta + 360) % 360;
     render();
@@ -1098,13 +1098,18 @@
       setDisabled(rightBtn, !showArrows || !canNext);
     }
 
-    // Zoom dropdown (no +/- buttons — D1)
+    // Zoom dropdown (no +/- buttons — D1) — same no-op-outside-flip-modes reasoning
+    // as rotation below (applyTransform scales through .rotation-target too, which
+    // doesn't exist in thumbnail or single's scroll strip).
+    var canRotate = isFlipMode();
     var zt = scope.querySelector("#js-zoom-dropdown [data-dropdown-trigger]");
-    setDisabled(zt, isThumb);
+    setDisabled(zt, !canRotate);
 
-    // Rotation
-    setDisabled(byId("js-rotate-cw"), isThumb);
-    setDisabled(byId("js-rotate-ccw"), isThumb);
+    // Rotation — no-op outside flip modes: thumbnail has no reading image, and
+    // single's vertical/horizontal scroll strip has no single .rotation-target
+    // (see renderLayout/rotate), so disable there too, not just in thumbnail.
+    setDisabled(byId("js-rotate-cw"), !canRotate);
+    setDisabled(byId("js-rotate-ccw"), !canRotate);
 
     // Sharpen (銳化) — nothing to sharpen in thumbnail; reflect the disabled state
     setDisabled(sharpenBtn(), isThumb);

@@ -89,6 +89,20 @@
         min-height: 0;
         overflow: hidden;
       }
+      /* the absolutely-filled container itself [WF] — gives the stage's single
+       child a definite size so the zoom-fit-page 100%/100% + scroll-strip
+       overflow:auto rules above have a box to resolve/clip against, instead of
+       growing to content height and silently spilling past .viewer-stage. */
+      .viewer-page-container {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px;
+        user-select: none;
+      }
 
       /* ---- arrows [WF: .viewer-arrow, :hover, .is-left, .is-right] ---- */
       .viewer-arrow {
