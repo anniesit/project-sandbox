@@ -903,7 +903,14 @@
     var target = container().querySelector('[data-page-index="' + idx + '"]');
     if (!target) return;
     var far = Math.abs(idx - state.currentPage) > SCROLL_INSTANT_JUMP;
-    target.scrollIntoView({ behavior: far ? "instant" : "smooth", block: "start", inline: "start" });
+    // inline:"nearest" (NOT "start"): scrollIntoView scrolls EVERY scrollable
+    // ancestor to satisfy the requested alignment. On the live site the stage is
+    // horizontally scrollable (the off-canvas side panels overflow it to the right),
+    // so inline:"start" forced the stage to scroll sideways — dragging the whole
+    // viewer left. The page is already fully visible on the inline axis, so "nearest"
+    // leaves the stage's horizontal scroll untouched while block:"start" still lines
+    // the page up to the top/left of the strip container as before.
+    target.scrollIntoView({ behavior: far ? "instant" : "smooth", block: "start", inline: "nearest" });
   }
 
   /* ============================================================
