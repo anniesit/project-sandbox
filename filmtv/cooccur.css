@@ -199,14 +199,20 @@
   animation-fill-mode: both;
 }
 @keyframes filmtv-cooccur-pop {
-  from { transform: scale(0); }
-  to   { transform: scale(1); }
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .filmtv-cooccur-bubble.is-grow { animation: none; }
+  .filmtv-cooccur-bubble.is-grow {
+    animation: none;
+  }
 }
 .filmtv-cooccur-hit {
-  cursor: pointer;
+  cursor: default;
 }
 
 /* ---------- year axis (shared, bottom) ---------- */
