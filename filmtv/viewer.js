@@ -823,6 +823,11 @@
     panel.classList.toggle("is-open", open);
     var trig = layoutPanelTrigger();
     if (trig) trig.setAttribute("aria-expanded", open ? "true" : "false");
+    // The layout/zoom DS dropdowns live inside this drawer. Their own close relies on
+    // a document click bubbling to forms.js — which never happens when the drawer is
+    // closed via #js-viewer-layout-close (its handler stops propagation) or Escape. Close
+    // them explicitly here so the drawer closing always takes any open dropdown with it.
+    if (!open) closeDsDropdowns();
   }
 
   /* ============================================================
