@@ -263,7 +263,7 @@
         closeAllPanels(); // a fresh book starts with every side panel closed
         resetSearch(); // clear any prior search results / query
         render();
-        if (defaultPanelOpt) openPanel(defaultPanelOpt, true); // record page: opened, no slide-in
+        if (defaultPanelOpt) openPanel(defaultPanelOpt); // record page opens a panel on load
       })
       .catch(function (err) {
         console.error("[viewer] load failed:", err);
@@ -1547,24 +1547,13 @@
     var p = panelEl(name);
     return !!(p && p.classList.contains("is-open"));
   }
-  // instant=true opens with no slide (used for the record page's default-open panel):
-  // suppress the transform/visibility transition for this one state change so the panel
-  // is simply already open on first paint, then restore it so later closes still animate.
-  function openPanel(name, instant) {
+  function openPanel(name) {
     ["meta", "search", "article"].forEach(function (n) {
       if (n !== name) closePanel(n);
     }); // one at a time
     var p = panelEl(name);
     if (!p) return;
-    if (instant) {
-      var prevTransition = p.style.transition;
-      p.style.transition = "none";
-      p.classList.add("is-open");
-      void p.offsetWidth; // force reflow so the open state commits with no transition
-      p.style.transition = prevTransition || "";
-    } else {
-      p.classList.add("is-open");
-    }
+    p.classList.add("is-open");
     var t = triggerFor(name);
     if (t) t.setAttribute("aria-expanded", "true");
     if (name === "meta") updateMetaTocActive();
