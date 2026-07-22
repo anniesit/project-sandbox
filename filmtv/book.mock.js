@@ -58,7 +58,13 @@
       .then(function (data) {
         root.__data = data || {};                  // cache so the switcher can re-select
         mountSwitcher(root);
-        show(root, (root.getAttribute && root.getAttribute("data-book-number")) || DEFAULT_BOOK);
+        // NOTE: default-book auto-render is intentionally OFF so the empty state is
+        // visible on a bare load while it's being designed. Pick a book from the
+        // switcher to preview real data. To restore the old auto-preview, call
+        // show(root, ... || DEFAULT_BOOK) here instead of showEmpty().
+        var initial = root.getAttribute && root.getAttribute("data-book-number");
+        if (initial) show(root, initial);
+        else window.filmtvBook.showEmpty(root);
       })
       .catch(function (err) { console.error("[book.mock] load failed (" + url + "):", err); });
   }

@@ -343,8 +343,11 @@
    * not this file). If the hook is absent we inject a minimal fallback whose CTA
    * points at `emptyStateHref` (data-empty-href / opts.emptyStateHref) or "../".
    * A [data-empty-heading] leaf (if present) gets a reason-specific heading.
-   * The reading chrome is hidden by a single root class (.viewer-is-empty); the
-   * rule is injected lazily, mirroring ensureSharpenFilter()'s inject-once pattern.
+   *
+   * We do NOT hide the reading chrome (the stage / toolbars stay visible) — the
+   * message simply sits over the empty stage. The root gets a .viewer-is-empty
+   * class purely as a STYLING HOOK the Webflow build can opt into (e.g. to dim or
+   * hide a control while empty); the component itself hides nothing.
    * ============================================================ */
   var EMPTY_HEADINGS = { "no-book": "沒有選擇書刊", notfound: "找不到書刊", "article-notfound": "找不到文章" };
   function emptyHeading(reason) {
@@ -372,7 +375,9 @@
     }
   }
   function injectEmptyState() {
-    var host = scope === document ? document.body : scope;
+    // Put the fallback inside the stage so it centres over the empty reading area
+    // (the stage stays visible). Falls back to the scope root if no stage exists.
+    var host = scope.querySelector("main.viewer-stage") || (scope === document ? document.body : scope);
     if (!host) return null;
     var href = emptyStateHref || "../";
     var box = document.createElement("div");
@@ -392,8 +397,6 @@
     var st = document.createElement("style");
     st.id = "filmtv-viewer-empty-css";
     st.textContent =
-      ".viewer-is-empty .viewer-stage,.viewer-is-empty .viewer-toolbar-top," +
-      ".viewer-is-empty .viewer-toolbar-bottom{display:none!important}" +
       ".viewer-empty{display:flex;align-items:center;justify-content:center;" +
       "text-align:center;min-height:60vh;padding:4rem 1.5rem}" +
       ".viewer-empty-inner{display:flex;flex-direction:column;align-items:center;gap:.6rem;max-width:28rem}" +

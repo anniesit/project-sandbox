@@ -34,12 +34,14 @@
     var root = document.querySelector("[data-viewer]") || document;
     injectSwitcherCss();
 
-    // If the URL has no ?book=, seed it so init() has something to load.
+    // NOTE: default-book seeding is intentionally OFF so the empty state is visible
+    // on a bare load (no ?book=) while it's being designed. To restore the old
+    // auto-preview, change `hasBook` back to `hasBook || DEFAULT_BOOK` below.
     var hasBook = new URLSearchParams(window.location.search).get("book");
     window.filmtvViewer.init({
       root: root === document ? undefined : root,
       dataBaseUrl: DATA_BASE,
-      bookNumber: hasBook || DEFAULT_BOOK
+      bookNumber: hasBook || undefined   // no default -> init() shows the empty state
     });
 
     mountSwitcher(root);
