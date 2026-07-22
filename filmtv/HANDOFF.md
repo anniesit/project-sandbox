@@ -128,6 +128,7 @@ chart is article-only and does not follow this toggle.
 
 ```js
 filmtvBook.render(rootEl, { items, imageBase, counts }, opts);
+filmtvBook.showEmpty(rootEl, { emptyHref });   // bare /book route: no book to draw
 ```
 
 - `rootEl` — the `[data-book]` element (legacy `[data-collection]` also accepted),
@@ -162,6 +163,15 @@ mounts a floating dev switcher, and calls `filmtvBook.render()`. In production
 each book is its own route carrying the BookNumber, so you fetch that one book's
 family server-side and call `render()` directly — no switcher, no family select.
 
+**Empty state (bare / missing / not-found book):** for the bare `/book` route (no
+book in the URL, so no data to render), call `filmtvBook.showEmpty(rootEl)` instead
+of `render()` — otherwise the authored placeholder TOC shows as if it were real,
+empty content. `render()` also routes there itself if handed an empty family. The
+empty block is **authored in Webflow as `[data-empty-state]`** (hidden by
+`u-d="none"`, carrying the real search/browse link — nav routes are yours). If that
+hook is absent, a minimal fallback is injected whose CTA uses `[data-book]`'s
+`data-empty-href` attribute (or `showEmpty`'s `{ emptyHref }`), defaulting to `../`.
+
 **Still open (as of handoff):** (1) `publisher` is absent from the current article
 data → the header row hides; supply a `publisher` field or hardcode it in Webflow.
 (2) Attachment tab labels (正刊 / 附件 A…) and their real data are unconfirmed until
@@ -192,6 +202,17 @@ filmtvViewer.render();                            // re-render current state
 - URL contract (shareable): `?book=<n>` · `?book=<n>&page=<i>` · `?book=<n>&article=<id>`.
   Only book/page/article live in the URL; layout/zoom/rotation intentionally do not.
   `history.pushState` on every page change; `popstate` navigates pages.
+
+**Empty state (missing / not-found book, missing record article):** reached with
+**no `?book=`** (bare URL / stale bookmark), a book that **fails to load** (404 /
+bad data), or a **record page whose `?id=` matches no article**, the viewer shows a
+short empty state + a CTA back to search/browse instead of a blank stage (the
+record case no longer silently falls back to the whole book). Author the block in
+Webflow as **`[data-empty-state]`** (hidden by `u-d="none"`, carrying the real
+link); if absent a minimal fallback is injected whose CTA uses `data-empty-href` on
+`[data-viewer]` (or `init`'s `{ emptyStateHref }`), default `../`. A
+`[data-empty-heading]` leaf, if present, gets a reason-specific heading
+(沒有選擇書刊 / 找不到書刊 / 找不到文章).
 
 **`book.json` shape** (backend returns this at the path above):
 ```json

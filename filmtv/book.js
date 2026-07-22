@@ -8,6 +8,11 @@
  *
  *   window.filmtvBook.render(rootEl, { items, imageBase, counts }, opts)
  *
+ * For the BARE /book route (no book in the URL, so no data to render) the backend
+ * calls window.filmtvBook.showEmpty(rootEl) instead — it puts up a short empty
+ * state + a CTA back to search/browse rather than leaving the authored placeholder
+ * TOC visible. render() also routes there on its own when handed an empty family.
+ *
  * The sample-data LOADING (fetch of the mock JSON) + the floating BookNumber
  * dev switcher live in the SEPARATE, disposable `book.mock.js` — a reference
  * the backend colleague deletes and replaces with her own fetch → render().
@@ -34,6 +39,12 @@
  *
  * data-* contract (author these hooks in Webflow; most already exist):
  *   [data-book] | [data-collection]   OPTIONAL scope wrapper (else document).
+ *   [data-empty-state]                OPTIONAL empty-state block (hidden via
+ *                                      u-d="none"; carries the real search/browse
+ *                                      link). Shown for a bare/empty book; if
+ *                                      absent a minimal fallback is injected, its
+ *                                      CTA using [data-book]'s data-empty-href
+ *                                      (default "../").
  *   HEADER
  *     img[data-field=cover]            book cover image
  *     [data-field=journal]             optional journal name (h1); no hook today
@@ -141,6 +152,12 @@
     data = data || {};
     var imageBase = data.imageBase || "";
     var items = Array.isArray(data.items) ? data.items : [];
+
+    // Empty family (no articles at all) — show the empty state instead of clearing
+    // the templates into a blank header + TOC (which read as real, empty content).
+    // The bare /book route reaches this via the public showEmpty() below.
+    if (!items.length) { showEmptyState(root); return; }
+    hideEmptyState(root); // real data — clear any empty state a prior render left up
 
     var pool = pickVisible(items, opts);
     // Order the TOC by page. Source order isn't reliably page-ordered. Stable
@@ -547,6 +564,79 @@
     return isFinite(num) ? num.toLocaleString("en-US") : String(n);
   }
 
+  /* ============================================================
+   * EMPTY STATE — shown when the page has no book to display. book.js never runs
+   * itself; the backend calls render(). For the bare /book route (no book in the
+   * URL) the backend has no data to pass, so it calls showEmpty(root) to put up a
+   * short message + a CTA back to search/browse instead of leaving the authored
+   * placeholder TOC visible. render() also routes here on its own when handed an
+   * empty family.
+   *
+   * The block is AUTHORED in Webflow as [data-empty-state] (hidden by u-d="none",
+   * carrying the real search/browse link — nav routes belong to the Webflow build).
+   * If absent we inject a minimal fallback whose CTA points at data-empty-href on
+   * the root (or "../"). The header + TOC are hidden by a single root class
+   * (.cc-book-empty); the rule is injected lazily like injectCss().
+   * ============================================================ */
+  function showEmpty(root, opts) {
+    if (!root) {
+      var list = roots();
+      for (var n = 0; n < list.length; n++) showEmpty(list[n], opts);
+      return;
+    }
+    if (opts && opts.emptyHref && root.setAttribute) root.setAttribute("data-empty-href", opts.emptyHref);
+    showEmptyState(root);
+  }
+  function showEmptyState(root) {
+    ensureEmptyStateCss();
+    var host = emptyHost(root);
+    if (host && host.classList) host.classList.add("cc-book-empty");
+    var el = root.querySelector("[data-empty-state]") || injectEmptyState(root);
+    if (!el) return;
+    el.classList.remove("is-hidden");
+    el.removeAttribute("u-d"); // u-d="none" is what hid it — restore natural display
+  }
+  function hideEmptyState(root) {
+    var host = emptyHost(root);
+    if (host && host.classList) host.classList.remove("cc-book-empty");
+    var el = root.querySelector("[data-empty-state]");
+    if (el) { el.classList.add("is-hidden"); el.setAttribute("u-d", "none"); }
+  }
+  function emptyHost(root) { return root === document ? document.body : root; }
+  function injectEmptyState(root) {
+    var host = emptyHost(root);
+    if (!host || !host.appendChild) return null;
+    var href = (root.getAttribute && root.getAttribute("data-empty-href")) || "../";
+    var box = document.createElement("div");
+    box.className = "book-empty";
+    box.setAttribute("data-empty-state", "");
+    box.innerHTML =
+      '<div class="book-empty-inner">' +
+      '<p class="book-empty-heading" data-empty-heading>沒有選擇書刊</p>' +
+      '<p class="book-empty-sub">請從搜尋或瀏覽頁面選擇書刊。</p>' +
+      '<a class="book-empty-cta" href="' + href + '">返回搜尋</a>' +
+      "</div>";
+    host.appendChild(box);
+    return box;
+  }
+  function ensureEmptyStateCss() {
+    if (document.getElementById("filmtv-book-empty-css")) return;
+    var st = document.createElement("style");
+    st.id = "filmtv-book-empty-css";
+    st.textContent =
+      ".cc-book-empty .cc-book-header,.cc-book-empty .section{display:none!important}" +
+      ".book-empty{display:flex;align-items:center;justify-content:center;text-align:center;" +
+      "min-height:50vh;padding:4rem 1.5rem}" +
+      ".book-empty-inner{display:flex;flex-direction:column;align-items:center;gap:.6rem;max-width:28rem}" +
+      ".book-empty-heading{margin:0;font-size:1.4rem;font-weight:600}" +
+      ".book-empty-sub{margin:0;color:#6b6b6b;line-height:1.5}" +
+      ".book-empty-cta{display:inline-block;margin-top:.6rem;padding:.55rem 1.2rem;border-radius:8px;" +
+      "background:var(--accent,#8a1c2b);color:#fff;text-decoration:none;font-weight:500}";
+    (document.head || document.documentElement).appendChild(st);
+  }
+
   /* ---------- public API (backend integration) ---------- */
-  window.filmtvBook = { render: render };
+  //   filmtvBook.render(root, { items, imageBase, counts }, opts)  — draw one book
+  //   filmtvBook.showEmpty(root, { emptyHref })                    — bare /book: no book to draw
+  window.filmtvBook = { render: render, showEmpty: showEmpty };
 })();

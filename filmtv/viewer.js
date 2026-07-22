@@ -159,6 +159,7 @@
   var lastMetaBook = null; // gates the (book-level) metadata panel rebuild
   var linkAlertTimer = null; // pending hide of the "link copied" toast
   var wired = false; // event listeners attached once per init
+  var emptyStateHref = null; // CTA target for the empty state (data-empty-href / opts; else "../")
 
   /* ---------------- tiny DOM helpers ---------------- */
   function $(sel) {
@@ -220,6 +221,7 @@
     // Record-page overrides: from init() opts or [data-viewer] attributes.
     defaultLayoutOpt = opts.defaultLayout || (scope.getAttribute && scope.getAttribute("data-default-layout")) || null;
     defaultPanelOpt = opts.defaultPanel || (scope.getAttribute && scope.getAttribute("data-default-panel")) || null;
+    emptyStateHref = opts.emptyStateHref || (scope.getAttribute && scope.getAttribute("data-empty-href")) || null;
 
     ensureSharpenFilter();
     wireEvents();
@@ -227,7 +229,10 @@
     var url = readUrl();
     var bookNumber = opts.bookNumber || url.book || (scope.getAttribute && scope.getAttribute("data-book-number"));
     if (!bookNumber) {
+      // No identifier at all (bare URL / stale bookmark) — show the empty state
+      // instead of a blank stage. See the EMPTY STATE section below.
       console.error("[viewer] no book specified (URL ?book= or opts.bookNumber)");
+      showEmptyState("no-book");
       return;
     }
     // Record mode: ?id=<articleId> (or opts.articleId / data-article-id) scopes the
@@ -247,8 +252,16 @@
           if (sa) {
             book = sliceBookToArticle(book, sa);
             scopeArticleId = nav.scope;
-          } else console.warn("[viewer] article not found for scope id:", nav.scope);
+          } else {
+            // Record page: a scope id was requested but no such article is in the book.
+            // Show the empty state rather than silently falling through to the WHOLE book
+            // (the user asked for one record — the full book would be the wrong result).
+            console.warn("[viewer] article not found for scope id:", nav.scope);
+            showEmptyState("article-notfound");
+            return;
+          }
         }
+        hideEmptyState(); // a valid book clears any empty state a prior load left up
         state.book = book;
         // reset per-book manual settings
         state.rotation = 0;
@@ -266,7 +279,9 @@
         if (defaultPanelOpt) openPanel(defaultPanelOpt); // record page opens a panel on load
       })
       .catch(function (err) {
+        // Fetch failed / book not found (404 / bad data) — same friendly empty state.
         console.error("[viewer] load failed:", err);
+        showEmptyState("notfound");
       });
   }
 
@@ -315,6 +330,78 @@
     var arr = book.articles || [];
     for (var i = 0; i < arr.length; i++) if (arr[i].id === id) return arr[i];
     return null;
+  }
+
+  /* ============================================================
+   * EMPTY STATE — shown when there is nothing to read: no ?book= (bare URL /
+   * stale bookmark), a book that fails to load (404 / bad data), or a record
+   * page ?id= that matches no article. Replaces the blank stage with a short
+   * message + a CTA back to search/browse.
+   *
+   * The block is AUTHORED in Webflow as [data-empty-state] (hidden by u-d="none",
+   * with the real search/browse link — the nav routes belong to the Webflow build,
+   * not this file). If the hook is absent we inject a minimal fallback whose CTA
+   * points at `emptyStateHref` (data-empty-href / opts.emptyStateHref) or "../".
+   * A [data-empty-heading] leaf (if present) gets a reason-specific heading.
+   * The reading chrome is hidden by a single root class (.viewer-is-empty); the
+   * rule is injected lazily, mirroring ensureSharpenFilter()'s inject-once pattern.
+   * ============================================================ */
+  var EMPTY_HEADINGS = { "no-book": "沒有選擇書刊", notfound: "找不到書刊", "article-notfound": "找不到文章" };
+  function emptyHeading(reason) {
+    return EMPTY_HEADINGS[reason] || EMPTY_HEADINGS["no-book"];
+  }
+  function showEmptyState(reason) {
+    ensureEmptyStateCss();
+    var root = rootEl();
+    if (root) root.classList.add("viewer-is-empty");
+    var el = scope.querySelector("[data-empty-state]") || injectEmptyState();
+    if (!el) return;
+    var head = el.querySelector("[data-empty-heading]");
+    if (head) head.textContent = emptyHeading(reason);
+    el.classList.remove("is-hidden");
+    el.setAttribute("u-d", "block");
+    el.removeAttribute("u-d"); // restore natural display (u-d="none" is what hid it)
+  }
+  function hideEmptyState() {
+    var root = rootEl();
+    if (root) root.classList.remove("viewer-is-empty");
+    var el = scope.querySelector("[data-empty-state]");
+    if (el) {
+      el.classList.add("is-hidden");
+      el.setAttribute("u-d", "none");
+    }
+  }
+  function injectEmptyState() {
+    var host = scope === document ? document.body : scope;
+    if (!host) return null;
+    var href = emptyStateHref || "../";
+    var box = document.createElement("div");
+    box.className = "viewer-empty";
+    box.setAttribute("data-empty-state", "");
+    box.innerHTML =
+      '<div class="viewer-empty-inner">' +
+      '<p class="viewer-empty-heading" data-empty-heading>沒有選擇書刊</p>' +
+      '<p class="viewer-empty-sub">請從搜尋或瀏覽頁面選擇書刊後再開啟閱讀器。</p>' +
+      '<a class="viewer-empty-cta" href="' + href + '">返回搜尋</a>' +
+      "</div>";
+    host.appendChild(box);
+    return box;
+  }
+  function ensureEmptyStateCss() {
+    if (document.getElementById("filmtv-viewer-empty-css")) return;
+    var st = document.createElement("style");
+    st.id = "filmtv-viewer-empty-css";
+    st.textContent =
+      ".viewer-is-empty .viewer-stage,.viewer-is-empty .viewer-toolbar-top," +
+      ".viewer-is-empty .viewer-toolbar-bottom{display:none!important}" +
+      ".viewer-empty{display:flex;align-items:center;justify-content:center;" +
+      "text-align:center;min-height:60vh;padding:4rem 1.5rem}" +
+      ".viewer-empty-inner{display:flex;flex-direction:column;align-items:center;gap:.6rem;max-width:28rem}" +
+      ".viewer-empty-heading{margin:0;font-size:1.4rem;font-weight:600}" +
+      ".viewer-empty-sub{margin:0;color:#6b6b6b;line-height:1.5}" +
+      ".viewer-empty-cta{display:inline-block;margin-top:.6rem;padding:.55rem 1.2rem;border-radius:8px;" +
+      "background:var(--accent,#8a1c2b);color:#fff;text-decoration:none;font-weight:500}";
+    (document.head || document.documentElement).appendChild(st);
   }
 
   /* ============================================================
