@@ -1,9 +1,10 @@
 /* ============================================================
  * viewer.js — Film/TV publication BOOK VIEWER (handoff component)
  *
- * STAGE 1: Page Manipulation (layout, page-turn, zoom, rotation, drag,
- * fullscreen, scroll modes, thumbnail, OCR). Navigation / Search / Metadata
- * are LATER stages that extend THIS SAME file (same `state`, same `render()`).
+ * Complete as of handoff: Stage 1 — Page Manipulation (layout, page-turn, zoom,
+ * rotation, drag, fullscreen, scroll modes, thumbnail, OCR) — AND the three
+ * side panels — Book Metadata (目錄), Search (搜尋內文), Article Info (文章資訊)
+ * — all live in THIS SAME file (same `state`, same `render()`).
  *
  * This is the REUSABLE, handed-off viewer. It owns the interactive VIEW: it is
  * handed one book's data and renders it, syncing the URL. The sample-data
@@ -147,6 +148,9 @@
   /* ---------------- module-level refs ---------------- */
   var scope = document; // the [data-viewer] element (or document)
   var dataBaseUrl = DEFAULT_DATA_BASE;
+  // Per-page initial-state overrides (record page): null = use built-in defaults.
+  var defaultLayoutOpt = null; // e.g. "ocr" to open in OCR View
+  var defaultPanelOpt = null; // e.g. "article" to open a side panel on load
   var imageCache = new Map();
   var loadingSlots = new Set(); // reading-image slots currently fetching (drives the spinner)
   var scrollObserver = null;
@@ -212,6 +216,9 @@
     opts = opts || {};
     scope = opts.root || document.querySelector("[data-viewer]") || document;
     dataBaseUrl = opts.dataBaseUrl || (scope.getAttribute && scope.getAttribute("data-src")) || DEFAULT_DATA_BASE;
+    // Record-page overrides: from init() opts or [data-viewer] attributes.
+    defaultLayoutOpt = opts.defaultLayout || (scope.getAttribute && scope.getAttribute("data-default-layout")) || null;
+    defaultPanelOpt = opts.defaultPanel || (scope.getAttribute && scope.getAttribute("data-default-panel")) || null;
 
     ensureSharpenFilter();
     wireEvents();
@@ -222,13 +229,22 @@
       console.error("[viewer] no book specified (URL ?book= or opts.bookNumber)");
       return;
     }
-    return load(bookNumber, { page: opts.page || url.page, article: opts.article || url.article });
+    // Record mode: ?id=<articleId> (or opts.articleId / data-article-id) scopes the
+    // load to a single article and only its pages.
+    var scopeId = opts.articleId || url.id || (scope.getAttribute && scope.getAttribute("data-article-id")) || null;
+    return load(bookNumber, { page: opts.page || url.page, article: opts.article || url.article, scope: scopeId });
   }
 
   function load(bookNumber, nav) {
     nav = nav || {};
     return fetchBook(bookNumber)
       .then(function (book) {
+        // Record mode: replace the book with a single-article slice (only its pages).
+        if (nav.scope) {
+          var sa = findArticle(book, nav.scope);
+          if (sa) book = sliceBookToArticle(book, sa);
+          else console.warn("[viewer] article not found for scope id:", nav.scope);
+        }
         state.book = book;
         // reset per-book manual settings
         state.rotation = 0;
@@ -236,13 +252,14 @@
         state.sharpen = false;
         state.panX = state.panY = 0;
         state.previousLayout = null;
-        state.layout = defaultLayout();
+        state.layout = defaultLayoutOpt || defaultLayout();
         state.currentPage = resolveInitialPage(book, nav);
         lastStructureKey = null; // force structural rebuild for the new book
         lastMetaBook = null; // force the metadata panel + TOC to rebuild
         closeAllPanels(); // a fresh book starts with every side panel closed
         resetSearch(); // clear any prior search results / query
         render();
+        if (defaultPanelOpt) openPanel(defaultPanelOpt); // record page opens a panel on load
       })
       .catch(function (err) {
         console.error("[viewer] load failed:", err);
@@ -271,6 +288,25 @@
     return 1;
   }
 
+  // Record mode: return a shallow-cloned book scoped to one article — pages trimmed
+  // to that article's range, articles reduced to just it (nav indices remapped to the
+  // sliced array; the display `page` field is left untouched so the metadata still shows
+  // the real publication page).
+  function sliceBookToArticle(book, a) {
+    var total = book.pages.length;
+    var lo = clamp(a.pageStart, 1, total);
+    var hi = clamp(a.pageEnd, lo, total);
+    var scopedArticle = Object.assign({}, a, { pageStart: 1, pageEnd: hi - lo + 1 });
+    return {
+      bookNumber: book.bookNumber,
+      title: book.title,
+      bookOrientation: book.bookOrientation,
+      imageBaseUrl: book.imageBaseUrl,
+      pages: book.pages.slice(lo - 1, hi),
+      articles: [scopedArticle],
+    };
+  }
+
   function findArticle(book, id) {
     var arr = book.articles || [];
     for (var i = 0; i < arr.length; i++) if (arr[i].id === id) return arr[i];
@@ -282,7 +318,7 @@
    * ============================================================ */
   function readUrl() {
     var p = new URLSearchParams(window.location.search);
-    return { book: p.get("book"), page: p.get("page"), article: p.get("article") };
+    return { book: p.get("book"), page: p.get("page"), article: p.get("article"), id: p.get("id") };
   }
 
   function updateUrlForPage() {

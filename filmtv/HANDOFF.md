@@ -12,10 +12,15 @@ project-specific decisions that aren't obvious from the code.
 | `chart.js` | Stacked bar chart (entries or books by year) | `filmtvChart.render`, `filmtvChart.setView` |
 | `cooccur.js` | Keyword co-occurrence bubble chart (in a modal) | `filmtvCooccur.render`, `filmtvCooccur.redraw` |
 | `book.js` | Book page table of contents (one book + attachments) | `filmtvBook.render` |
+| `viewer.js` | Book Viewer (page-by-page reader: layout/zoom/rotate/scroll/OCR + 目錄/搜尋/文章資訊 panels) | `filmtvViewer.init`, `filmtvViewer.load`, `filmtvViewer.render` |
 
 `book.js` renders the separate **Book page**. Unlike the others its mock driver
 is a **separate file, `book.mock.js`** (sample-data loader + dev switcher) —
 delete that whole file rather than stripping an inline fetch. See its section.
+
+`viewer.js` renders the separate **Book Viewer page** and is the same kind of
+exception — its mock driver is also a **separate file, `viewer.mock.js`**. See
+its section.
 
 ## Ownership split (read this first)
 
@@ -45,9 +50,10 @@ That's the **mock driver**; remove it and call `render()` with live data.
 - Keep everything else — the components still self-initialise on
   `DOMContentLoaded` from their `[data-*]` host elements.
 
-**`book.js` is the exception** — its mock driver is already a separate file
-(`book.mock.js`), not an inline fetch. Just **delete `book.mock.js`** and call
-`filmtvBook.render()` from your own fetch (see the `book.js` section).
+**`book.js` and `viewer.js` are the exceptions** — their mock drivers are already
+separate files (`book.mock.js`, `viewer.mock.js`), not an inline fetch. Just
+**delete the mock file** and call `filmtvBook.render()` / `filmtvViewer.init()`
+from your own fetch (see each component's section).
 
 **In the demo HTML** (`chart.html`, `cooccur.html`) the inline `<script>` driver
 is a **backend stand-in** — don't just delete it, *reimplement its calls* against
@@ -167,9 +173,11 @@ attachment records exist.
 
 An interactive, **stateful** in-browser reader for ONE book's scanned pages —
 unlike the other components (stateless `render(data)`), this one owns a state
-machine, event handling, and URL sync. **Stage 1 = Page Manipulation** (layout,
-page-turn, zoom, rotation, drag-to-pan, fullscreen, scroll modes, thumbnail,
-OCR). Navigation / Search / Metadata are LATER stages that extend the SAME file.
+machine, event handling, and URL sync. **Complete as of this handoff:** Stage 1
+— Page Manipulation (layout, page-turn, zoom, rotation, drag-to-pan, fullscreen,
+scroll modes, thumbnail, OCR) — AND the three side panels — Book Metadata
+(目錄), Search (搜尋內文), Article Info (文章資訊) — all live in this SAME
+file/state/`render()`.
 
 ```js
 filmtvViewer.init({ root, dataBaseUrl });        // wire once; reads ?book=&page=&article=
@@ -213,6 +221,14 @@ buttons are intentionally absent** (design decision — dropdown only); to add a
 zoom level, add one entry to `ZOOM_PRESETS` in `viewer.js` + one `<li>` option.
 The page number is an **editable numeric jump input** (`#js-page-input`).
 
+**Search (搜尋內文) is 100% client-side** — it filters `state.book.articles`
+already sitting in memory from the `book.json` fetch (title, author, section,
+keywords, and the OCR `articleBody` with HTML tags stripped). No backend search
+endpoint is called. This depends on `articleBody` being present up front, so it
+directly trades off against backend ask (3) below: if you lazy-fetch
+`articleBody` per article instead of inlining it, full-text search over OCR
+content will silently stop matching anything beyond title/author/keywords.
+
 **Mock driver — `viewer.mock.js` (delete on integration):** points `dataBaseUrl`
 at `sample-data`, inits the viewer (default book **2922** = 《多情河歌集》 (1957),
 real article data from `sample-data/2922.json` + real page scans on the library
@@ -224,7 +240,8 @@ production you `init()` once and let the viewer read the page URL — no switche
 `thumbnailBaseUrl` (thumbnail tier); (2) include `pages[].width`/`height` (kills
 layout shift); (3) decide whether `articles[].articleBody` ships in `book.json`
 or is lazy-fetched per article — inlining all OCR can push `book.json` to MB-scale
-and block first render.
+and block first render, **but lazy-fetching breaks client-side OCR search** (see
+Search note above) — pick one and own the tradeoff.
 
 ---
 
@@ -456,6 +473,10 @@ document.addEventListener("filmtv:addKeyword", e => addTermAndSearch(e.detail.ke
 The results article/book toggle fires **no event** — it's a pure CSS panel swap
 over one shared payload (see results.js notes).
 
+`viewer.js` fires **no `filmtv:*` events either** — unlike the other components,
+it doesn't hand search state to a backend listener. It self-fetches its own
+`book.json` via `dataBaseUrl` and owns its state end-to-end (see its section).
+
 All events **bubble to `document`**.
 
 ## Integration checklist
@@ -469,4 +490,6 @@ All events **bubble to `document`**.
 - [ ] Collection page: feed the book chart one publication's series; render the year buttons + cover cards from the by-article payload grouped by `bookNumber`.
 - [ ] Don't call `filmtvChart.render()` on page turns.
 - [ ] Listen for the two `filmtv:*` events (`filmtv:filter`, `filmtv:addKeyword`) and round-trip them.
-- [ ] Run the CDN export/republish step so production picks up the change.
+- [ ] `book.js`: delete `book.mock.js`; fetch one book's family server-side per route and call `filmtvBook.render()` directly (no family switcher).
+- [ ] `viewer.js`: delete `viewer.mock.js`; call `filmtvViewer.init({ root, dataBaseUrl })` once and let it read `?book=&page=&article=` from the URL (no dev switcher). Decide the `articleBody` inline-vs-lazy tradeoff (breaks client-side search if lazy — see the `viewer.js` section).
+- [ ] Push to the repo — Vercel auto-deploys from `project-sandbox` (see "Deploy" above); no CDN purge or manual export step needed.
