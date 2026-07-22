@@ -151,6 +151,7 @@
   // Per-page initial-state overrides (record page): null = use built-in defaults.
   var defaultLayoutOpt = null; // e.g. "ocr" to open in OCR View
   var defaultPanelOpt = null; // e.g. "article" to open a side panel on load
+  var scopeArticleId = null; // record mode: the ?id= article the book is scoped to (keeps ?book= out of the URL)
   var imageCache = new Map();
   var loadingSlots = new Set(); // reading-image slots currently fetching (drives the spinner)
   var scrollObserver = null;
@@ -240,10 +241,13 @@
     return fetchBook(bookNumber)
       .then(function (book) {
         // Record mode: replace the book with a single-article slice (only its pages).
+        scopeArticleId = null;
         if (nav.scope) {
           var sa = findArticle(book, nav.scope);
-          if (sa) book = sliceBookToArticle(book, sa);
-          else console.warn("[viewer] article not found for scope id:", nav.scope);
+          if (sa) {
+            book = sliceBookToArticle(book, sa);
+            scopeArticleId = nav.scope;
+          } else console.warn("[viewer] article not found for scope id:", nav.scope);
         }
         state.book = book;
         // reset per-book manual settings
@@ -324,9 +328,15 @@
   function updateUrlForPage() {
     if (!state.book) return;
     var p = new URLSearchParams(window.location.search);
-    p.set("book", state.book.bookNumber);
-    p.set("page", String(state.currentPage));
-    p.delete("article"); // paginating drops the article ref
+    if (scopeArticleId) {
+      // Record page: keep the ?id= scope + page only — the book comes from
+      // data-book-number, so ?book= would just be noise.
+      p.set("page", String(state.currentPage));
+    } else {
+      p.set("book", state.book.bookNumber);
+      p.set("page", String(state.currentPage));
+      p.delete("article"); // paginating drops the article ref
+    }
     var next = window.location.pathname + "?" + p.toString();
     if (next !== window.location.pathname + window.location.search) {
       history.pushState({ page: state.currentPage }, "", next);
