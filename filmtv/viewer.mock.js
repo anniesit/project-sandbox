@@ -29,6 +29,7 @@
 
   var DATA_BASE = new URL("./sample-data", SELF).href;   // {base}/{bookNumber}/book.json
   var DEFAULT_BOOK = "2922";                              // 多情河歌集 (1957) — real data; 2048 花燈記 also available
+  var SAMPLE_BOOKS = ["2922", "2048"];                   // dev sample set the record-mode resolver scans
 
   ready(function () {
     var root = document.querySelector("[data-viewer]") || document;
@@ -36,16 +37,49 @@
 
     // NOTE: default-book seeding is intentionally OFF so the empty state is visible
     // on a bare load (no ?book=) while it's being designed. To restore the old
-    // auto-preview, change `hasBook` back to `hasBook || DEFAULT_BOOK` below.
-    var hasBook = new URLSearchParams(window.location.search).get("book");
-    window.filmtvViewer.init({
-      root: root === document ? undefined : root,
-      dataBaseUrl: DATA_BASE,
-      bookNumber: hasBook || undefined   // no default -> init() shows the empty state
-    });
+    // auto-preview, pass DEFAULT_BOOK to start() in the else branch below.
+    var params = new URLSearchParams(window.location.search);
+    var hasBook = params.get("book");
+    var hasId = params.get("id");
 
-    mountSwitcher(root);
+    function start(bookNumber) {
+      window.filmtvViewer.init({
+        root: root === document ? undefined : root,
+        dataBaseUrl: DATA_BASE,
+        bookNumber: bookNumber || undefined   // undefined -> init() shows the empty state
+      });
+      mountSwitcher(root);
+    }
+
+    if (!hasBook && hasId) {
+      // RECORD-page preview: the real record route carries no ?book= (its book comes
+      // from data-book-number, set per route). Resolve which sample book holds this
+      // article so the record renders — mirroring the backend's article->book lookup.
+      // Unresolved -> start(undefined): init() falls back to data-book-number if the
+      // page has one, else shows the empty state.
+      resolveBookForArticle(hasId).then(start);
+    } else {
+      start(hasBook);   // ?book= wins; bare load (neither) -> empty state
+    }
   });
+
+  // Find the sample book whose articles include `id` (first match), else null.
+  function resolveBookForArticle(id) {
+    var i = 0;
+    function next() {
+      if (i >= SAMPLE_BOOKS.length) return Promise.resolve(null);
+      var bn = SAMPLE_BOOKS[i++];
+      return fetch(DATA_BASE.replace(/\/+$/, "") + "/" + bn + "/book.json", { credentials: "omit" })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (book) {
+          var arts = (book && book.articles) || [];
+          for (var j = 0; j < arts.length; j++) if (arts[j].id === id) return bn;
+          return next();
+        })
+        .catch(function () { return next(); });
+    }
+    return next();
+  }
 
   /* ---------- floating dev switcher ---------- */
   function injectSwitcherCss() {
