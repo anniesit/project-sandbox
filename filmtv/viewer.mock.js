@@ -28,58 +28,24 @@
     (function () { var s = document.querySelector('script[src*="viewer.mock.js"]'); return s ? s.src : window.location.href; })();
 
   var DATA_BASE = new URL("./sample-data", SELF).href;   // {base}/{bookNumber}/book.json
-  var DEFAULT_BOOK = "2922";                              // 多情河歌集 (1957) — real data; 2048 花燈記 also available
-  var SAMPLE_BOOKS = ["2922", "2048"];                   // dev sample set the record-mode resolver scans
+  var DEFAULT_BOOK = "2922";                              // switcher default only (多情河歌集); 2048 花燈記 also available
 
   ready(function () {
     var root = document.querySelector("[data-viewer]") || document;
     injectSwitcherCss();
 
-    // NOTE: default-book seeding is intentionally OFF so the empty state is visible
-    // on a bare load (no ?book=) while it's being designed. To restore the old
-    // auto-preview, pass DEFAULT_BOOK to start() in the else branch below.
-    var params = new URLSearchParams(window.location.search);
-    var hasBook = params.get("book");
-    var hasId = params.get("id");
+    // No default-book seeding: a bare load (no ?book=/?id=) shows the empty state.
+    // init() reads the URL itself — ?book= loads that book; a record ?id= (no book)
+    // is resolved to its book via the article index (see resolveArticleBook in
+    // viewer.js). This mirrors the LIVE record page, whose inline init() call is
+    // the same. Use the switcher to preview a specific book on demand.
+    window.filmtvViewer.init({
+      root: root === document ? undefined : root,
+      dataBaseUrl: DATA_BASE
+    });
 
-    function start(bookNumber) {
-      window.filmtvViewer.init({
-        root: root === document ? undefined : root,
-        dataBaseUrl: DATA_BASE,
-        bookNumber: bookNumber || undefined   // undefined -> init() shows the empty state
-      });
-      mountSwitcher(root);
-    }
-
-    if (!hasBook && hasId) {
-      // RECORD-page preview: the real record route carries no ?book= (its book comes
-      // from data-book-number, set per route). Resolve which sample book holds this
-      // article so the record renders — mirroring the backend's article->book lookup.
-      // Unresolved -> start(undefined): init() falls back to data-book-number if the
-      // page has one, else shows the empty state.
-      resolveBookForArticle(hasId).then(start);
-    } else {
-      start(hasBook);   // ?book= wins; bare load (neither) -> empty state
-    }
+    mountSwitcher(root);
   });
-
-  // Find the sample book whose articles include `id` (first match), else null.
-  function resolveBookForArticle(id) {
-    var i = 0;
-    function next() {
-      if (i >= SAMPLE_BOOKS.length) return Promise.resolve(null);
-      var bn = SAMPLE_BOOKS[i++];
-      return fetch(DATA_BASE.replace(/\/+$/, "") + "/" + bn + "/book.json", { credentials: "omit" })
-        .then(function (r) { return r.ok ? r.json() : null; })
-        .then(function (book) {
-          var arts = (book && book.articles) || [];
-          for (var j = 0; j < arts.length; j++) if (arts[j].id === id) return bn;
-          return next();
-        })
-        .catch(function () { return next(); });
-    }
-    return next();
-  }
 
   /* ---------- floating dev switcher ---------- */
   function injectSwitcherCss() {

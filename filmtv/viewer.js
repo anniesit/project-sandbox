@@ -228,17 +228,45 @@
 
     var url = readUrl();
     var bookNumber = opts.bookNumber || url.book || (scope.getAttribute && scope.getAttribute("data-book-number"));
-    if (!bookNumber) {
-      // No identifier at all (bare URL / stale bookmark) — show the empty state
-      // instead of a blank stage. See the EMPTY STATE section below.
-      console.error("[viewer] no book specified (URL ?book= or opts.bookNumber)");
-      showEmptyState("no-book");
-      return;
-    }
     // Record mode: ?id=<articleId> (or opts.articleId / data-article-id) scopes the
     // load to a single article and only its pages.
     var scopeId = opts.articleId || url.id || (scope.getAttribute && scope.getAttribute("data-article-id")) || null;
-    return load(bookNumber, { page: opts.page || url.page, article: opts.article || url.article, scope: scopeId });
+    var nav = { page: opts.page || url.page, article: opts.article || url.article, scope: scopeId };
+
+    if (bookNumber) return load(bookNumber, nav);
+
+    // No explicit book. On the RECORD page the URL is just ?id=<articleId> (the book
+    // is intentionally left out) — resolve the article's book from the index, then
+    // load. See resolveArticleBook(). A record id with no resolvable book, or a bare
+    // URL with no id at all, falls to the empty state.
+    if (scopeId) {
+      return resolveArticleBook(scopeId, opts).then(function (bn) {
+        if (bn) return load(bn, nav);
+        console.error("[viewer] no book found for article id: " + scopeId);
+        showEmptyState("article-notfound");
+      });
+    }
+    console.error("[viewer] no book specified (URL ?book=/?id= or opts.bookNumber)");
+    showEmptyState("no-book");
+  }
+
+  // Resolve a record article's book from the article index (id -> bookNumber). The
+  // record route carries only ?id=, so we look up the book here. Index URL comes
+  // from opts.articleIndex / [data-article-index], else {dataBaseUrl}/article-index.json.
+  // Accepts a flat { id: book } map or a { articles: { id: book } } wrapper.
+  // In production this is the article-based backend's id->BookNumber lookup.
+  function resolveArticleBook(id, opts) {
+    var indexUrl =
+      (opts && opts.articleIndex) ||
+      (scope.getAttribute && scope.getAttribute("data-article-index")) ||
+      dataBaseUrl.replace(/\/+$/, "") + "/article-index.json";
+    return fetch(indexUrl, { credentials: "omit" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (idx) {
+        var map = (idx && idx.articles) || idx;
+        return (map && map[id]) || null;
+      })
+      .catch(function () { return null; });
   }
 
   function load(bookNumber, nav) {

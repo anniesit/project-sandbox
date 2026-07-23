@@ -203,6 +203,19 @@ filmtvViewer.render();                            // re-render current state
   Only book/page/article live in the URL; layout/zoom/rotation intentionally do not.
   `history.pushState` on every page change; `popstate` navigates pages.
 
+**Record page (`?id=` only) — book resolution:** the record route carries just the
+article id (`/record?id=HDJ-0005`), no `?book=`. viewer.js resolves the article's
+book from an **article index**: a JSON map `{ "<articleId>": "<bookNumber>", … }`
+(a `{ "articles": { … } }` wrapper is also accepted) served at
+**`{data-src}/article-index.json`** — override with `[data-article-index]` on
+`[data-viewer]` or `init({ articleIndex })`. It then loads that book scoped to the
+article. In production the article-based backend derives the same id→BookNumber map
+from its DB (each row already carries `BookNumber`, per the phpMyAdmin export
+`202412LDDimport.json`) and serves it at that path (or points `[data-article-index]`
+at an equivalent endpoint). For the sample harness, regenerate it with
+`node sample-data/build-article-index.js` (scans every `sample-data/<book>/book.json`).
+An `?id=` that resolves to no book shows the `找不到文章` empty state.
+
 **Empty state (missing / not-found book, missing record article):** reached with
 **no `?book=`** (bare URL / stale bookmark), a book that **fails to load** (404 /
 bad data), or a **record page whose `?id=` matches no article**, the viewer shows a
