@@ -48,7 +48,10 @@
   ready(function () {
     injectSwitcherCss();
     var list = roots();
-    for (var i = 0; i < list.length; i++) loadInto(list[i]);
+    for (var i = 0; i < list.length; i++) {
+      if (window.filmtvBook.showLoading) window.filmtvBook.showLoading(list[i]); // skeleton before the fetch
+      loadInto(list[i]);
+    }
   });
 
   function loadInto(root) {

@@ -129,6 +129,7 @@ chart is article-only and does not follow this toggle.
 ```js
 filmtvBook.render(rootEl, { items, imageBase, counts }, opts);
 filmtvBook.showEmpty(rootEl, { emptyHref });   // bare /book route: no book to draw
+filmtvBook.showLoading(rootEl);                // shimmer skeleton while fetching
 ```
 
 - `rootEl` — the `[data-book]` element (legacy `[data-collection]` also accepted),
@@ -162,6 +163,23 @@ is hidden — and while hidden the component adds `.cc-max-w-90` to the nearest
 mounts a floating dev switcher, and calls `filmtvBook.render()`. In production
 each book is its own route carrying the BookNumber, so you fetch that one book's
 family server-side and call `render()` directly — no switcher, no family select.
+
+**Loading skeleton (avoid the placeholder flash):** call `filmtvBook.showLoading(rootEl)`
+**before** you fetch a book's data — it hides the authored placeholder TOC and shows a
+shimmer skeleton (cover + meta lines + rows). `render()` / `showEmpty()` clear it
+automatically once the outcome is known. The markup + CSS are injected by `book.js`.
+- **Method B (no Webflow change):** the above works as-is, but since `book.js` loads in
+  the footer, a bare page paints its placeholder for a frame or two before it runs (a
+  short flash), then the skeleton takes over.
+- **Method A (zero flash):** link **`book.css`** in the Book page `<head>` — it cloaks
+  the placeholder before first paint and shows a shimmer until `book.js` reveals content:
+  ```html
+  <link rel="stylesheet" href="https://hkbuproject-sandbox.vercel.app/filmtv/book.css">
+  <noscript><style>[data-book] .cc-book-header,[data-book] .section{display:block!important}
+  [data-book]::before{display:none!important}</style></noscript>
+  ```
+  `book.js` drives the state classes (`cc-book-loading` → `cc-book-ready` | `cc-book-empty`);
+  the `<noscript>` guard reveals content if JS is disabled so the cloak never sticks.
 
 **Empty state (bare / missing / not-found book):** for the bare `/book` route (no
 book in the URL, so no data to render), call `filmtvBook.showEmpty(rootEl)` instead

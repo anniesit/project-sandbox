@@ -13,6 +13,10 @@
  * state + a CTA back to search/browse rather than leaving the authored placeholder
  * TOC visible. render() also routes there on its own when handed an empty family.
  *
+ * While FETCHING, call window.filmtvBook.showLoading(rootEl) first (BEFORE the
+ * fetch) to show a shimmer skeleton in place of the authored placeholder;
+ * render()/showEmpty() clear it. See the LOADING SKELETON section.
+ *
  * The sample-data LOADING (fetch of the mock JSON) + the floating BookNumber
  * dev switcher live in the SEPARATE, disposable `book.mock.js` — a reference
  * the backend colleague deletes and replaces with her own fetch → render().
@@ -158,6 +162,8 @@
     // The bare /book route reaches this via the public showEmpty() below.
     if (!items.length) { showEmptyState(root); return; }
     hideEmptyState(root); // real data — clear any empty state a prior render left up
+    hideLoading(root);    // real data — drop the loading skeleton
+    markReady(root);      // real data — reveal content past the head cloak (book.css)
 
     var pool = pickVisible(items, opts);
     // Order the TOC by page. Source order isn't reliably page-ordered. Stable
@@ -589,8 +595,9 @@
   }
   function showEmptyState(root) {
     ensureEmptyStateCss();
+    hideLoading(root); // resolved (no data) — drop the loading skeleton
     var host = emptyHost(root);
-    if (host && host.classList) host.classList.add("cc-book-empty");
+    if (host && host.classList) { host.classList.remove("cc-book-ready"); host.classList.add("cc-book-empty"); }
     var el = root.querySelector("[data-empty-state]") || injectEmptyState(root);
     if (!el) return;
     el.classList.remove("is-hidden");
@@ -635,8 +642,92 @@
     (document.head || document.documentElement).appendChild(st);
   }
 
+  /* ============================================================
+   * LOADING SKELETON — a shimmer placeholder shown WHILE the book data is being
+   * fetched, so the authored placeholder TOC never sits there looking like real
+   * (empty) content. The driver (book.mock.js in preview; the backend in prod)
+   * calls showLoading(root) up front, BEFORE its fetch; render()/showEmptyState()
+   * then clear it (hideLoading) once the outcome is known.
+   *
+   * FULLY component-side: the markup + shimmer CSS are injected here (same
+   * inject-once idiom as ensureEmptyStateCss), so this works with NO Webflow change
+   * (method B) — but because book.js loads in the footer, a bare page still paints
+   * its authored placeholder for a frame or two before this runs (a short flash).
+   * ZERO-FLASH (method A): link book.css in the page <head> — it cloaks the
+   * placeholder before first paint; markReady() (on real render) reveals content.
+   * ============================================================ */
+  function showLoading(root) {
+    if (!root) {
+      var list = roots();
+      for (var n = 0; n < list.length; n++) showLoading(list[n]);
+      return;
+    }
+    ensureSkeletonCss();
+    hideEmptyState(root); // a fresh loading cycle supersedes any empty state on screen
+    var host = emptyHost(root);
+    if (host && host.classList) { host.classList.remove("cc-book-ready"); host.classList.add("cc-book-loading"); }
+    if (!root.querySelector(".book-skeleton")) injectSkeleton(root);
+  }
+  function hideLoading(root) {
+    var host = emptyHost(root);
+    if (host && host.classList) host.classList.remove("cc-book-loading");
+  }
+  // Marks the book as showing real content — reveals it past the optional head
+  // cloak (book.css). Inert when book.css isn't linked, so it's always safe to add.
+  function markReady(root) {
+    var host = emptyHost(root);
+    if (host && host.classList) host.classList.add("cc-book-ready");
+  }
+  function injectSkeleton(root) {
+    var host = emptyHost(root);
+    if (!host || !host.appendChild) return;
+    var rows = "";
+    for (var i = 0; i < 6; i++) rows += '<div class="bsk sk-row"></div>';
+    var box = document.createElement("div");
+    box.className = "book-skeleton";
+    box.setAttribute("aria-hidden", "true");
+    box.innerHTML =
+      '<div class="bsk-header">' +
+      '<div class="bsk sk-cover"></div>' +
+      '<div class="bsk-meta">' +
+      '<div class="bsk sk-line sk-lg"></div>' +
+      '<div class="bsk sk-line sk-md"></div>' +
+      '<div class="bsk sk-line"></div>' +
+      '<div class="bsk sk-line sk-sm"></div>' +
+      "</div></div>" +
+      '<div class="bsk-toc">' + rows + "</div>";
+    host.appendChild(box);
+  }
+  function ensureSkeletonCss() {
+    if (document.getElementById("filmtv-book-skeleton-css")) return;
+    var st = document.createElement("style");
+    st.id = "filmtv-book-skeleton-css";
+    st.textContent =
+      // cloak real content + reveal the skeleton, only while loading
+      ".cc-book-loading .cc-book-header,.cc-book-loading .section{display:none!important}" +
+      ".book-skeleton{display:none}.cc-book-loading .book-skeleton{display:block;padding:1rem 0}" +
+      // shared shimmer on every .bsk shape
+      ".book-skeleton .bsk{position:relative;overflow:hidden;background:#e6e9ea;border-radius:6px}" +
+      ".book-skeleton .bsk::after{content:'';position:absolute;inset:0;transform:translateX(-100%);" +
+      "background:linear-gradient(90deg,transparent,rgba(255,255,255,.65),transparent);" +
+      "animation:book-sk-shimmer 1.4s infinite}" +
+      "@keyframes book-sk-shimmer{100%{transform:translateX(100%)}}" +
+      // layout: cover + meta lines, then TOC rows
+      ".book-skeleton .bsk-header{display:flex;gap:1.5rem;align-items:flex-start;margin-bottom:1.5rem}" +
+      ".book-skeleton .sk-cover{flex:0 0 auto;width:150px;height:205px;border-radius:8px}" +
+      ".book-skeleton .bsk-meta{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:.75rem;padding-top:.5rem}" +
+      ".book-skeleton .sk-line{height:16px;width:80%}" +
+      ".book-skeleton .sk-lg{height:26px;width:60%}.book-skeleton .sk-md{width:40%}.book-skeleton .sk-sm{width:30%}" +
+      ".book-skeleton .bsk-toc{display:flex;flex-direction:column;gap:.9rem}" +
+      ".book-skeleton .sk-row{height:44px;width:100%}" +
+      // respect reduced-motion: hold the placeholder still
+      "@media(prefers-reduced-motion:reduce){.book-skeleton .bsk::after{animation:none}}";
+    (document.head || document.documentElement).appendChild(st);
+  }
+
   /* ---------- public API (backend integration) ---------- */
   //   filmtvBook.render(root, { items, imageBase, counts }, opts)  — draw one book
   //   filmtvBook.showEmpty(root, { emptyHref })                    — bare /book: no book to draw
-  window.filmtvBook = { render: render, showEmpty: showEmpty };
+  //   filmtvBook.showLoading(root)                                 — shimmer skeleton while fetching
+  window.filmtvBook = { render: render, showEmpty: showEmpty, showLoading: showLoading };
 })();

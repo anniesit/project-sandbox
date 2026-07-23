@@ -1,0 +1,46 @@
+/* ============================================================
+ * book.css — render-blocking CLOAK for the Book page (zero-flash / "method A").
+ *
+ * book.js loads in the page FOOTER, so it can only hide the authored placeholder
+ * AFTER the browser has already painted it (the flash). This stylesheet, linked in
+ * the page <head>, applies BEFORE first paint — the placeholder header + TOC start
+ * hidden and are revealed only once book.js has real data. A shimmer fills the gap
+ * so the wait never looks blank, and book.js swaps in the detailed skeleton the
+ * instant it runs.
+ *
+ * ADD TO THE BOOK PAGE <head> (Webflow → Page settings → custom code, head):
+ *   <link rel="stylesheet" href="https://hkbuproject-sandbox.vercel.app/filmtv/book.css">
+ *   <noscript><style>[data-book] .cc-book-header,[data-book] .section{display:block!important}
+ *   [data-book]::before{display:none!important}</style></noscript>
+ * The <noscript> guard reveals the content if JavaScript is disabled (so the cloak
+ * never permanently hides it).
+ *
+ * State classes are driven by book.js: cc-book-loading (fetching) → cc-book-ready
+ * (real data) | cc-book-empty (nothing to show).
+ * ============================================================ */
+
+/* Placeholder header + TOC stay hidden until book.js reveals real content. */
+[data-book] .cc-book-header,
+[data-book] .section { display: none; }
+[data-book].cc-book-ready .cc-book-header,
+[data-book].cc-book-ready .section { display: block; }
+
+/* Immediate shimmer for the pre-JS moment. Once book.js takes over (loading /
+ * ready / empty) this hides and its structured skeleton — or the content — shows. */
+[data-book]:not(.cc-book-ready):not(.cc-book-empty):not(.cc-book-loading)::before {
+  content: "";
+  display: block;
+  min-height: 60vh;
+  margin: 1rem 0;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #eceef0 25%, #e0e3e6 37%, #eceef0 63%);
+  background-size: 400% 100%;
+  animation: filmtv-book-cloak-shimmer 1.4s ease infinite;
+}
+@keyframes filmtv-book-cloak-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: 0 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-book]::before { animation: none; }
+}
