@@ -1,46 +1,55 @@
 /* ============================================================
- * book.css — render-blocking CLOAK for the Book page (zero-flash / "method A").
+ * book.css — render-blocking loading CLOAK for the Book page (zero-flash / "method A").
  *
- * book.js loads in the page FOOTER, so it can only hide the authored placeholder
- * AFTER the browser has already painted it (the flash). This stylesheet, linked in
- * the page <head>, applies BEFORE first paint — the placeholder header + TOC start
- * hidden and are revealed only once book.js has real data. A shimmer fills the gap
- * so the wait never looks blank, and book.js swaps in the detailed skeleton the
- * instant it runs.
+ * book.js loads in the page FOOTER, so it can only mask the authored placeholder
+ * AFTER the browser has painted it (the flash). This stylesheet, linked in the page
+ * <head>, applies BEFORE first paint: elements you tag with data-loading start
+ * masked/hidden and are revealed once book.js has real data.
+ *
+ * PER-ELEMENT — tag any element inside [data-book]:
+ *   data-loading="mask"  → shimmer sized to that element's own box while awaiting
+ *                          data (its own text/children are hidden); revealed on data.
+ *   data-loading="hide"  → simply hidden until data is ready.
+ * Untagged elements stay visible during load — tag anything you don't want shown.
  *
  * ADD TO THE BOOK PAGE <head> (Webflow → Page settings → custom code, head):
  *   <link rel="stylesheet" href="https://hkbuproject-sandbox.vercel.app/filmtv/book.css">
- *   <noscript><style>[data-book] .cc-book-header,[data-book] .section{display:block!important}
- *   [data-book]::before{display:none!important}</style></noscript>
- * The <noscript> guard reveals the content if JavaScript is disabled (so the cloak
- * never permanently hides it).
+ *   <noscript><style>[data-book]:not(.cc-book-ready) [data-loading="hide"]{display:revert!important}
+ *   [data-book]:not(.cc-book-ready):not(.cc-book-empty) [data-loading="mask"]{background:none!important;
+ *   animation:none!important;color:inherit!important;min-height:0!important}
+ *   [data-book]:not(.cc-book-ready):not(.cc-book-empty) [data-loading="mask"]>*{visibility:visible!important}</style></noscript>
+ * The <noscript> guard reveals content if JavaScript is disabled (so a tagged
+ * element is never permanently masked/hidden). It MIRRORS the selectors below so it
+ * matches their specificity and wins on source order — keep the two in sync.
  *
- * State classes are driven by book.js: cc-book-loading (fetching) → cc-book-ready
- * (real data) | cc-book-empty (nothing to show).
+ * State classes are driven by book.js: cc-book-ready (real data) | cc-book-empty
+ * (nothing to show). "Awaiting" = neither class present, so the rules below apply
+ * pre-JS too (that's what makes it zero-flash). book.js also adds cc-book-loading
+ * as an optional styling hook, but these rules don't depend on it.
  * ============================================================ */
 
-/* Placeholder header + TOC stay hidden until book.js reveals real content. */
-[data-book] .cc-book-header,
-[data-book] .section { display: none; }
-[data-book].cc-book-ready .cc-book-header,
-[data-book].cc-book-ready .section { display: block; }
+/* HIDE: tagged element stays out of the layout until real content is ready. */
+[data-book]:not(.cc-book-ready) [data-loading="hide"] { display: none !important; }
 
-/* Immediate shimmer for the pre-JS moment. Once book.js takes over (loading /
- * ready / empty) this hides and its structured skeleton — or the content — shows. */
-[data-book]:not(.cc-book-ready):not(.cc-book-empty):not(.cc-book-loading)::before {
-  content: "";
-  display: block;
-  min-height: 60vh;
-  margin: 1rem 0;
-  border-radius: 8px;
+/* MASK: shimmer over the element's own box while awaiting data; its own text
+ * (color:transparent) and children (visibility:hidden) are hidden so only the
+ * shimmer shows. min-height is a floor for elements that render empty — give the
+ * element a real height in Webflow for taller bars. */
+[data-book]:not(.cc-book-ready):not(.cc-book-empty) [data-loading="mask"] {
+  border-radius: 6px;
+  color: transparent !important;
+  min-height: .9em;
   background: linear-gradient(90deg, #eceef0 25%, #e0e3e6 37%, #eceef0 63%);
   background-size: 400% 100%;
-  animation: filmtv-book-cloak-shimmer 1.4s ease infinite;
+  animation: filmtv-book-shimmer 1.4s ease infinite;
 }
-@keyframes filmtv-book-cloak-shimmer {
+[data-book]:not(.cc-book-ready):not(.cc-book-empty) [data-loading="mask"] > * {
+  visibility: hidden !important;
+}
+@keyframes filmtv-book-shimmer {
   0% { background-position: 100% 0; }
   100% { background-position: 0 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  [data-book]::before { animation: none; }
+  [data-book] [data-loading="mask"] { animation: none; }
 }

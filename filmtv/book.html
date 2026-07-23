@@ -8,7 +8,7 @@
   <!-- Zero-flash cloak (method A). In Webflow use the absolute CDN URL:
        https://hkbuproject-sandbox.vercel.app/filmtv/book.css -->
   <link rel="stylesheet" href="book.css" />
-  <noscript><style>[data-book] .cc-book-header,[data-book] .section{display:block!important}[data-book]::before{display:none!important}</style></noscript>
+  <noscript><style>[data-book]:not(.cc-book-ready) [data-loading="hide"]{display:revert!important}[data-book]:not(.cc-book-ready):not(.cc-book-empty) [data-loading="mask"]{background:none!important;animation:none!important;color:inherit!important;min-height:0!important}[data-book]:not(.cc-book-ready):not(.cc-book-empty) [data-loading="mask"]>*{visibility:visible!important}</style></noscript>
   <style>
     /* ⚠️ PREVIEW CHROME ONLY. On the real site these blocks are authored in
        Webflow; this file mirrors the Book page's data-* hook structure so
@@ -94,31 +94,34 @@
     <main class="page-main" data-book>
 
       <!-- ============ HEADER ============ -->
+      <!-- data-loading demo: mask the cover WRAPPER (not the bare <img>), the title,
+           issue and each meta row; hide the nav chrome (topbars + access tag) until
+           real data is ready. Untagged elements would stay visible during load. -->
       <section class="panel cc-book-header">
-        <div class="topbar u-w-100">
+        <div class="topbar u-w-100" data-loading="hide">
           <button class="text-link"><div>← 返回 香港電視</div></button>
           <div class="access-tag cc-collection"><span>🔒</span><div>有限開放</div></div>
         </div>
 
         <div class="book-header-row u-w-100" data-field="publication">
-          <div class="thumbnail cc-book-header">
+          <div class="thumbnail cc-book-header" data-loading="mask">
             <img class="card-img" alt="" data-field="cover" />
           </div>
           <div class="book-header-meta">
-            <h1 data-field="journal">香港電視</h1>
-            <h2>第 <span data-field="journal-issue">8</span> 期</h2>
-            <div class="paragraph-xl u-mb-0" u-flex="row-left-center">
+            <h1 data-field="journal" data-loading="mask">香港電視</h1>
+            <h2 data-loading="mask">第 <span data-field="journal-issue">8</span> 期</h2>
+            <div class="paragraph-xl u-mb-0" u-flex="row-left-center" data-loading="mask">
               <div>出版商　：</div>
               <div data-field="publisher">香港電視出版有限公司</div>
             </div>
-            <div class="paragraph-xl u-mb-0" u-flex="row-left-center">
+            <div class="paragraph-xl u-mb-0" u-flex="row-left-center" data-loading="mask">
               <div>出版日期：</div>
               <div data-field="book-date">1968-01-03</div>
             </div>
           </div>
         </div>
 
-        <div class="topbar u-w-100">
+        <div class="topbar u-w-100" data-loading="hide">
           <button class="text-link"><div>← 上一本</div></button>
           <button class="text-link"><div>下一本 →</div></button>
         </div>
@@ -135,14 +138,14 @@
         </div>
 
         <!-- tab bar: FIRST .view-toggle-btn is the template book.js clones -->
-        <div data-view-toggle="true" role="group" aria-label="顯示方式">
+        <div data-view-toggle="true" role="group" aria-label="顯示方式" data-loading="hide">
           <button class="view-toggle-btn cc-active" aria-pressed="true" type="button"><div>正刊</div></button>
           <button class="view-toggle-btn" aria-pressed="false" type="button"><div>DVD Magazine</div></button>
           <button class="view-toggle-btn" aria-pressed="false" type="button"><div>附件</div></button>
         </div>
 
         <div class="toc-body">
-          <div class="thumbnail cc-book-toc">
+          <div class="thumbnail cc-book-toc" data-loading="hide">
             <img class="card-img" alt="" data-field="toc-img" />
           </div>
 
@@ -150,7 +153,7 @@
                li.book-toc-li is the row template book.js clones -->
           <div class="book-toc-ul">
             <ul>
-              <li class="book-toc-li">
+              <li class="book-toc-li" data-loading="mask">
                 <div class="book-article-meta">
                   <div class="paragraph-xl u-mb-0" u-d="inline" data-field="section">有讚有彈　有彈有讚</div>
                   <div u-d="inline-flex"><div class="pipe cc-book"></div></div>

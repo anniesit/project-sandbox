@@ -164,22 +164,36 @@ mounts a floating dev switcher, and calls `filmtvBook.render()`. In production
 each book is its own route carrying the BookNumber, so you fetch that one book's
 family server-side and call `render()` directly — no switcher, no family select.
 
-**Loading skeleton (avoid the placeholder flash):** call `filmtvBook.showLoading(rootEl)`
-**before** you fetch a book's data — it hides the authored placeholder TOC and shows a
-shimmer skeleton (cover + meta lines + rows). `render()` / `showEmpty()` clear it
-automatically once the outcome is known. The markup + CSS are injected by `book.js`.
-- **Method B (no Webflow change):** the above works as-is, but since `book.js` loads in
-  the footer, a bare page paints its placeholder for a frame or two before it runs (a
-  short flash), then the skeleton takes over.
-- **Method A (zero flash):** link **`book.css`** in the Book page `<head>` — it cloaks
-  the placeholder before first paint and shows a shimmer until `book.js` reveals content:
+**Loading mask (avoid the placeholder flash):** call `filmtvBook.showLoading(rootEl)`
+**before** you fetch a book's data; `render()` / `showEmpty()` clear it once the outcome
+is known. You choose PER ELEMENT what happens while awaiting data, by tagging elements
+inside `[data-book]` with **`data-loading`**:
+
+| `data-loading` | while awaiting data | on real data | when empty |
+|---|---|---|---|
+| `mask` | shimmer sized to the element's own box (its text/children hidden) | revealed | hidden |
+| `hide` | `display:none` | revealed | hidden |
+
+Untagged elements stay visible during load — tag anything you don't want shown. Gotchas:
+mask a **wrapper, not a bare `<img>`** (an empty `<img>` paints a broken icon over the
+shimmer); masked text needs height (the placeholder text gives it — `min-height:.9em`
+is the floor, size taller bars in Webflow); the TOC shows **one** shimmer row (rows are
+cloned from the template `<li>` only at render).
+
+- **Method B (no Webflow change):** `book.js` injects the rules — works as-is, but since
+  it loads in the footer, a bare page paints the placeholder for a frame or two first.
+- **Method A (zero flash):** link **`book.css`** in the Book page `<head>` — the SAME
+  rules apply before first paint:
   ```html
   <link rel="stylesheet" href="https://hkbuproject-sandbox.vercel.app/filmtv/book.css">
-  <noscript><style>[data-book] .cc-book-header,[data-book] .section{display:block!important}
-  [data-book]::before{display:none!important}</style></noscript>
+  <noscript><style>[data-book]:not(.cc-book-ready) [data-loading="hide"]{display:revert!important}
+  [data-book]:not(.cc-book-ready):not(.cc-book-empty) [data-loading="mask"]{background:none!important;
+  animation:none!important;color:inherit!important;min-height:0!important}
+  [data-book]:not(.cc-book-ready):not(.cc-book-empty) [data-loading="mask"]>*{visibility:visible!important}</style></noscript>
   ```
-  `book.js` drives the state classes (`cc-book-loading` → `cc-book-ready` | `cc-book-empty`);
-  the `<noscript>` guard reveals content if JS is disabled so the cloak never sticks.
+  `book.js` drives the state classes (`cc-book-ready` on real data | `cc-book-empty`); the
+  `<noscript>` guard mirrors `book.css`'s selectors (so it wins the cascade) and reveals
+  content if JS is disabled so a tag never sticks.
 
 **Empty state (bare / missing / not-found book):** for the bare `/book` route (no
 book in the URL, so no data to render), call `filmtvBook.showEmpty(rootEl)` instead
