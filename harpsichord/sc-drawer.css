@@ -1,0 +1,71 @@
+/* ============================================================
+ * sc-drawer.css — Search Catalogue entry detail drawer
+ *
+ * Layout, motion, and responsive behaviour for the #sc-entry-drawer
+ * detail sheet. Loaded alongside sc-drawer.js.
+ *
+ * Webflow owns the drawer's VISUAL styling (background, padding, radius,
+ * box-shadow, tokens). This file owns POSITIONING, the slide animation,
+ * and the responsive overlay/push behaviour — things Webflow's breakpoint
+ * and class system can't express (exact 1440 cutoff, transform slide, :has).
+ *
+ * Selectors use #sc-entry-drawer so this file wins over Webflow's
+ * single-class .sc-entry-drawer rules regardless of stylesheet order.
+ * ============================================================ */
+
+/* Positioning context for the overlay sheet (Webflow already sets relative;
+   restated for self-containment) + clip the parked sheet so it can't create
+   horizontal page scroll while off-canvas. */
+.sc-split {
+  position: relative;
+  overflow-x: clip;
+}
+
+/* The results list stays full-width; the drawer overlays it by default. */
+.sc-split .cc-result-list {
+  width: 100%;
+}
+
+/* The drawer = a fixed-width sheet that slides in from the right.
+   Animating TRANSFORM (not width) means the content is never re-laid-out,
+   so it can't reflow or re-wrap during the transition; and because the sheet
+   is absolutely positioned it contributes no height to the row when closed. */
+#sc-entry-drawer.sc-entry-drawer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(40rem, 92vw);          /* responsive fixed width == content width */
+  max-width: none;
+  overflow: hidden;                  /* the sheet clips; .cc-entry scrolls */
+  transform: translateX(100%);       /* closed: parked off the right edge */
+  transition: transform 800ms ease-in-out;
+  z-index: 2;
+}
+
+#sc-entry-drawer.sc-entry-drawer.is-open {
+  transform: translateX(0);
+}
+
+/* Content fills the fixed-width sheet and scrolls internally for long records. */
+#sc-entry-drawer .cc-entry {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #sc-entry-drawer.sc-entry-drawer {
+    transition: none;
+  }
+}
+
+/* Above 1440px only: reveal the sheet BESIDE the list (push), not over it,
+   by reserving space on the list while the drawer is open. */
+@media (min-width: 1441px) {
+  .sc-split:has(#sc-entry-drawer.is-open) .cc-result-list {
+    padding-right: calc(min(40rem, 92vw) + 1.5rem);
+    transition: padding-right 800ms ease-in-out;
+  }
+}
