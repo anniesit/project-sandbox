@@ -32,7 +32,7 @@
   }
 
   .sc-entry-drawer.is-open {
-    width: min(40rem, 92vw);
+    width: var(--_components---drawer-width);
   }
 
   .sc-entry-drawer:not(.is-open) > .sc-panel.cc-entry {
