@@ -18,6 +18,14 @@
   overflow-x: clip;
 }
 
+/* Overlay mode only: after the drawer has slid out, sc-drawer.js eases the
+   reserved height back down so the footer glides up instead of snapping. The
+   transition is scoped to this JS-applied state class so it never affects the
+   grow on open (which must be instant, or the sliding drawer would overflow). */
+.sc-split.is-collapsing {
+  transition: min-height 300ms ease;
+}
+
 /* Above 1440px: the drawer sits IN FLOW beside the list instead of overlaying
    it, so the drawer's own content sets its height and the PAGE (not a nested
    scroll area) scrolls. It reveals by animating width; the content keeps its
@@ -41,7 +49,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sc-entry-drawer {
+  .sc-entry-drawer,
+  .sc-split.is-collapsing {
     transition: none;
   }
 }
