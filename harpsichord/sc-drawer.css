@@ -23,7 +23,20 @@
    transition is scoped to this JS-applied state class so it never affects the
    grow on open (which must be instant, or the sliding drawer would overflow). */
 .sc-split.is-collapsing {
-  transition: min-height 300ms ease;
+  transition: min-height 700ms ease;
+}
+
+/* Content fade-out on close. sc-drawer.js keeps the drawer .is-open (so the
+   card stays laid out) while adding .is-fading to fade the whole card in place;
+   only then does it drop .is-open to collapse the now-invisible card. The
+   closed state stays transparent too, so nothing flashes back in mid-collapse
+   (and >1440 the fade finishes before the display:none rule below removes it). */
+.sc-entry-drawer .sc-panel.cc-entry {
+  transition: opacity 300ms ease;
+}
+.sc-entry-drawer.is-fading .sc-panel.cc-entry,
+.sc-entry-drawer:not(.is-open) .sc-panel.cc-entry {
+  opacity: 0;
 }
 
 /* Above 1440px: the drawer sits IN FLOW beside the list instead of overlaying
@@ -40,7 +53,7 @@
   }
 
   .sc-entry-drawer.is-open {
-    width: var(--_components---drawer-width);
+    width: var(--_components---drawer-width--desktop);
   }
 
   .sc-entry-drawer:not(.is-open) > .sc-panel.cc-entry {
@@ -50,6 +63,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .sc-entry-drawer,
+  .sc-entry-drawer .sc-panel.cc-entry,
   .sc-split.is-collapsing {
     transition: none;
   }
