@@ -1,9 +1,9 @@
 /* ============================================================
  * nav-scroll.js — navbar background slide-down on scroll
  *
- * The nav sits transparent over the Home hero; once the page is scrolled
- * past a threshold, a background panel slides down into the navbar and
- * stays. Scroll back to the top and it slides back up.
+ * The nav sits transparent at the top of every page; once the page is
+ * scrolled past a threshold, a background panel slides down into the navbar
+ * and stays. Scroll back to the top and it slides back up.
  *
  * Why not a Webflow interaction / GSAP: the nav is injected at runtime by
  * component-loader.js. An IX2 scroll interaction applies its initial state
@@ -14,12 +14,9 @@
  * whenever that happens to be.
  *
  * Markup contract (authored in the Webflow Nav component):
- *   [data-nav-scroll]  — the background panel itself (.nav-bg), absolutely
- *                        positioned behind the nav content, parked at
- *                        translateY(-100%) and revealed by .is-scrolled
- *   [data-nav-overlay] — opt-in, set on a page's hero. Without it the panel
- *                        is simply shown (no motion), which is what the
- *                        heroless pages want.
+ *   [data-nav-scroll] — the background panel itself (.nav-bg), absolutely
+ *                       positioned behind the nav content, parked at
+ *                       translateY(-100%) and revealed by .is-scrolled
  *
  * All styling lives in WEBFLOW (.nav-bg + the .is-scrolled combo). Pairs
  * with nav-scroll.css, which only holds the two things a Webflow class
@@ -113,8 +110,8 @@
     bg = next;
     bg.setAttribute("data-nav-scroll-ready", "");
 
-    // Heroless pages don't overlay the nav — just show the panel and stop.
-    if (!document.querySelector("[data-nav-overlay]") || !window.IntersectionObserver) {
+    // No observer support: fall back to simply showing the panel.
+    if (!window.IntersectionObserver) {
       setScrolled(true, true);
       return;
     }
