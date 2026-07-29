@@ -1,0 +1,24 @@
+/* ============================================================
+ * nav-scroll.css — navbar background slide-down on scroll
+ *
+ * Minimal companion to nav-scroll.js. The panel's styling lives in WEBFLOW
+ * (.nav-bg: absolute inset, z-index, background, border-bottom, transform
+ * translateY(-100%), transition; .nav-bg.is-scrolled: translateY(0)).
+ *
+ * This file only holds what a Webflow class can't express: a JS-only state
+ * class and a reduced-motion override.
+ * ============================================================ */
+
+/* nav-scroll.js applies the FIRST state with this class on, so a page that
+   loads already-scrolled — or a nav injected mid-page by component-loader.js
+   — snaps into place instead of playing the reveal unprompted. It's removed
+   on the same frame, so every subsequent flip animates normally. */
+.nav-bg.no-anim {
+  transition-duration: 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-bg {
+    transition: none;
+  }
+}
