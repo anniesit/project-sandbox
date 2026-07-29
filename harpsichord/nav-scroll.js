@@ -57,14 +57,22 @@
     bg.classList.remove("no-anim");
   }
 
-  // Zero-size, out-of-flow marker pinned to the top of the document. Observing
-  // it with a negative top rootMargin is equivalent to "scrollY > threshold",
-  // but costs no scroll handler and self-reports on observe().
+  // Out-of-flow marker pinned to the top of the document and made exactly as
+  // TALL as the threshold: it is in view while scrollY < threshold and has left
+  // the viewport once scrollY >= it. So "is it intersecting" is the state we
+  // want, with no scroll handler, and observe() self-reports it immediately.
+  //
+  // Its height is what encodes the threshold — do NOT swap this for a zero-size
+  // marker plus a negative rootMargin. That inverse looks equivalent but the
+  // marker then sits permanently outside the inset root, so the observer
+  // reports "not intersecting" forever and the panel sticks open.
   function makeSentinel() {
     var el = document.createElement("div");
     el.setAttribute("aria-hidden", "true");
     el.style.cssText =
-      "position:absolute;top:0;left:0;width:0;height:0;pointer-events:none;visibility:hidden;";
+      "position:absolute;top:0;left:0;width:1px;height:" +
+      Math.max(1, threshold()) +
+      "px;pointer-events:none;visibility:hidden;";
     document.body.insertBefore(el, document.body.firstChild);
     return el;
   }
@@ -113,13 +121,10 @@
 
     sentinel = makeSentinel();
     var first = true;
-    observer = new IntersectionObserver(
-      function (entries) {
-        setScrolled(!entries[entries.length - 1].isIntersecting, first);
-        first = false;
-      },
-      { rootMargin: -threshold() + "px 0px 0px 0px", threshold: 0 }
-    );
+    observer = new IntersectionObserver(function (entries) {
+      setScrolled(!entries[entries.length - 1].isIntersecting, first);
+      first = false;
+    });
     observer.observe(sentinel);
   }
 
