@@ -26,24 +26,16 @@
   transition: min-height 700ms ease;
 }
 
-/* Content fade-out on close. sc-drawer.js keeps the drawer .is-open (so the
-   card stays laid out) while adding .is-fading to fade the whole card in place;
-   only then does it drop .is-open to collapse the now-invisible card. The
-   closed state stays transparent too, so nothing flashes back in mid-collapse
-   (and >1440 the fade finishes before the display:none rule below removes it). */
-.sc-entry-drawer .sc-panel.cc-entry {
-  transition: opacity 300ms ease;
-}
-.sc-entry-drawer.is-fading .sc-panel.cc-entry,
-.sc-entry-drawer:not(.is-open) .sc-panel.cc-entry {
-  opacity: 0;
-}
-
 /* Above 1440px: the drawer sits IN FLOW beside the list instead of overlaying
    it, so the drawer's own content sets its height and the PAGE (not a nested
    scroll area) scrolls. It reveals by animating width; the content keeps its
-   fixed Webflow width so it never re-wraps, and is taken out of flow while
-   closed so a 0-width drawer can't inflate the row height. */
+   fixed Webflow width so it never re-wraps.
+
+   The content is display:none while closed so a 0-width drawer can't inflate
+   the row height — BUT NOT while .is-closing, so on close the content stays laid
+   out and un-reveals (clipped) as the width collapses, mirroring the open
+   reveal. sc-drawer.js drops .is-closing (→ display:none) once the collapse
+   ends. The :not(.is-closing) default also keeps this working without JS. */
 @media (min-width: 1441px) {
   .sc-entry-drawer {
     position: relative;
@@ -56,14 +48,13 @@
     width: var(--_components---drawer-width--desktop);
   }
 
-  .sc-entry-drawer:not(.is-open) > .sc-panel.cc-entry {
+  .sc-entry-drawer:not(.is-open):not(.is-closing) > .sc-panel.cc-entry {
     display: none;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .sc-entry-drawer,
-  .sc-entry-drawer .sc-panel.cc-entry,
   .sc-split.is-collapsing {
     transition: none;
   }

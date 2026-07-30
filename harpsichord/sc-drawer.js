@@ -15,12 +15,12 @@
  * (page scrolls, no nested scroll area); at >1440px it's in-flow and grows the
  * row naturally.
  *
- * Close is a two-phase, breakpoint-agnostic sequence: (1) fade the whole card
- * out in place — keep .is-open so it stays laid out while opacity -> 0; then
- * (2) drop .is-open to collapse it (width/slide + display:none) and ease
- * .sc-split's reserved height back down (easeCollapse) so the footer glides up.
- * Collapsing only after the fade means it's never visible — so there's no
- * slide-wait/overflow dance and both breakpoints behave the same.
+ * Close is the reverse of open — a slide/collapse OUT, not a fade: drop
+ * .is-open so <=1440 the transform slides the card off-canvas and >1440 the
+ * width collapses. .is-closing keeps the >1440 content laid out during the
+ * collapse so it un-reveals (mirror of the open reveal) instead of vanishing;
+ * it's dropped (-> display:none) once the transition ends. Then .sc-split's
+ * reserved height eases back down (easeCollapse) so the footer glides up.
  *
  * Elements are FOUND via data-* hooks; visual state is the .is-open (drawer)
  * and .is-active (row) classes the CSS keys on. Pairs with sc-drawer.css.
@@ -33,11 +33,9 @@
     if (!drawer) return; // not the Search Catalogue page — no-op
 
     var split = drawer.closest(".sc-split");
-    var content = drawer.querySelector(".cc-entry");
     var overlayQuery = window.matchMedia("(max-width: 1440px)");
     var lastTrigger = null;
     var collapseTimer = null;
-    var fadeTimer = null;
     var onSplitTransitionEnd = null;
 
     // In overlay mode, size .sc-split to the open drawer so it isn't clipped
@@ -60,12 +58,6 @@
         return v.indexOf("ms") > -1 ? parseFloat(v) || 0 : (parseFloat(v) || 0) * 1000;
       }
       return ms(cs.transitionDuration) + ms(cs.transitionDelay);
-    }
-
-    // Cancel a pending fade→collapse hand-off (e.g. when reopened mid-fade).
-    function stopFade() {
-      window.clearTimeout(fadeTimer);
-      fadeTimer = null;
     }
 
     // Cancel any pending / in-progress height animation and leave .sc-split in a
@@ -121,9 +113,8 @@
 
     function openDrawer(trigger) {
       lastTrigger = trigger;
-      stopFade();          // cancel a fade→collapse in progress from a prior close
-      stopCollapseAnim();  // cancel any pending / in-progress collapse
-      drawer.classList.remove("is-fading");
+      stopCollapseAnim();               // cancel any pending / in-progress collapse
+      drawer.classList.remove("is-closing"); // in case reopened mid-close
 
       clearActiveState();
       trigger.setAttribute("aria-expanded", "true");
@@ -145,7 +136,6 @@
 
     function closeDrawer() {
       if (!drawer.classList.contains("is-open")) return;
-      stopFade();
       stopCollapseAnim();
 
       clearActiveState();
@@ -159,30 +149,29 @@
       drawer.setAttribute("inert", "");
       drawer.setAttribute("aria-hidden", "true");
 
-      // Capture the height while the card is still laid out, so we can hold it
-      // and ease it down rather than let the row snap short once it collapses.
+      // Hold the pre-close height so the footer doesn't snap up during / after
+      // the slide-out; we ease it down once the drawer has finished moving.
       var reserve = split ? split.offsetHeight : 0;
+      if (split) split.style.minHeight = reserve + "px";
 
-      // Phase 1: fade the whole card out IN PLACE — keep .is-open so the layout
-      // (width/position/height) holds steady while opacity goes to 0.
-      drawer.classList.add("is-fading");
+      // Slide/collapse OUT (reverse of open): <=1440 the transform slides the
+      // card off-canvas; >1440 the width collapses and .is-closing keeps the
+      // content laid out so it un-reveals instead of vanishing.
+      drawer.classList.add("is-closing");
+      drawer.classList.remove("is-open");
 
-      // Phase 2: once invisible, drop .is-open to collapse the card (slide/width
-      // + display:none) and ease the reserved height down. Doing this only after
-      // the fade means the collapse is never visible, in either breakpoint mode.
-      var collapse = function () {
-        fadeTimer = null;
-        if (split) split.style.minHeight = reserve + "px"; // hold before content drops
-        drawer.classList.remove("is-fading");
-        drawer.classList.remove("is-open");
+      // After the drawer's own slide/width transition, finalize: drop
+      // .is-closing (>1440 -> content display:none) and ease the height down.
+      var finalize = function () {
+        collapseTimer = null;
+        drawer.classList.remove("is-closing");
         if (split) easeCollapse();
       };
-
-      var fadeMs = content ? transitionMs(content) : 0;
-      if (fadeMs > 0) {
-        fadeTimer = window.setTimeout(collapse, fadeMs + 30);
+      var ms = transitionMs(drawer);
+      if (ms > 0) {
+        collapseTimer = window.setTimeout(finalize, ms + 50);
       } else {
-        collapse();
+        finalize();
       }
     }
 
