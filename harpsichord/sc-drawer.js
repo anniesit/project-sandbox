@@ -194,9 +194,18 @@
 
     // Recompute the overlay height when the viewport changes or crosses the
     // 1440px boundary. Cancel any in-flight ease first so it settles cleanly.
+    // Suppress the drawer's transition while resizing, so the value changes at
+    // the breakpoint snap instead of animating a phantom slide; re-enable once
+    // resizing settles.
+    var resizeSettle = null;
     function onViewportChange() {
       stopCollapseAnim();
+      drawer.classList.add("no-transition");
       syncOverlayHeight();
+      window.clearTimeout(resizeSettle);
+      resizeSettle = window.setTimeout(function () {
+        drawer.classList.remove("no-transition");
+      }, 120);
     }
     window.addEventListener("resize", onViewportChange);
     if (overlayQuery.addEventListener) {

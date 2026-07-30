@@ -26,6 +26,15 @@
   transition: min-height 700ms ease;
 }
 
+/* While the viewport is being resized — especially crossing 1440px, where the
+   drawer switches between transform-slide (<=1440) and width-collapse (>1440) —
+   its transitioned property changes value at the breakpoint and would animate a
+   phantom slide. sc-drawer.js adds this class during resize so the change snaps.
+   (Two classes → beats the single-class Webflow/media transition rules.) */
+.sc-entry-drawer.no-transition {
+  transition: none;
+}
+
 /* Above 1440px: the drawer sits IN FLOW beside the list instead of overlaying
    it, so the drawer's own content sets its height and the PAGE (not a nested
    scroll area) scrolls. It reveals by animating width; the content keeps its
