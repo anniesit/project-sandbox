@@ -1,13 +1,27 @@
 /* ============================================================
  * nav-scroll.css — navbar background slide-down on scroll
  *
- * Minimal companion to nav-scroll.js. The panel's styling lives in WEBFLOW
- * (.nav-bg: absolute inset, z-index, background, border-bottom, transform
- * translateY(-100%), transition; .nav-bg.is-scrolled: translateY(0)).
+ * The panel's resting look lives in WEBFLOW (.nav-bg: absolute inset,
+ * z-index, background, opacity, transform, transition) — that part is the
+ * designer's to restyle freely.
  *
- * This file only holds what a Webflow class can't express: a JS-only state
- * class and a reduced-motion override.
+ * The "scrolled" state lives HERE, not in Webflow, on purpose: it's a
+ * JS-driven state class, not a look a designer picks in the class panel, and
+ * a .nav-bg restyle in the Designer already deleted it once (nothing in the
+ * Designer UI signals that a class is load-bearing for a script elsewhere).
+ * This file loads after both Webflow's own stylesheet and the DS bundle, so
+ * at equal specificity it always wins — restyle .nav-bg all you like, this
+ * rule keeps applying without needing to be recreated.
  * ============================================================ */
+
+/* Reverses .nav-bg's resting opacity/transform. Keep in lockstep with
+   whatever .nav-bg's base values are — this only needs to set the opposite
+   end of the same two properties; the transition itself (duration/easing)
+   stays in Webflow, on .nav-bg, where it's meant to be tuned. */
+.nav-bg.is-scrolled {
+  opacity: 1;
+  transform: translate(0, 0);
+}
 
 /* nav-scroll.js applies the FIRST state with this class on, so a page that
    loads already-scrolled — or a nav injected mid-page by component-loader.js
