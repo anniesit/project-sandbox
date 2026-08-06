@@ -21,33 +21,33 @@
  * ──────────────────────────────────────────────────────────── */
 :root {
   /* colour — semantic aliases over the DIR primitives */
-  --primary--text:                    var(--blue--900);
-  --primary--background:              var(--neutral--white);
-  --primary--border:                  var(--neutral--400);
-  --primary--accent:                  var(--blue--700);
-  --primary--accent-dark:             var(--blue--800);
-  --_color---neutral--black:          var(--neutral--900);
-  --color-danger:                     var(--warning--red--700);
+  --primary--text: var(--blue--900);
+  --primary--background: var(--neutral--white);
+  --primary--border: var(--neutral--400);
+  --primary--accent: var(--blue--700);
+  --primary--accent-dark: var(--blue--800);
+  --_color---neutral--black: var(--neutral--900);
+  --color-danger: var(--warning--red--700);
 
   /* spacing — matches the v2 utility values:
      u-gap-4 .25 / u-mb-xs .5 / u-gap-xsmall .75 / u-mb-sm 1
      u-gap-small 1.5 / u-gap-medium 2.5 / u-gap-large 4 */
-  --_layout---spacing--2xs:           0.25rem;
-  --_layout---spacing--xs:            0.5rem;
-  --_layout---spacing--sm:            0.75rem;
-  --_layout---spacing--base:          1rem;
-  --_layout---spacing--md:            1.5rem;
-  --_layout---spacing--lg:            2.5rem;
-  --_layout---spacing--xl:            4rem;
-  --_layout---spacing--2xl:           6rem;
-  --_layout---spacing--3xl:           8rem;
+  --_layout---spacing--2xs: 0.25rem;
+  --_layout---spacing--xs: 0.5rem;
+  --_layout---spacing--sm: 0.75rem;
+  --_layout---spacing--base: 1rem;
+  --_layout---spacing--md: 1.5rem;
+  --_layout---spacing--lg: 2.5rem;
+  --_layout---spacing--xl: 4rem;
+  --_layout---spacing--2xl: 6rem;
+  --_layout---spacing--3xl: 8rem;
 
   /* grid + components */
-  --_layout---grid--columns:          12;
-  --_layout---grid--gap-main:         1.5rem;
-  --_layout---grid--gap-md:           1.5rem;
-  --_layout---grid--gap-sm:           0.75rem;
-  --_layout---grid--gap-button:       0.5rem;
+  --_layout---grid--columns: 12;
+  --_layout---grid--gap-main: 1.5rem;
+  --_layout---grid--gap-md: 1.5rem;
+  --_layout---grid--gap-sm: 0.75rem;
+  --_layout---grid--gap-button: 0.5rem;
   --_components---button--border-radius: 0.4rem;
 }
 
@@ -60,7 +60,7 @@
  * Real links, not tabs. aria-current marks the page, so the
  * active style keys off the attribute rather than a class —
  * nothing to keep in sync when a page is added.
- * ──────────────────────────────────────────────────────────── */
+ * ──────────────────────────────────────────────────────────── 
 .dsg_subnav_link[aria-current="page"] {
   border-bottom-color: var(--lime--500);
   color: var(--blue--900);
@@ -69,22 +69,24 @@
 }
 .dsg_subnav_link[aria-current="page"]:hover {
   border-bottom-color: var(--lime--500);
-}
+}*/
 /* The scroll affordance itself is on .dsg_subnav in Webflow;
    only the bar-hiding pseudo-element has to live here. */
-.dsg_subnav::-webkit-scrollbar { display: none; }
+.dsg_subnav::-webkit-scrollbar {
+  display: none;
+}
 
 /* ── L2 tabs ─────────────────────────────────────────────────
  * tabs.js drives aria-selected and .cc-active. Styling the
  * attribute as well as the class means the correct tab looks
  * active even before the script runs.
- * ──────────────────────────────────────────────────────────── */
+ * ──────────────────────────────────────────────────────────── 
 .tabs-link[aria-selected="true"] .tabs-link_label,
 .tabs-link.cc-active .tabs-link_label {
   border-bottom-color: var(--blue--800);
   color: var(--blue--900);
   font-weight: 600;
-}
+} */
 
 /* ── Accordions ──────────────────────────────────────────────
  * Native <details>. accordion.js animates the height; these
@@ -111,6 +113,7 @@
   width: 0.55em;
   height: 0.55em;
   margin-top: -0.25em;
+  margin-right: 0.5rem;
   border-right: 2px solid currentColor;
   border-bottom: 2px solid currentColor;
   transform: rotate(45deg);
@@ -121,7 +124,9 @@
   transform: rotate(225deg);
 }
 @media (prefers-reduced-motion: reduce) {
-  .dsg_accordion_summary::after { transition: none; }
+  .dsg_accordion_summary::after {
+    transition: none;
+  }
 }
 
 /* The list sits inside a bordered stack; the last item would
@@ -145,11 +150,15 @@
  * ──────────────────────────────────────────────────────────── */
 /* [hidden] loses to any display rule the class carries, so it has
    to be restated at higher specificity. */
-.dsg_projects_empty[hidden] { display: none; }
+.dsg_projects_empty[hidden] {
+  display: none;
+}
 
 /* Search field: hide the WebKit native clear so it doesn't double
    up with the filter's own affordances. */
-.dsg_search_input::-webkit-search-cancel-button { display: none; }
+.dsg_search_input::-webkit-search-cancel-button {
+  display: none;
+}
 
 /* ── Workflow diagram ────────────────────────────────────────
  * The diagram is wider than a phone. Below 768px it scrolls
@@ -173,9 +182,16 @@
     overflow: visible !important;
     display: block !important;
   }
-  .tabs-pane[aria-hidden="true"] { display: block !important; }
+  .tabs-pane[aria-hidden="true"] {
+    display: block !important;
+  }
   .dsg_subnav,
   .tabs-menu,
-  .btn_totop { display: none !important; }
-  .dsg_sidebar { position: static !important; max-height: none !important; }
+  .btn_totop {
+    display: none !important;
+  }
+  .dsg_sidebar {
+    position: static !important;
+    max-height: none !important;
+  }
 }
