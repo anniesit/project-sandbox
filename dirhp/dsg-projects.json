@@ -1,0 +1,189 @@
+[
+  {
+    "track": "grant",
+    "year": "2025/26",
+    "code": "DSG/2526/106",
+    "title": "Picturing Difference: Disability in Early Modern Art",
+    "pi": "Prof. Angelo LO CONTE",
+    "department": "Academy of Visual Arts",
+    "status": "Active",
+    "project_url": "",
+    "interview_url": ""
+  },
+  {
+    "track": "grant",
+    "year": "2025/26",
+    "code": "DSG/2526/110",
+    "title": "4D Digital Archive of Hong Kong Traditional Paper Crafts",
+    "pi": "Prof. YE Hui",
+    "department": "Department of Interactive Media",
+    "status": "Active",
+    "project_url": "",
+    "interview_url": ""
+  },
+  {
+    "track": "grant",
+    "year": "2024/25",
+    "code": "DSG/2425/101",
+    "title": "An Online, Open-Access Catalogue of Seventeenth Century Harpsichord Music",
+    "pi": "Prof. CHUNG Yu Sum David",
+    "department": "Department of Music",
+    "status": "Completed",
+    "project_url": "",
+    "interview_url": ""
+  },
+  {
+    "track": "grant",
+    "year": "2024/25",
+    "code": "DSG/2425/102",
+    "title": "Transnational Religious Exchange of Chinese Protestant Christians and the CCCWE, 1974–2021",
+    "pi": "Prof. KWOK Wai Luen",
+    "department": "Academy of Chinese, History, Religion, and Philosophy",
+    "status": "Completed",
+    "project_url": "",
+    "interview_url": ""
+  },
+  {
+    "track": "grant",
+    "year": "2024/25",
+    "code": "DSG/2425/105",
+    "title": "Rediscovering a Chinese Intellectual Woman Gu Shuxing's Photography and Global Travels (1910s–70s)",
+    "pi": "Dr WANG Yizhou",
+    "department": "Academy of Visual Arts",
+    "status": "Terminated",
+    "project_url": "",
+    "interview_url": ""
+  },
+  {
+    "track": "grant",
+    "year": "2023/24",
+    "code": "DSG/2324/104",
+    "title": "The Chinese/English Translation & Interpreting Learner Corpus (CETILC)",
+    "pi": "Dr Janice Jun PAN",
+    "department": "Department of Translation, Interpreting and Intercultural Studies",
+    "status": "Completed",
+    "project_url": "",
+    "interview_url": ""
+  },
+  {
+    "track": "grant",
+    "year": "2023/24",
+    "code": "DSG/2324/103",
+    "title": "Finding the Heritage of the Sai Kung Catholic Villages — 360 Virtual Tours",
+    "pi": "Prof. CHU Cindy",
+    "department": "Department of History",
+    "status": "Completed",
+    "project_url": "https://digital.lib.hkbu.edu.hk/history/catholic-churches/",
+    "interview_url": ""
+  },
+  {
+    "track": "grant",
+    "year": "2023/24",
+    "code": "DSG/2324/105",
+    "title": "A Digital Archive of the Theatrical Works of Danny Ning-Tsun Yung",
+    "pi": "Dr YEUNG Jessica",
+    "department": "Department of Translation, Interpreting and Intercultural Studies",
+    "status": "Completed",
+    "project_url": "",
+    "interview_url": ""
+  },
+  {
+    "track": "grant",
+    "year": "2023/24",
+    "code": "DSG/2324/101",
+    "title": "A Stranger/Helper at Home: Hong Kong Families with Migrant Domestic Workers",
+    "pi": "Dr CHEUNG Adam",
+    "department": "Department of Sociology",
+    "status": "Completed",
+    "project_url": "https://digital.lib.hkbu.edu.hk/helper-at-home/",
+    "interview_url": ""
+  },
+  {
+    "track": "grant",
+    "year": "2022/23",
+    "code": "DSG/2223/107",
+    "title": "Crisscross 7000 years – Art and Technology of Mortise and Tenon",
+    "pi": "Ms. QIN Lai Yin, Anna",
+    "department": "Academy of Visual Arts",
+    "status": "Completed",
+    "project_url": "https://digital.lib.hkbu.edu.hk/mortise_tenon/",
+    "interview_url": ""
+  },
+  {
+    "track": "grant",
+    "year": "2022/23",
+    "code": "DSG/2223/108",
+    "title": "The Digital Legacy of Hong Kong Culture – Bridging Audio-Visual Art World and Physical Reality",
+    "pi": "Dr Yupeng Li",
+    "department": "Department of Interactive Media",
+    "status": "Completed",
+    "project_url": "https://digital.lib.hkbu.edu.hk/culture-map/",
+    "interview_url": ""
+  },
+  {
+    "track": "grant",
+    "year": "2022/23",
+    "code": "DSG/2223/111",
+    "title": "Asian-European cities online energy map",
+    "pi": "Dr Man-wai Cheung, Darren",
+    "department": "Department of Geography",
+    "status": "Completed",
+    "project_url": "",
+    "interview_url": ""
+  },
+  {
+    "track": "grant",
+    "year": "2021/22",
+    "code": "DSG/2122/105",
+    "title": "Synergy between Tradition and the Contemporary – Chinese Calligraphy and Seal Engraving",
+    "pi": "Dr Chak Kwong LAU",
+    "department": "Academy of Film",
+    "status": "Completed",
+    "project_url": "https://digital.lib.hkbu.edu.hk/calligraphy/daniellauchakkwong/",
+    "interview_url": ""
+  },
+  {
+    "track": "grant",
+    "year": "2021/22",
+    "code": "DSG/2122/110",
+    "title": "100 Chinese Protestant Christian Hymns from Qing China",
+    "pi": "Dr Man Kong WONG",
+    "department": "Department of History",
+    "status": "Completed",
+    "project_url": "https://digital.lib.hkbu.edu.hk/qinghymns/",
+    "interview_url": ""
+  },
+  {
+    "track": "non-grant",
+    "year": "2025/26",
+    "code": "NG/2526/01",
+    "title": "Hong Kong-Singapore Screen Heritage: The Kong Ngee Film Company and the Cantonese Movie Industry in Post-War Asia, 1950s–1960s",
+    "pi": "Prof. CHUNG Po Yin",
+    "department": "Department of History",
+    "status": "Active",
+    "project_url": "",
+    "interview_url": ""
+  },
+  {
+    "track": "non-grant",
+    "year": "2019/20",
+    "code": "NG/1920/01",
+    "title": "HKKH: Sinophone Hong Kong Literature – Translation Anthologies",
+    "pi": "Dr Maialen MARIN-LACARTA",
+    "department": "Department of Translation, Interpreting and Intercultural Studies",
+    "status": "Completed",
+    "project_url": "https://digital.lib.hkbu.edu.hk/hkkh/",
+    "interview_url": ""
+  },
+  {
+    "track": "non-grant",
+    "year": "2018/19",
+    "code": "NG/1819/01",
+    "title": "The 'Asian' Empson: A Trilingual Open-Access Database on Sir William Empson in China and Japan, 1931–1952",
+    "pi": "Prof. Stuart CHRISTIE",
+    "department": "Department of English Language and Literature",
+    "status": "Completed",
+    "project_url": "https://digital.lib.hkbu.edu.hk/empson/",
+    "interview_url": ""
+  }
+]

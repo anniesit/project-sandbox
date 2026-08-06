@@ -1,0 +1,14 @@
+/* Accordion */
+
+:root {
+  interpolate-size: allow-keywords; /* To animate accordions */
+}
+details[open] .accordion-icon{
+  transform: rotate(45deg);
+}
+details[open] .accordion-icon.is-caret{
+  transform: rotate(-90deg);
+}
+summary::-webkit-details-marker {
+  display: none; /* Hide older Safari's default disclosure arrow */
+}
