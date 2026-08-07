@@ -165,17 +165,17 @@
 .dsg_card_summary::after {
   content: "";
   position: absolute;
-  top: 1.1rem;
+  top: 0.95rem;
   right: 0.85rem;
-  width: 0.45em;
-  height: 0.45em;
+  width: 0.35em;
+  height: 0.35em;
   border-right: 2px solid currentColor;
   border-bottom: 2px solid currentColor;
   transform: rotate(45deg);
   transition: transform 0.3s ease;
 }
 .dsg_card[open] > .dsg_card_summary::after {
-  top: 1.3rem;
+  top: 1.15rem;
   transform: rotate(225deg);
 }
 @media (prefers-reduced-motion: reduce) {
