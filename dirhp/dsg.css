@@ -234,6 +234,11 @@
   font-size: 0.7em;
 }
 
+/* ── Numbered List Marker ── */
+ol li::marker {
+  font-size: 1em;
+}
+
 /* ── Quick link icons ────────────────────────────────────────
  * Phosphor "download-simple" and "arrow-square-out", same mask
  * technique. The glyph is chosen by data-link-type on the row, so
