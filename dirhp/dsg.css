@@ -187,6 +187,16 @@
   margin-bottom: 0;
 }
 
+/* When closed, .dsg_card_content isn't rendered at all (browser
+   <details> behaviour, not CSS), so .dsg_card_head's own
+   border-bottom sits flush against .dsg_card's outer border —
+   same colour token, so the two 1px + 1.5px lines merge into one
+   visibly thicker edge. Only needed while closed: once open, the
+   content block separates them and both read correctly. */
+.dsg_card:not([open]) > .dsg_card_summary > .dsg_card_head {
+  border-bottom-style: none;
+}
+
 /* ── Checklist ticks ─────────────────────────────────────────
  * Phosphor "check", drawn as a mask so it takes its colour from
  * the list's `color` — set that on .dsg_checklist.is-check in
