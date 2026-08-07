@@ -144,6 +144,49 @@
   margin-bottom: 0;
 }
 
+/* ── Sidebar card accordions ─────────────────────────────────
+ * The three sidebar cards are native <details> so they can be
+ * collapsed, chiefly on narrow viewports where the sidebar stacks
+ * above the main column. They start open: accordion.js strips
+ * `open` from every <details> that lacks
+ * data-accordion-start-open="true", so both attributes are set.
+ *
+ * The visible bar is still .dsg_card_head, which keeps its own
+ * padding, border and background — the <summary> is a bare wrapper
+ * so none of that had to move. The caret is positioned against the
+ * summary instead of being added as a flex child, which means
+ * .dsg_card_head needed no change at all.
+ * ──────────────────────────────────────────────────────────── */
+.dsg_card_summary::marker,
+.dsg_card_summary::-webkit-details-marker {
+  display: none;
+  content: "";
+}
+.dsg_card_summary::after {
+  content: "";
+  position: absolute;
+  top: 1.1rem;
+  right: 0.85rem;
+  width: 0.45em;
+  height: 0.45em;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.3s ease;
+}
+.dsg_card[open] > .dsg_card_summary::after {
+  top: 1.3rem;
+  transform: rotate(225deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .dsg_card_summary::after {
+    transition: none;
+  }
+}
+.dsg_card_content > *:last-child {
+  margin-bottom: 0;
+}
+
 /* ── Checklist ticks ─────────────────────────────────────────
  * Phosphor "check", drawn as a mask so it takes its colour from
  * the list's `color` — set that on .dsg_checklist.is-check in
@@ -247,10 +290,14 @@
  * show every tab pane so nothing is silently omitted.
  * ──────────────────────────────────────────────────────────── */
 @media print {
-  .dsg_accordion > .dsg_accordion_content {
+  .dsg_accordion > .dsg_accordion_content,
+  .dsg_card > .dsg_card_content {
     height: auto !important;
     overflow: visible !important;
     display: block !important;
+  }
+  .dsg_card_summary::after {
+    display: none;
   }
   .tabs-pane[aria-hidden="true"] {
     display: block !important;
