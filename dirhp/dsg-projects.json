@@ -28,7 +28,7 @@
     "title": "An Online, Open-Access Catalogue of Seventeenth Century Harpsichord Music",
     "pi": "Prof. CHUNG Yu Sum David",
     "department": "Department of Music",
-    "status": "Completed",
+    "status": "Active",
     "project_url": "",
     "interview_url": ""
   },
@@ -39,7 +39,7 @@
     "title": "Transnational Religious Exchange of Chinese Protestant Christians and the CCCWE, 1974–2021",
     "pi": "Prof. KWOK Wai Luen",
     "department": "Academy of Chinese, History, Religion, and Philosophy",
-    "status": "Completed",
+    "status": "Active",
     "project_url": "",
     "interview_url": ""
   },
@@ -107,7 +107,7 @@
     "department": "Academy of Visual Arts",
     "status": "Completed",
     "project_url": "https://digital.lib.hkbu.edu.hk/mortise_tenon/",
-    "interview_url": ""
+    "interview_url": "https://hkbutube.lib.hkbu.edu.hk/inner.php?id=BTO-010183"
   },
   {
     "track": "grant",
@@ -128,7 +128,7 @@
     "pi": "Dr Man-wai Cheung, Darren",
     "department": "Department of Geography",
     "status": "Completed",
-    "project_url": "",
+    "project_url": "https://digital.lib.hkbu.edu.hk/energymap/",
     "interview_url": ""
   },
   {
@@ -140,7 +140,7 @@
     "department": "Academy of Film",
     "status": "Completed",
     "project_url": "https://digital.lib.hkbu.edu.hk/calligraphy/daniellauchakkwong/",
-    "interview_url": ""
+    "interview_url": "https://hkbutube.lib.hkbu.edu.hk/inner.php?id=BTO-010181"
   },
   {
     "track": "grant",
@@ -151,7 +151,7 @@
     "department": "Department of History",
     "status": "Completed",
     "project_url": "https://digital.lib.hkbu.edu.hk/qinghymns/",
-    "interview_url": ""
+    "interview_url": "https://hkbutube.lib.hkbu.edu.hk/inner.php?id=BTO-010182"
   },
   {
     "track": "non-grant",
@@ -184,6 +184,226 @@
     "department": "Department of English Language and Literature",
     "status": "Completed",
     "project_url": "https://digital.lib.hkbu.edu.hk/empson/",
+    "interview_url": "http://hkbutube.lib.hkbu.edu.hk/ov/display.php?id=10119"
+  },
+  {
+    "track": "grant",
+    "year": "2021/22",
+    "code": "DSG/2122/103",
+    "title": "Metapicturing Hong Kong: A Virtual Archive of Photo Pictorial (1964-2005)",
+    "pi": "",
+    "department": "Academy of Film",
+    "status": "Discontinued",
+    "project_url": "",
+    "interview_url": ""
+  },
+  {
+    "track": "grant",
+    "year": "2020/21",
+    "code": "DSG/2021/105",
+    "title": "Sci-fi blockbusters' representation of female cyborgs and its impacts on audiences' perception of human-machine communication",
+    "pi": "Dr Xinzhi ZHANG",
+    "department": "Department of Journalism",
+    "status": "Completed",
+    "project_url": "https://digital.lib.hkbu.edu.hk/cyborg/index.php",
+    "interview_url": "https://hkbutube.lib.hkbu.edu.hk/inner.php?id=BTO-010180"
+  },
+  {
+    "track": "grant",
+    "year": "2020/21",
+    "code": "DSG/2021/102",
+    "title": "Mapping Touristic Encounters in Southwest Asia",
+    "pi": "Dr Elvan COBB",
+    "department": "Department of History",
+    "status": "Completed",
+    "project_url": "https://digital.lib.hkbu.edu.hk/ottomantours/",
+    "interview_url": ""
+  },
+  {
+    "track": "grant",
+    "year": "2019/20",
+    "code": "DSG201903",
+    "title": "Historical Geographic Information System Project (Battle of Hong Kong Map 1941)",
+    "pi": "Dr Chi Man KWONG",
+    "department": "Department of History",
+    "status": "Completed",
+    "project_url": "https://digital.lib.hkbu.edu.hk/1941hkbattle/",
+    "interview_url": "http://hkbutube.lib.hkbu.edu.hk/ov/display.php?id=10140"
+  },
+  {
+    "track": "grant",
+    "year": "2019/20",
+    "code": "DSG201902",
+    "title": "Hong Kong Facebook News Analytics Dashboard",
+    "pi": "Dr Stephanie Jean TSANG",
+    "department": "Department of Journalism",
+    "status": "Completed",
+    "project_url": "https://digital.lib.hkbu.edu.hk/fbnews/",
+    "interview_url": "http://hkbutube.lib.hkbu.edu.hk/ov/display.php?id=10141"
+  },
+  {
+    "track": "grant",
+    "year": "2019/20",
+    "code": "DSG201901",
+    "title": "Sounding/Resounding Hong Kong's Chinese Musical Past: Digitization of the Music Office's Chinese Ensemble Music Collection",
+    "pi": "Prof. Helan YANG",
+    "department": "Department of Music",
+    "status": "Completed",
+    "project_url": "https://digital.lib.hkbu.edu.hk/chinesemusic/",
+    "interview_url": "https://hkbutube.lib.hkbu.edu.hk/inner.php?id=BTO-010179"
+  },
+  {
+    "track": "grant",
+    "year": "2018/19",
+    "code": "DSG/1819/104",
+    "title": "An Archive of Materials about Augustine Mok-chiu-yu's Works from the 70s Biweekly to His Community Theatre in the 2010s",
+    "pi": "Dr Wai Yee Jessica YEUNG",
+    "department": "Department of English Language and Literature",
+    "status": "Completed",
+    "project_url": "https://digital.lib.hkbu.edu.hk/mok/",
+    "interview_url": "http://hkbutube.lib.hkbu.edu.hk/ov/display.php?id=10110"
+  },
+  {
+    "track": "grant",
+    "year": "2018/19",
+    "code": "DSG/1819/101",
+    "title": "Hong Kong Traditional Handicraft: Piu Sik Parade",
+    "pi": "Prof. Mee Ping LEUNG",
+    "department": "Academy of Visual Arts",
+    "status": "Completed",
+    "project_url": "https://digital.lib.hkbu.edu.hk/hkcraft/piusik/",
+    "interview_url": ""
+  },
+  {
+    "track": "grant",
+    "year": "2017/18 (2nd round)",
+    "code": "DSG/1718/207",
+    "title": "Men Studies in Greater China",
+    "pi": "Dr Tak Mau Simon CHAN",
+    "department": "Department of Social Work",
+    "status": "Completed",
+    "project_url": "https://digital.lib.hkbu.edu.hk/menstudies/",
+    "interview_url": ""
+  },
+  {
+    "track": "grant",
+    "year": "2017/18 (2nd round)",
+    "code": "DSG/1718/204",
+    "title": "An Oral and Documentary History of Hong Kong Protestant Christians from 1970 to 1997",
+    "pi": "Dr Wai Luen KWOK",
+    "department": "Department of Religion and Philosophy",
+    "status": "Completed",
+    "project_url": "https://digital.lib.hkbu.edu.hk/christianhistory/",
+    "interview_url": "http://hkbutube.lib.hkbu.edu.hk/ov/display.php?id=10109"
+  },
+  {
+    "track": "grant",
+    "year": "2017/18 (1st round)",
+    "code": "DSG/1718/106",
+    "title": "The Art of Chinese Calligraphy by Han Yunshan",
+    "pi": "Dr Chak Kwong Daniel LAU",
+    "department": "Academy of Visual Arts",
+    "status": "Completed",
+    "project_url": "https://digital.lib.hkbu.edu.hk/yunshan/",
+    "interview_url": ""
+  },
+  {
+    "track": "grant",
+    "year": "2017/18 (1st round)",
+    "code": "DSG/1718/104",
+    "title": "The Chinese-English Political Interpreting Corpus (CEPIC)",
+    "pi": "Dr Janice Jun PAN",
+    "department": "Department of English Language and Literature",
+    "status": "Completed",
+    "project_url": "https://digital.lib.hkbu.edu.hk/cepic/",
+    "interview_url": "http://hkbutube.lib.hkbu.edu.hk/ov/display.php?id=10103"
+  },
+  {
+    "track": "grant",
+    "year": "2017/18 (1st round)",
+    "code": "DSG/1718/103",
+    "title": "A Disappearing Art: Bookplates and Hong Kong",
+    "pi": "Dr Sarah Ng",
+    "department": "Academy of Visual Arts",
+    "status": "Completed",
+    "project_url": "https://digital.lib.hkbu.edu.hk/bookplate/",
+    "interview_url": "http://hkbutube.lib.hkbu.edu.hk/ov/display.php?id=10102"
+  },
+  {
+    "track": "grant",
+    "year": "2016/17 (2nd round)",
+    "code": "DSG/1617/204",
+    "title": "Yinheritance? Cultural Celebrations for Ethnic Minority Children's Well-being",
+    "pi": "Dr Angel LAI",
+    "department": "Department of Social Work",
+    "status": "Completed",
+    "project_url": "https://digital.lib.hkbu.edu.hk/yinheritance/",
+    "interview_url": "http://hkbutube.lib.hkbu.edu.hk/ov/display.php?id=10097"
+  },
+  {
+    "track": "grant",
+    "year": "2016/17 (2nd round)",
+    "code": "DSG/1617/202",
+    "title": "Online Catalogue of Keyboard Arrangements of Jean-Baptiste Lully's Music",
+    "pi": "Prof. CHUNG Yu Sum David",
+    "department": "Department of Music",
+    "status": "Completed",
+    "project_url": "https://digital.lib.hkbu.edu.hk/OTCL/",
+    "interview_url": "http://hkbutube.lib.hkbu.edu.hk/ov/display.php?id=10094"
+  },
+  {
+    "track": "grant",
+    "year": "2016/17 (1st round)",
+    "code": "DSG/1617/101",
+    "title": "Materialism Among Children and Youth in China, Hong Kong, Macao, and Singapore",
+    "pi": "Prof. Kara CHAN",
+    "department": "Department of Communication Studies",
+    "status": "Completed",
+    "project_url": "https://digital.lib.hkbu.edu.hk/materialism/",
+    "interview_url": "http://hkbutube.lib.hkbu.edu.hk/ov/display.php?id=10083"
+  },
+  {
+    "track": "grant",
+    "year": "2015/16 (2nd round)",
+    "code": "DSG/1516/202",
+    "title": "Journalistic Role Conception and Role Performance",
+    "pi": "Prof. Colin SPARKS, Prof. HUANG Yu",
+    "department": "Department of Journalism, Office of the Dean of Communication",
+    "status": "Completed",
+    "project_url": "https://digital.lib.hkbu.edu.hk/JRP/",
+    "interview_url": "http://hkbutube.lib.hkbu.edu.hk/ov/display.php?id=10076"
+  },
+  {
+    "track": "grant",
+    "year": "2015/16 (2nd round)",
+    "code": "DSG/1516/201",
+    "title": "Hong Kong Solar Map",
+    "pi": "Dr LO Tek Sheng, Kevin, Dr MAH Ngar-yin, Daphne, and Prof. ZHOU Qiming",
+    "department": "Department of Geography",
+    "status": "Completed",
+    "project_url": "https://digital.lib.hkbu.edu.hk/solarmap/",
+    "interview_url": "http://hkbutube.lib.hkbu.edu.hk/ov/display.php?id=10063"
+  },
+  {
+    "track": "grant",
+    "year": "2015/16 (1st round)",
+    "code": "DSG/1516/104",
+    "title": "Development of the HKBU Chinese Corpus of Political Speeches",
+    "pi": "Prof. Kathleen AHRENS",
+    "department": "Language Centre",
+    "status": "Completed",
+    "project_url": "https://digital.lib.hkbu.edu.hk/corpus/",
+    "interview_url": ""
+  },
+  {
+    "track": "grant",
+    "year": "2015/16 (1st round)",
+    "code": "DSG/1516/102",
+    "title": "Primary Archival Documents on the Documentary Film in India (1948-1975): Digitizing, Preserving and Developing Online Visualization Tools",
+    "pi": "Dr Camille DEPREZ",
+    "department": "Academy of Film",
+    "status": "Completed",
+    "project_url": "https://digital.lib.hkbu.edu.hk/documentary-film/",
     "interview_url": ""
   }
 ]
