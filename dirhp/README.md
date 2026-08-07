@@ -44,6 +44,30 @@ In the **Page JS** embed (give it `.u-d-none` so it doesn't render as an alert b
 
 `dsg.js` is only needed on the two pages that carry a project list.
 
+## Class names the JS owns — do not rename these
+
+Style them in Webflow all you like, but the **names** are a contract with the copied
+design-system scripts:
+
+| Class | Toggled by | Where |
+|---|---|---|
+| `cc-active` | `tabs.js` | combo on `.tabs-link`, the `[data-tabs-link]` element |
+| `tabs-pane` | `tabs.css` | hides the pane via `[aria-hidden="true"]` |
+
+`tabs.js` hardcodes `cc-active`. A class named `is-current` on a tab never moves, because
+nothing toggles it — the tab bar then looks frozen on the first tab. (`is-current` **is** right
+for the L1 subnav, which has no JS: you set it by hand on each page's own link, alongside
+`aria-current="page"`.)
+
+Two more things that silently kill the tabs:
+
+- **`pointer-events: none` anywhere on `.tabs-menu` or its children.** Clicks never reach the
+  buttons. No error, no clue.
+- **`overflow-x: auto` on `.tabs-menu_wrapper`.** `tabs.js` calls `wrapper.scrollTo()` and
+  `link.scrollIntoView()` on every activation; with a scroll container present, the bar and
+  sometimes the page jump on each click. Let the tab bar wrap instead
+  (`.tabs-menu { flex-wrap: wrap }`).
+
 ## The token bridge is temporary
 
 `tabs.css` and `accordion.css` resolve through the design system's token names
