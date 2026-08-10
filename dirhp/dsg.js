@@ -72,6 +72,21 @@
     return el;
   }
 
+  /* Swaps a title <a> for a plain <span> (unfocusable, no dead href)
+     and tags it .not-link so the Designer's link styling — colour,
+     underline — doesn't apply to text that isn't actually clickable. */
+  function markAsNotLink(el, text) {
+    if (el.tagName !== "A") {
+      el.classList.add("not-link");
+      return;
+    }
+    var span = document.createElement("span");
+    span.className = el.className + " not-link";
+    span.textContent = text;
+    span.setAttribute("data-dsg-field", "title");
+    el.parentNode.replaceChild(span, el);
+  }
+
   function buildRow(template, project) {
     var row = template.content.firstElementChild.cloneNode(true);
 
@@ -90,12 +105,8 @@
         title.setAttribute("href", project.project_url);
         title.setAttribute("target", "_blank");
         title.setAttribute("rel", "noopener");
-      } else if (title.tagName === "A") {
-        var span = document.createElement("span");
-        span.className = title.className;
-        span.textContent = project.title;
-        span.setAttribute("data-dsg-field", "title");
-        title.parentNode.replaceChild(span, title);
+      } else {
+        markAsNotLink(title, project.title);
       }
     }
 
