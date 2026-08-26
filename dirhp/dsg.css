@@ -320,6 +320,35 @@ ol li::marker {
   }
 }
 
+/* ── Walkthrough video ───────────────────────────────────────
+ * Sits where the workflow diagram image used to be, and uses that
+ * image as its poster. The poster is wider than 16:9, so contain
+ * fits it whole rather than cropping the diagram; the letterbox
+ * bars take the page background.
+ *
+ * webflow.css gives img a max-width but not video, so the size is
+ * set here rather than inherited.
+ * ──────────────────────────────────────────────────────────── */
+.dsg_video {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+  background-color: var(--neutral--200, #eee);
+}
+
+/* Soften the browser's own scrim behind the controls so the bottom
+   of the diagram stays readable through it. This reaches into the
+   player's shadow DOM: Chrome, Edge and Safari honour it, Firefox
+   ignores it and draws its own (lighter) control bar. */
+.dsg_video::-webkit-media-controls-panel {
+  background-image: linear-gradient(to top,
+    rgba(0, 0, 0, .4) 0%,
+    rgba(0, 0, 0, .24) 40%,
+    rgba(0, 0, 0, 0) 100%);
+}
+
 /* ── Print ───────────────────────────────────────────────────
  * Applicants print these guidelines. Open every accordion and
  * show every tab pane so nothing is silently omitted.
