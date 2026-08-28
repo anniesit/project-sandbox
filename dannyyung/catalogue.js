@@ -21,8 +21,11 @@
  *   window.dyCatalogue.getQuery(rootEl)  -> the current UI selection
  *
  * Events (bubbling, on the [data-catalogue] root):
- *   "dy:query"  detail = { categories, yearFrom, yearTo, location, director,
+ *   "dy:query"  detail = { category, yearFrom, yearTo, location, director,
  *                          q, sort, page }
+ *     category is a SINGLE value, not a list — the category facet is a radio
+ *     group. "all" means no filter; "other" means records whose categoryKey is
+ *     empty (6 of the 88 sample records, mostly the 其他-YYYY buckets).
  *     Fired whenever the user touches a control. The backend listens, refetches
  *     and calls render() again. The component does NOT filter on its own —
  *     except inside the MOCK DRIVER below.
@@ -33,7 +36,7 @@
  *     "title": "媒介事件一",          // zh-Hant; falls back to titleEn when empty
  *     "titleEn": "Media Event 1",
  *     "category": "劇場",             // display label
- *     "categoryKey": "theatre-production",  // stable key, matches the checkboxes
+ *     "categoryKey": "theatre-production",  // stable key, matches the radio values
  *     "year": 1982,
  *     "location": "香港",
  *     "venue": "香港藝術中心演奏廳",
@@ -50,7 +53,8 @@
  *   [data-field=title|category|year|location|director]   text sinks: a SPAN
  *                                     inside each td, never a <p> — see below
  *   [data-facet=category|year|location|director]         facet wrappers
- *   [data-facet-value]                category checkbox -> categoryKey
+ *   [data-facet-value]                category radio -> categoryKey; plus the
+ *                                     two synthetic values "all" and "other"
  *   [data-year-from] / [data-year-to] numeric year inputs
  *   [data-search]                     search input
  *   [data-sort]                       the sort .dropdown
@@ -231,13 +235,13 @@
   /* ---------- reading the controls ---------- */
 
   function getQuery(root, page) {
-    var cats = [];
-    var boxes = root.querySelectorAll('[data-facet="category"] input[data-facet-value]');
-    for (var i = 0; i < boxes.length; i++) {
-      if (boxes[i].checked) cats.push(boxes[i].getAttribute("data-facet-value"));
+    var category = "all";
+    var radios = root.querySelectorAll('[data-facet="category"] input[data-facet-value]');
+    for (var i = 0; i < radios.length; i++) {
+      if (radios[i].checked) category = radios[i].getAttribute("data-facet-value");
     }
     return {
-      categories: cats,
+      category: category,
       yearFrom: num(root.querySelector("[data-year-from]")),
       yearTo: num(root.querySelector("[data-year-to]")),
       location: selected(root, '[data-facet="location"]'),
@@ -382,7 +386,13 @@
   }
 
   function mockMatch(item, q) {
-    if (q.categories.length && q.categories.indexOf(item.categoryKey) < 0) return false;
+    /* "other" is the escape hatch for records the client left uncategorised —
+       it matches an EMPTY categoryKey, not a category called "other". */
+    if (q.category === "other") {
+      if (item.categoryKey) return false;
+    } else if (q.category && q.category !== "all") {
+      if (item.categoryKey !== q.category) return false;
+    }
     if (q.yearFrom && (!item.year || item.year < q.yearFrom)) return false;
     if (q.yearTo && (!item.year || item.year > q.yearTo)) return false;
     if (q.location !== "all" && item.location !== q.location) return false;

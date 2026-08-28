@@ -42,7 +42,18 @@
       .table-cell { padding:.5rem .75rem; text-align:start; vertical-align:top;
                     border-bottom:1px solid #cccabf; }
       .table-row.cc-head .table-cell { font-size:.9rem; opacity:.7; }
-      .checkbox { display:flex; align-items:center; gap:.5rem; cursor:pointer; }
+      .radio { position:relative; display:flex; align-items:center; gap:.5rem; cursor:pointer; }
+      /* the real site hides the native input this way; mirrored so the
+         harness does not show a stray browser radio next to the control */
+      .radio-input { position:absolute; opacity:0; pointer-events:none; }
+      /* square, matching the site: Border Radius/SM is 0rem */
+      .radio-control { display:inline-flex; width:1rem; height:1rem; flex:none;
+                       align-items:center; justify-content:center;
+                       border:1px solid #cccabf; border-radius:0; }
+      .radio-input:checked + .radio-control { border-color:#9c331b; }
+      .radio-control::after { content:""; width:55%; height:55%; border-radius:0;
+                              background:#d14424; opacity:0; }
+      .radio-input:checked + .radio-control::after { opacity:1; }
       .pagination { display:flex; flex-wrap:wrap; justify-content:center; align-items:center;
                     gap:.25rem; margin-top:2rem; }
       .pagination-btn { min-width:2.5rem; padding:.5rem .75rem; border:1px solid #cccabf;
@@ -70,10 +81,12 @@
           <div class="facet" data-facet="category">
             <div class="eyebrow cc-facet">類別</div>
             <div class="facet-options">
-              <label class="checkbox"><input class="checkbox-input" type="checkbox" data-facet-value="theatre-production" /><span class="checkbox-label">劇場</span></label>
-              <label class="checkbox"><input class="checkbox-input" type="checkbox" data-facet-value="visual-arts" /><span class="checkbox-label">視覺藝術</span></label>
-              <label class="checkbox"><input class="checkbox-input" type="checkbox" data-facet-value="event" /><span class="checkbox-label">活動</span></label>
-              <label class="checkbox"><input class="checkbox-input" type="checkbox" data-facet-value="performing-art" /><span class="checkbox-label">表演藝術</span></label>
+              <label class="radio"><input class="radio-input" type="radio" name="category" checked data-facet-value="all" /><span class="radio-control" aria-hidden="true"></span><span class="radio-label">全選</span></label>
+              <label class="radio"><input class="radio-input" type="radio" name="category" data-facet-value="theatre-production" /><span class="radio-control" aria-hidden="true"></span><span class="radio-label">劇場</span></label>
+              <label class="radio"><input class="radio-input" type="radio" name="category" data-facet-value="visual-arts" /><span class="radio-control" aria-hidden="true"></span><span class="radio-label">視覺藝術</span></label>
+              <label class="radio"><input class="radio-input" type="radio" name="category" data-facet-value="event" /><span class="radio-control" aria-hidden="true"></span><span class="radio-label">活動</span></label>
+              <label class="radio"><input class="radio-input" type="radio" name="category" data-facet-value="performing-art" /><span class="radio-control" aria-hidden="true"></span><span class="radio-label">表演藝術</span></label>
+              <label class="radio"><input class="radio-input" type="radio" name="category" data-facet-value="other" /><span class="radio-control" aria-hidden="true"></span><span class="radio-label">其他</span></label>
             </div>
           </div>
 

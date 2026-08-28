@@ -19,7 +19,7 @@ Follows the site-wide convention, inherited by duplicating the `Template` page:
   main.page-main#main
     section.section
       .container
-        h1                    目錄
+        .catalogue-head       h1 目錄  +  Theme Toggle (component)
         .catalogue-layout[data-catalogue]   grid: 16rem sidebar + results
           aside.catalogue-facets
           .catalogue-results
@@ -38,7 +38,7 @@ Markup was copied from the site's own Components page, not invented:
 | Thing | Markup |
 |---|---|
 | Table | `.table-wrap` > `table.table` > `thead.table-head` > `tr.table-row.cc-head` > `th.table-cell[scope=col]`; `tbody.table-body` > `tr.table-row` > `td.table-cell` |
-| Checkbox | `label.checkbox` > `input.checkbox-input[type=checkbox]` + `span.checkbox-control[aria-hidden]` > `svg.checkbox-icon` > `path.checkbox-icon-check` + `span.checkbox-label` |
+| Radio | `label.radio` > `input.radio-input[type=radio][name=category]` + `span.radio-control[aria-hidden]` + `span.radio-label`. The indicator is the stylesheet's `.radio-control::after`, not markup |
 | Dropdown | `.dropdown[data-dropdown]` > `button.dropdown-trigger[data-dropdown-trigger]` (> `span.dropdown-trigger-label[data-dropdown-value]` + `svg.dropdown-trigger-icon`) + `ul.dropdown-list[role=listbox][data-dropdown-list]` > `li.dropdown-option[role=option][data-value][data-dropdown-option]` > `span.dropdown-option-label` |
 | Text input | `.input-group` > `label.input-label[for]` + `input.input` |
 
@@ -50,7 +50,7 @@ is a `DOM` element with an explicit tag.
 Base: `catalogue-layout`, `catalogue-facets`, `catalogue-results`,
 `catalogue-toolbar`, `catalogue-sort`, `facet`, `facet-options`,
 `facet-date-range`, `pagination`, `pagination-btn`, `catalogue-empty`,
-`catalogue-script`.
+`catalogue-script`, `catalogue-head`.
 
 Combos: `.pagination-btn.cc-current`, `.eyebrow.cc-facet`,
 `.input-group.cc-search`, `.input.cc-year`, `.paragraph-sm.cc-count`.
@@ -93,8 +93,11 @@ window.dyCatalogue.getQuery(rootEl);
 Every user action fires a bubbling `dy:query` event on `[data-catalogue]`:
 
 ```js
-detail = { categories, yearFrom, yearTo, location, director, q, sort, page }
+detail = { category, yearFrom, yearTo, location, director, q, sort, page }
 ```
+
+`category` is a **single** value, not a list — the facet is a radio group.
+`"all"` means no filter; `"other"` matches records whose `categoryKey` is empty.
 
 The component filters nothing on its own.
 
@@ -219,6 +222,84 @@ renderer hook (`data-field`, `data-count`, `data-empty`, `data-dropdown-value`,
 **If a text element is added to this page later, use the whtml route.** Adding a
 Paragraph reintroduces the margin and quietly shifts the layout.
 
+## Theme, and the category facet
+
+### Theme toggle
+
+The design system ships a theme system — `color-scheme: light dark`, a
+`u-mode-light` / `u-mode-dark` class on `<html>`, and a Theme Toggle component.
+Nothing was ever set to light-only; the toggle simply had not been placed on a
+page. It now sits in `.catalogue-head`, next to the page title.
+
+Two things had to be true for it to work, and one of them was not:
+
+- The Theme Toggle component must be **on the page**. It is now.
+- `DS_CONFIG.themeKey` must be unique per project. It was still the starter's
+  placeholder `'CHANGEME-theme'`, now `'danny-yung-archive-theme'`. localStorage
+  is shared per host, so two projects on one hostname that both keep the
+  placeholder overwrite each other's theme choice.
+
+`localeFolder` is now set to `'en'` in the same config, since this project is
+zh-Hant first — Chinese at the root, English in `/en/`, the inverse of the
+design system default.
+
+The toggle stores the viewer's choice, so it is a genuine two-theme demo rather
+than a preview trick. Its permanent home is probably the Nav (it would then
+appear on every page); it is on the catalogue page for now because editing the
+shared Nav component definition has site-wide blast radius.
+
+### Why the checkbox ticks were invisible
+
+Not a markup bug — the classes and structure matched the design system exactly.
+Two design system rules combine badly:
+
+```css
+.checkbox-input:checked + .checkbox-control { background-color: var(--primary--accent-dark); }
+```
+
+and the tick path is drawn with `stroke="currentColor"`. `currentColor` inside
+the control inherits from the label, which is `Primary/Text` — near-black in
+light mode. So the tick is painted **near-black on `#9c331b` dark brick**: it is
+there, but the contrast is so low it reads as no tick at all.
+
+The fix belongs upstream in `design-system/components/forms/forms.css` — the
+checked control needs `color: var(--primary--text-invert)` so the tick flips to
+the light ink. **Not done here**, because that file is shared by every project
+and changing it is its own deliberate task. It affects any project using the
+design system's checkboxes.
+
+### Category facet is now a radio group
+
+Six single-select options, replacing four checkboxes:
+
+| Label | `data-facet-value` | Matches |
+|---|---|---|
+| 全選 (default) | `all` | everything, 88 |
+| 劇場 | `theatre-production` | 69 |
+| 視覺藝術 | `visual-arts` | 4 |
+| 活動 | `event` | 8 |
+| 表演藝術 | `performing-art` | 1 |
+| 其他 | `other` | 6 — records with **no** category in the client data |
+
+Verified against the sample: the five real categories sum to 88.
+
+`其他` is the honest home for discrepancy 2 below — the five `其他-YYYY` buckets
+plus `創意中國－榮念曾與香港的藝術政治`. They are now reachable and visible rather
+than sitting in the list with an em dash, but the underlying question (should
+the `其他-` records be in a public catalogue at all?) is still open.
+
+### Radios are square, site-wide
+
+`.radio-control` had `border-radius: 50%`. It now uses `Border Radius/SM`, the
+same token the checkbox control uses — which is `0rem`, so the radio is a true
+square and the two controls match. The stylesheet also draws the inner
+indicator as a circle (`.radio-control::after { border-radius: 50% }`), so that
+is overridden to the same token; otherwise it would be a dot inside a box.
+
+This is a change to a **design system class on this site**, not a combo — it was
+asked for site-wide, and a combo would only square the radios that opted in.
+It does not touch the Mast Fork starter, so other projects keep round radios.
+
 ## Discrepancies between the client data and the wireframe
 
 Found while building. Each needs a decision.
@@ -232,8 +313,9 @@ Found while building. Each needs a decision.
 2. **Six records have no category at all.** Five are `其他-YYYY`
    ("Non-project-based-1996/1998/2008/2011/2020") — these look like catch-all
    buckets rather than works. The sixth is `創意中國－榮念曾與香港的藝術政治`.
-   They currently appear in the table with an em dash. Decide whether the
-   `其他-` records belong in a public catalogue at all.
+   They appear in the table with an em dash, and are now reachable through the
+   其他 radio option. Still decide whether the `其他-` records belong in a
+   public catalogue at all.
 
 3. **Year range is 1974–2020, not 1974–2022.** The wireframe's slider is
    labelled 1974–2022. The inputs are set to the real range.
