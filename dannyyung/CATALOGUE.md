@@ -169,6 +169,56 @@ facet matches inside the multi-valued array (selecting 胡恩威 returns the 5 w
 where he is one of several directors); pagination repaints with the ellipsis
 window; the template row is lifted out of the DOM at runtime.
 
+## No `<p>` anywhere on this page
+
+The design system gives `p` a `--bottom-margin` token (`1em` on body copy,
+`0.2–0.6em` on headings). That margin fights every gap set on a flex or grid
+parent, so the page carries **no paragraph elements at all** — text sits
+directly inside a `span` or `div`, which is what the design system's own
+dropdown and checkbox markup already does.
+
+Getting there is not obvious, because three of the four routes fail:
+
+| Route | Result |
+|---|---|
+| `data_element_builder` type `Paragraph` | renders `<p>` — the thing being avoided |
+| `data_element_builder` type `TextBlock` + `set_text` | **silently no-ops.** Creates a `div` holding Webflow's placeholder "This is some text inside of a div block."; the element then reports as a plain `Block` and `data_element_tool > set_text` on it errors "This element doesn't support text" |
+| `data_whtml_builder` with bare text, no tag | rejected: "No elements found in WHTML" |
+| `data_whtml_builder` with a single root element | **works** — `<span class="checkbox-label">劇場</span>` becomes a real `Span` with a String child, keeping its classes and attributes |
+
+So the recipe is: build the replacement with `data_whtml_builder`
+(`creation_position: "before"`, anchored on the element being replaced), then
+remove the old one. Two further constraints:
+
+- **One root element per action.** Two siblings in one `html` string is rejected:
+  "Expected single root element but found 2 elements."
+- **`<label>` is coerced** into Webflow's Field Label widget and rejected with
+  "Field Label can only be placed in a Form", which aborts the whole batch
+  atomically. The two `input-label` elements were therefore left as
+  `data_element_builder` `DOM` elements with `dom_tag: "label"` (which does not
+  coerce), and only the paragraph inside each was swapped for a span.
+
+Where the replacement went:
+
+| Was | Now |
+|---|---|
+| `p.eyebrow.cc-facet` ×4 | `div.eyebrow.cc-facet` |
+| `span.checkbox-label > p` ×4 | `span.checkbox-label` with direct text |
+| `span.dropdown-trigger-label > p` ×3 | `span.dropdown-trigger-label` with direct text |
+| `span.dropdown-option-label > p` ×5 | `span.dropdown-option-label` with direct text |
+| `label.input-label > p` ×2 | `label.input-label > span` |
+| `th.table-cell > p` ×5 | `th.table-cell > span` |
+| `td.table-cell > p[data-field]` ×5 | `td.table-cell > span[data-field]` |
+| `p.paragraph-sm.cc-count` | `div.paragraph-sm.cc-count` |
+| `p.catalogue-empty` | `div.catalogue-empty` |
+
+Verified: 31 paragraphs replaced, `[data-catalogue] p` now returns 0, and every
+renderer hook (`data-field`, `data-count`, `data-empty`, `data-dropdown-value`,
+`data-dropdown-option-label`) survived.
+
+**If a text element is added to this page later, use the whtml route.** Adding a
+Paragraph reintroduces the margin and quietly shifts the layout.
+
 ## Discrepancies between the client data and the wireframe
 
 Found while building. Each needs a decision.

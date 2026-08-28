@@ -47,7 +47,8 @@
  *   [data-catalogue]                  the root; everything is queried inside it
  *   [data-rows]                       tbody rows are rendered into
  *   [data-row-template]               tr cloned per record, removed at runtime
- *   [data-field=title|category|year|location|director]   text sinks in each td
+ *   [data-field=title|category|year|location|director]   text sinks: a SPAN
+ *                                     inside each td, never a <p> — see below
  *   [data-facet=category|year|location|director]         facet wrappers
  *   [data-facet-value]                category checkbox -> categoryKey
  *   [data-year-from] / [data-year-to] numeric year inputs
@@ -60,6 +61,13 @@
  * Dropdowns reuse the design system's markup (.dropdown / .dropdown-trigger /
  * .dropdown-list / .dropdown-option). Option <li>s for location and director
  * are generated from the data, so no one maintains them by hand.
+ *
+ * NO <p> ON THIS PAGE. The design system gives p a --bottom-margin token, which
+ * fights every gap set on a flex/grid parent. Text sits directly in a span or
+ * div. This file only ever sets textContent on existing nodes, so it stays
+ * correct either way — but anything added to the Webflow page by hand must use
+ * data_whtml_builder (a single root element with direct text), not a Paragraph.
+ * See CATALOGUE.md for why the other three routes fail.
  *
  * Dependency-free, multi-instance safe, writes no inline element styles.
  * ============================================================ */

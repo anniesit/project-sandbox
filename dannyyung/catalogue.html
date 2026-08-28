@@ -42,7 +42,6 @@
       .table-cell { padding:.5rem .75rem; text-align:start; vertical-align:top;
                     border-bottom:1px solid #cccabf; }
       .table-row.cc-head .table-cell { font-size:.9rem; opacity:.7; }
-      .table-cell p { margin:0; }
       .checkbox { display:flex; align-items:center; gap:.5rem; cursor:pointer; }
       .pagination { display:flex; flex-wrap:wrap; justify-content:center; align-items:center;
                     gap:.25rem; margin-top:2rem; }
@@ -57,11 +56,11 @@
     </style>
   </head>
   <body>
-    <p class="note">
+    <div class="note">
       <strong>Behaviour harness.</strong> Same <code>data-*</code> markup as the Webflow
       catalogue page, with throwaway CSS so <code>catalogue.js</code> can be exercised
       locally. Design happens in Webflow, not here.
-    </p>
+    </div>
 
     <div class="wrap">
       <h1>目錄</h1>
@@ -69,7 +68,7 @@
       <div class="catalogue-layout" data-catalogue data-src="./sample-data/catalogue-sample.json">
         <aside class="catalogue-facets" aria-label="篩選條件">
           <div class="facet" data-facet="category">
-            <p class="eyebrow cc-facet">類別</p>
+            <div class="eyebrow cc-facet">類別</div>
             <div class="facet-options">
               <label class="checkbox"><input class="checkbox-input" type="checkbox" data-facet-value="theatre-production" /><span class="checkbox-label">劇場</span></label>
               <label class="checkbox"><input class="checkbox-input" type="checkbox" data-facet-value="visual-arts" /><span class="checkbox-label">視覺藝術</span></label>
@@ -79,7 +78,7 @@
           </div>
 
           <div class="facet" data-facet="year">
-            <p class="eyebrow cc-facet">年份</p>
+            <div class="eyebrow cc-facet">年份</div>
             <div class="facet-date-range">
               <input class="input cc-year" type="number" inputmode="numeric" min="1974" max="2020" placeholder="1974" aria-label="起始年份" data-year-from />
               <span aria-hidden="true">–</span>
@@ -88,7 +87,7 @@
           </div>
 
           <div class="facet" data-facet="location">
-            <p class="eyebrow cc-facet">地點</p>
+            <div class="eyebrow cc-facet">地點</div>
             <div class="dropdown" data-dropdown>
               <button class="dropdown-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="篩選地點" data-dropdown-trigger>
                 <span class="dropdown-trigger-label" data-dropdown-value>全部</span>
@@ -101,7 +100,7 @@
           </div>
 
           <div class="facet" data-facet="director">
-            <p class="eyebrow cc-facet">導演</p>
+            <div class="eyebrow cc-facet">導演</div>
             <div class="dropdown" data-dropdown>
               <button class="dropdown-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="篩選導演" data-dropdown-trigger>
                 <span class="dropdown-trigger-label" data-dropdown-value>全部</span>
@@ -136,32 +135,32 @@
             </div>
           </div>
 
-          <p class="paragraph-sm cc-count" data-count aria-live="polite">共 88 項</p>
+          <div class="paragraph-sm cc-count" data-count aria-live="polite">共 88 項</div>
 
           <div class="table-wrap">
             <table class="table">
               <thead class="table-head">
                 <tr class="table-row cc-head">
-                  <th class="table-cell" scope="col"><p>標題</p></th>
-                  <th class="table-cell" scope="col"><p>類別</p></th>
-                  <th class="table-cell" scope="col"><p>年份</p></th>
-                  <th class="table-cell" scope="col"><p>地點</p></th>
-                  <th class="table-cell" scope="col"><p>導演</p></th>
+                  <th class="table-cell" scope="col"><span>標題</span></th>
+                  <th class="table-cell" scope="col"><span>類別</span></th>
+                  <th class="table-cell" scope="col"><span>年份</span></th>
+                  <th class="table-cell" scope="col"><span>地點</span></th>
+                  <th class="table-cell" scope="col"><span>導演</span></th>
                 </tr>
               </thead>
               <tbody class="table-body" data-rows>
                 <tr class="table-row" data-row-template>
-                  <td class="table-cell"><p data-field="title">標題</p></td>
-                  <td class="table-cell"><p data-field="category">類別</p></td>
-                  <td class="table-cell"><p data-field="year">1981</p></td>
-                  <td class="table-cell"><p data-field="location">香港</p></td>
-                  <td class="table-cell"><p data-field="director">榮念曾</p></td>
+                  <td class="table-cell"><span data-field="title">標題</span></td>
+                  <td class="table-cell"><span data-field="category">類別</span></td>
+                  <td class="table-cell"><span data-field="year">1981</span></td>
+                  <td class="table-cell"><span data-field="location">香港</span></td>
+                  <td class="table-cell"><span data-field="director">榮念曾</span></td>
                 </tr>
               </tbody>
             </table>
           </div>
 
-          <p class="catalogue-empty" data-empty hidden>沒有符合條件的作品。</p>
+          <div class="catalogue-empty" data-empty hidden>沒有符合條件的作品。</div>
           <nav class="pagination" data-pagination aria-label="分頁"></nav>
         </div>
       </div>
