@@ -1,0 +1,1635 @@
+{
+ "items": [
+  {
+   "id": "DYP-000001",
+   "title": "",
+   "titleEn": "ID123",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1974,
+   "location": "紐約",
+   "venue": "",
+   "directors": [],
+   "materialTypes": [
+    "演出照片"
+   ],
+   "mediaCount": 4,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000002",
+   "title": "為人民服務",
+   "titleEn": "To Serve The People",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1977,
+   "location": "",
+   "venue": "",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出照片"
+   ],
+   "mediaCount": 1,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000003",
+   "title": "旅程",
+   "titleEn": "Journey",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1978,
+   "location": "",
+   "venue": "",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出錄像"
+   ],
+   "mediaCount": 1,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000004",
+   "title": "入門需知",
+   "titleEn": "Door",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1979,
+   "location": "",
+   "venue": "",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出錄像"
+   ],
+   "mediaCount": 1,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000005",
+   "title": "椅子",
+   "titleEn": "Chair",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1979,
+   "location": "",
+   "venue": "",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出錄像"
+   ],
+   "mediaCount": 1,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000006",
+   "title": "破 記錄一號",
+   "titleEn": "Broken Record #1",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1979,
+   "location": "香港",
+   "venue": "香港藝術中心畫廊",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "手稿"
+   ],
+   "mediaCount": 2,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000007",
+   "title": "中國旅程之一－意圖",
+   "titleEn": "Journey to the East Part 1: Ideogram",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1980,
+   "location": "香港",
+   "venue": "香港藝術中心麥高利小劇場",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出照片",
+    "演出錄像"
+   ],
+   "mediaCount": 4,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000009",
+   "title": "中國旅程之二－故事",
+   "titleEn": "Journey to the East Part 2: Past Events",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1980,
+   "location": "香港",
+   "venue": "香港藝術中心壽臣劇院",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出照片"
+   ],
+   "mediaCount": 1,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000010",
+   "title": "中國旅程之三－問題",
+   "titleEn": "Journey to the East Part 3: Questions",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1980,
+   "location": "香港",
+   "venue": "香港藝術中心壽臣劇院",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出照片"
+   ],
+   "mediaCount": 6,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000011",
+   "title": "中國旅程之四－詞法",
+   "titleEn": "Journey to the East Part 4: Morphology",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1981,
+   "location": "香港",
+   "venue": "香港藝術中心麥高利小劇場",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出錄像"
+   ],
+   "mediaCount": 1,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000012",
+   "title": "大路",
+   "titleEn": "The Road",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1981,
+   "location": "香港",
+   "venue": "香港大會堂展覽廳",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出照片",
+    "文章",
+    "媒體文章"
+   ],
+   "mediaCount": 14,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000016",
+   "title": "中國旅程五 - 香港‧台北",
+   "titleEn": "Journey to the East Part5: Hong Kong - Taipei",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1982,
+   "location": "台北",
+   "venue": "台北國軍英雄紀念館",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出照片",
+    "媒體文章"
+   ],
+   "mediaCount": 2,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000017",
+   "title": "媒介事件一",
+   "titleEn": "Media Event 1",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1982,
+   "location": "香港",
+   "venue": "香港藝術中心演奏廳",
+   "directors": [
+    "沈聖德",
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出照片",
+    "場刊"
+   ],
+   "mediaCount": 2,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000018",
+   "title": "媒介事件二",
+   "titleEn": "Media Event 2",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1982,
+   "location": "香港",
+   "venue": "香港藝術中心演奏廳",
+   "directors": [
+    "沈聖德",
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "場刊"
+   ],
+   "mediaCount": 1,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000019",
+   "title": "媒介事件三－個體",
+   "titleEn": "Media Event 3 - Individual",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1982,
+   "location": "香港",
+   "venue": "香港藝術中心歌德學院演奏廳",
+   "directors": [
+    "沈聖德",
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "場刊",
+    "演出錄像"
+   ],
+   "mediaCount": 2,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000021",
+   "title": "媒介事件四－制度",
+   "titleEn": "Media Event 4 - System",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1982,
+   "location": "香港",
+   "venue": "Auditorium, Goethe Institut, Hong Kong Arts Centre",
+   "directors": [
+    "沈聖德",
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出錄像"
+   ],
+   "mediaCount": 1,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000022",
+   "title": "百年之孤寂第三年－長征",
+   "titleEn": "The Third Year of One Hundred Years of Solitude - The Long March",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1985,
+   "location": "香港",
+   "venue": "香港高山劇場",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出錄像"
+   ],
+   "mediaCount": 1,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000023",
+   "title": "錄影遊戲",
+   "titleEn": "Video Game",
+   "category": "視覺藝術",
+   "categoryKey": "visual-arts",
+   "year": 1986,
+   "location": "",
+   "venue": "",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "錄像藝術"
+   ],
+   "mediaCount": 1,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000024",
+   "title": "錄影窗",
+   "titleEn": "Video Window",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1987,
+   "location": "",
+   "venue": "",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出錄像"
+   ],
+   "mediaCount": 1,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000025",
+   "title": "百年之孤寂第四年－拾月",
+   "titleEn": "The Fourth Year of One Hundred Years of Solitude - October",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1987,
+   "location": "香港",
+   "venue": "香港沙田大會堂演奏廳",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出錄像"
+   ],
+   "mediaCount": 2,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000027",
+   "title": "拾日譚",
+   "titleEn": "Decameron",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1988,
+   "location": "台北",
+   "venue": "台北國立藝術館",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "媒體文章"
+   ],
+   "mediaCount": 4,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000031",
+   "title": "百年之孤寂第五年－最後光景",
+   "titleEn": "The Fifth Year of One Hundred Years of Solitude - The Final Stage",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1989,
+   "location": "日本",
+   "venue": "日本富山縣利賀野外劇場",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "場刊"
+   ],
+   "mediaCount": 6,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000032",
+   "title": "",
+   "titleEn": "Hong Kong Only Something That Is About To Disappear Becomes An Image",
+   "category": "視覺藝術",
+   "categoryKey": "visual-arts",
+   "year": 1990,
+   "location": "",
+   "venue": "",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "錄像藝術"
+   ],
+   "mediaCount": 1,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000033",
+   "title": "列女傳（潔本）之劉索拉",
+   "titleEn": "Chronicle of Women - Liu Sola In Concert",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1991,
+   "location": "香港",
+   "venue": "香港文化中心劇場",
+   "directors": [
+    "何秀萍",
+    "榮念曾",
+    "劉索拉"
+   ],
+   "materialTypes": [
+    "演出照片"
+   ],
+   "mediaCount": 28,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000034",
+   "title": "香港樣板戲",
+   "titleEn": "The Revolutionary Opera",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1991,
+   "location": "香港",
+   "venue": "香港文化中心大劇院",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出照片"
+   ],
+   "mediaCount": 40,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000035",
+   "title": "中國文化深層結構－廣場",
+   "titleEn": "The Deep Structure of Chinese Culture - The Square",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1991,
+   "location": "香港",
+   "venue": "香港沙田大會堂演奏廳",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出照片"
+   ],
+   "mediaCount": 19,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000036",
+   "title": "百年之孤寂第七年－海市蜃樓（1992/06）（東京）",
+   "titleEn": "The Seventh Year of One Hundred Years of Solitude - Mirage (1992/06)(Tokyo)",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1992,
+   "location": "日本",
+   "venue": "東京水戶藝術館",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出錄像",
+    "演出照片"
+   ],
+   "mediaCount": 5,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000038",
+   "title": "百年之孤寂第七年－海市蜃樓（1992/07）（香港）",
+   "titleEn": "The Seventh Year of One Hundred Years of Solitude - Mirage (1992/07)(Hong Kong)",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1992,
+   "location": "香港",
+   "venue": "香港大會堂音樂廳",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出照片"
+   ],
+   "mediaCount": 51,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000039",
+   "title": "百年之孤寂第七年－海市蜃樓（1992/09）（香港）",
+   "titleEn": "The Seventh Year of One Hundred Years of Solitude - Mirage (1992/09)(Hong Kong)",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1992,
+   "location": "香港",
+   "venue": "香港沙田大會堂演奏廳",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出照片"
+   ],
+   "mediaCount": 13,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000040",
+   "title": "行行企企",
+   "titleEn": "Idleness on Parade",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1993,
+   "location": "香港",
+   "venue": "香港公園花園廣場",
+   "directors": [
+    "集體創作",
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出照片"
+   ],
+   "mediaCount": 16,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000041",
+   "title": "香港二三事",
+   "titleEn": "2 or 3 Scenes… Hong Kong",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1993,
+   "location": "香港",
+   "venue": "香港沙田大會堂演奏廳",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出照片",
+    "舞台"
+   ],
+   "mediaCount": 21,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000042",
+   "title": "東方紅",
+   "titleEn": "East is Red",
+   "category": "視覺藝術",
+   "categoryKey": "visual-arts",
+   "year": 1993,
+   "location": "",
+   "venue": "",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "錄像藝術"
+   ],
+   "mediaCount": 1,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000043",
+   "title": "審判卡夫卡之拍案驚奇",
+   "titleEn": "The Trial",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1994,
+   "location": "香港",
+   "venue": "香港文化中心劇場",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出照片",
+    "宣傳資料"
+   ],
+   "mediaCount": 27,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000044",
+   "title": "進念九四出巡﹣中國旅程之八：哩度哩度過渡過渡",
+   "titleEn": "Journey To The East Part 8: Here Here There There",
+   "category": "表演藝術",
+   "categoryKey": "performing-art",
+   "year": 1994,
+   "location": "香港",
+   "venue": "路線：由紅磡火車站經尖東海濱公園至香港文化中心",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出照片",
+    "活動照片"
+   ],
+   "mediaCount": 50,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000045",
+   "title": "香港二三事",
+   "titleEn": "\"Two or Three Things\" You Want to Know about Hong Kong",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1994,
+   "location": "比利時",
+   "venue": "比利時露娜廣場",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出照片",
+    "舞台"
+   ],
+   "mediaCount": 36,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000046",
+   "title": "沙田雷雨",
+   "titleEn": "Shatin Thunder",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1994,
+   "location": "香港",
+   "venue": "沙田大會堂文娛廳",
+   "directors": [
+    "榮念曾",
+    "鄭志銳"
+   ],
+   "materialTypes": [
+    "演出照片"
+   ],
+   "mediaCount": 22,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000047",
+   "title": "香港九五二三事",
+   "titleEn": "Two or Three Events…of No Significance, Hong Kong 1995",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1995,
+   "location": "香港",
+   "venue": "香港文化中心大劇院",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出照片",
+    "舞台"
+   ],
+   "mediaCount": 47,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000048",
+   "title": "斷章記",
+   "titleEn": "The Legend",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1995,
+   "location": "香港",
+   "venue": "香港上環文娛中心劇院",
+   "directors": [
+    "榮念曾",
+    "林奕華",
+    "劉澤源",
+    "胡恩威"
+   ],
+   "materialTypes": [
+    "演出照片"
+   ],
+   "mediaCount": 26,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000049",
+   "title": "山海經－老舍之歿 (東京)",
+   "titleEn": "Book of Mountain & Ocean…Life & Times of Lao She (Tokyo)",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1996,
+   "location": "日本",
+   "venue": "東京日本文化交流基金會中心",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出照片"
+   ],
+   "mediaCount": 7,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000050",
+   "title": "山海經－老舍之歿 (香港)",
+   "titleEn": "Book of Mountain & Ocean…Life & Times of Lao She (Hong Kong)",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1996,
+   "location": "香港",
+   "venue": "香港大會堂劇院",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "舞台"
+   ],
+   "mediaCount": 6,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000051",
+   "title": "錄鬼簿",
+   "titleEn": "Feeding The Hungry Ghosts",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1996,
+   "location": "香港",
+   "venue": "香港文化中心大劇院",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出照片",
+    "舞台"
+   ],
+   "mediaCount": 29,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000052",
+   "title": "百年之孤寂第八年－萬歲萬歲萬萬歲",
+   "titleEn": "The Eighth Year Of One Hundred Years Of Solitude - Viva",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1996,
+   "location": "香港",
+   "venue": "香港大會堂展覽廳",
+   "directors": [
+    "潘德恕",
+    "孟京輝"
+   ],
+   "materialTypes": [
+    "演出照片",
+    "場刊"
+   ],
+   "mediaCount": 15,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000055",
+   "title": "大字報",
+   "titleEn": "Da Tsi Bao",
+   "category": "視覺藝術",
+   "categoryKey": "visual-arts",
+   "year": 1996,
+   "location": "",
+   "venue": "",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "錄像藝術"
+   ],
+   "mediaCount": 1,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000056",
+   "title": "中國旅程1997 (香港)",
+   "titleEn": "Journey to the East 97 (Hong Kong)",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1997,
+   "location": "香港",
+   "venue": "香港藝術中心壽臣劇院",
+   "directors": [
+    "楊德昌",
+    "李六乙",
+    "關錦鵬",
+    "李國修",
+    "林奕華",
+    "榮念曾",
+    "林兆華"
+   ],
+   "materialTypes": [
+    "演出照片",
+    "舞台"
+   ],
+   "mediaCount": 34,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000057",
+   "title": "山海經 (台北)",
+   "titleEn": "Book of Mountain and Ocean (Taipei)",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1997,
+   "location": "台北",
+   "venue": "台灣國立藝術大學表演藝術中心戲劇廳",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出照片"
+   ],
+   "mediaCount": 9,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000058",
+   "title": "舞照跳九七",
+   "titleEn": "Let's Dance 97",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1997,
+   "location": "香港",
+   "venue": "香港大會堂展覽廳",
+   "directors": [],
+   "materialTypes": [
+    "演出照片"
+   ],
+   "mediaCount": 4,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000059",
+   "title": "山海經﹣老舍之歿 (慕尼黑)",
+   "titleEn": "Book of Mountain & Ocean…Life & Times of Lao She (Munich)",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1997,
+   "location": "德國",
+   "venue": "德國慕尼黑瑪弗浩藝術中心",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出照片"
+   ],
+   "mediaCount": 16,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000060",
+   "title": "石頭再現記",
+   "titleEn": "Romance of the Rock 97",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1997,
+   "location": "香港",
+   "venue": "香港大會堂音樂廳",
+   "directors": [
+    "榮念曾",
+    "胡恩威",
+    "于逸堯"
+   ],
+   "materialTypes": [
+    "演出照片",
+    "舞台"
+   ],
+   "mediaCount": 24,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000062",
+   "title": "魔笛",
+   "titleEn": "Die Zauberflote",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1998,
+   "location": "香港",
+   "venue": "香港大會堂音樂廳",
+   "directors": [
+    "榮念曾",
+    "胡恩威"
+   ],
+   "materialTypes": [
+    "演出照片",
+    "舞台"
+   ],
+   "mediaCount": 18,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000063",
+   "title": "中國旅程九九－她知道他是 (香港)",
+   "titleEn": "Journey To The East 99: She knows he is (Hong Kong)",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1999,
+   "location": "香港",
+   "venue": "香港文化中心劇場",
+   "directors": [
+    "孟京輝",
+    "魏瑛娟",
+    "陳炳釗",
+    "張獻",
+    "李銳俊",
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出照片"
+   ],
+   "mediaCount": 4,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000064",
+   "title": "四大發明 (香港)",
+   "titleEn": "Four Grand Inventions (Hong Kong)",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 1999,
+   "location": "香港",
+   "venue": "香港大會堂音樂廳",
+   "directors": [
+    "榮念曾",
+    "胡恩威"
+   ],
+   "materialTypes": [
+    "演出照片",
+    "舞台"
+   ],
+   "mediaCount": 23,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000065",
+   "title": "亞洲藝術網絡",
+   "titleEn": "Asia Arts Net",
+   "category": "活動",
+   "categoryKey": "event",
+   "year": 2000,
+   "location": "香港",
+   "venue": "香港科技大學",
+   "directors": [],
+   "materialTypes": [
+    "活動照片"
+   ],
+   "mediaCount": 2,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000066",
+   "title": "實驗莎士比亞－李爾王",
+   "titleEn": "King Lear - Experimental Shakespeare",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 2000,
+   "location": "香港",
+   "venue": "香港葵青劇院",
+   "directors": [
+    "榮念曾",
+    "孟京輝",
+    "賴聲川",
+    "楊德昌"
+   ],
+   "materialTypes": [
+    "書信",
+    "演出照片",
+    "舞台"
+   ],
+   "mediaCount": 37,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000068",
+   "title": "華麗緣 - 旅程2000藝術節",
+   "titleEn": "Vanity Fair - Journey 2000 Festival",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 2000,
+   "location": "香港",
+   "venue": "香港藝術中心壽臣劇院",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出照片"
+   ],
+   "mediaCount": 22,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000069",
+   "title": "一桌兩椅 - 旅程2000藝術節",
+   "titleEn": "One Table Two Chairs - Journey 2000 Festival",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 2000,
+   "location": "香港",
+   "venue": "香港藝術中心壽臣劇院",
+   "directors": [
+    "魏瑛娟",
+    "Peeramon Chomdhavat & Paritat Tiphayakul",
+    "松島誠",
+    "龍植池",
+    "熊源偉",
+    "鄧樹榮",
+    "朱冥",
+    "Shimizu Shinjin",
+    "Joh Seongjoo & Park Hobin",
+    "Astad Deboo",
+    "田蔓莎",
+    "李銳俊",
+    "崔明慧",
+    "林奕華"
+   ],
+   "materialTypes": [
+    "演出照片"
+   ],
+   "mediaCount": 41,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000070",
+   "title": "「香港柏林當代文化節」- 「黑箱作業」之香港在柏林 (第一部分)",
+   "titleEn": "Festival of Vision – Hong Kong/ Berlin - Black Box in Berlin (First half of the Festival)",
+   "category": "活動",
+   "categoryKey": "event",
+   "year": 2000,
+   "location": "德國",
+   "venue": "",
+   "directors": [],
+   "materialTypes": [
+    "活動照片"
+   ],
+   "mediaCount": 10,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000071",
+   "title": "「錄像圈」2000 裝置演出 (柏林)",
+   "titleEn": "Video Circle 2000",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 2000,
+   "location": "德國",
+   "venue": "栢林世界文化中心展覽廳",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出照片",
+    "舞台"
+   ],
+   "mediaCount": 7,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000072",
+   "title": "一桌兩椅(柏林)",
+   "titleEn": "One Table Two Chairs(Berlin)",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 2000,
+   "location": "德國",
+   "venue": "柏林世界文化中心戶外裝置「竹亭」",
+   "directors": [
+    "榮念曾",
+    "Johannes Odenthal",
+    "田蔓莎",
+    "朱冥",
+    "李銳俊",
+    "龍植池",
+    "魏瑛娟",
+    "松島誠",
+    "Shimizu Shinjin",
+    "Astad Deboo",
+    "洪信子",
+    "Seongjoo Joh",
+    "Hobin Park",
+    "Thomas Lehmen",
+    "Christopher Kondek",
+    "Ann-Christin Rommen",
+    "Rilo Chmielorz",
+    "VA Wolfl"
+   ],
+   "materialTypes": [
+    "演出照片"
+   ],
+   "mediaCount": 4,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000073",
+   "title": "四城文化交流會議 - 2000",
+   "titleEn": "City-to-City Cultural Exchange Conference - 2000",
+   "category": "活動",
+   "categoryKey": "event",
+   "year": 2000,
+   "location": "香港",
+   "venue": "",
+   "directors": [],
+   "materialTypes": [
+    "活動照片"
+   ],
+   "mediaCount": 1,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000074",
+   "title": "「香港柏林當代文化節」-「黑箱作業」之柏林在香港 (第二部分)",
+   "titleEn": "Festival of Vision – Hong Kong/ Berlin Black - Box returned home, Hong Kong (Second half of the Festival)",
+   "category": "活動",
+   "categoryKey": "event",
+   "year": 2000,
+   "location": "香港",
+   "venue": "添馬艦",
+   "directors": [],
+   "materialTypes": [
+    "宣傳海報",
+    "活動照片",
+    "演出照片"
+   ],
+   "mediaCount": 141,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000075",
+   "title": "一人劇場獨腳騷",
+   "titleEn": "MonoFest －a series of solo performance",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 2001,
+   "location": "香港",
+   "venue": "上環文娛中心演講廳／葵青劇院展覽廳",
+   "directors": [],
+   "materialTypes": [
+    "演出照片"
+   ],
+   "mediaCount": 7,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000076",
+   "title": "烈女傳之疾病的隱喻",
+   "titleEn": "Chronicles of Women： Illness as Metaphor",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 2001,
+   "location": "香港",
+   "venue": "沙田大會堂演奏廳",
+   "directors": [
+    "魏瑛娟"
+   ],
+   "materialTypes": [
+    "演出照片"
+   ],
+   "mediaCount": 10,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000077",
+   "title": "四城文化交流會議 - 2001",
+   "titleEn": "City-to-City Cultural Exchange Conference - 2001",
+   "category": "活動",
+   "categoryKey": "event",
+   "year": 2001,
+   "location": "深圳",
+   "venue": "",
+   "directors": [],
+   "materialTypes": [
+    "活動照片"
+   ],
+   "mediaCount": 2,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000078",
+   "title": "佛洛伊德尋找中國情與事 (香港)",
+   "titleEn": "Sigmund Freud in Search of Chinese Master and Mind (Hong Kong)",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 2002,
+   "location": "香港",
+   "venue": "香港大會堂劇院",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出照片"
+   ],
+   "mediaCount": 4,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000079",
+   "title": "百年孤寂第九年：九",
+   "titleEn": "The Ninth Year of One Hundred Years of Solitude - 9",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 2002,
+   "location": "香港",
+   "venue": "香港文化中心大劇院",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "活動宣傳",
+    "演出錄像",
+    "演出照片",
+    "場刊"
+   ],
+   "mediaCount": 18,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000082",
+   "title": "尋找新中國(鄭和的後代) (新加坡)",
+   "titleEn": "In Search of Modern China - Descendants of Eunuch Admiral (Singapore)",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 2002,
+   "location": "新加坡",
+   "venue": "新加坡實踐表演藝術中心",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出照片"
+   ],
+   "mediaCount": 7,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000083",
+   "title": "我愛宋詞之好風如水",
+   "titleEn": "Good Wind Like Water",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 2003,
+   "location": "香港",
+   "venue": "香港大會堂劇院",
+   "directors": [
+    "榮念曾",
+    "胡恩威"
+   ],
+   "materialTypes": [
+    "文章",
+    "演出照片"
+   ],
+   "mediaCount": 25,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000086",
+   "title": "城市文化交流會議 - 2003",
+   "titleEn": "City-to-City Cultural Exchange Conference - 2003",
+   "category": "活動",
+   "categoryKey": "event",
+   "year": 2003,
+   "location": "台北",
+   "venue": "",
+   "directors": [],
+   "materialTypes": [
+    "活動照片"
+   ],
+   "mediaCount": 2,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000087",
+   "title": "佛洛伊德尋找中國情與事 (東京)",
+   "titleEn": "Sigmund Freud in Search of Chinese Master and Mind (Tokyo)",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 2003,
+   "location": "日本",
+   "venue": "東京藝術劇場",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出照片",
+    "舞台"
+   ],
+   "mediaCount": 39,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000088",
+   "title": "佛洛伊德尋找中國情與事 (新加坡)",
+   "titleEn": "Sigmund Freud in Search of Chinese Matter and Mind (Singapore)",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 2004,
+   "location": "新加坡",
+   "venue": "新加坡濱海藝術中心",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出照片",
+    "舞台"
+   ],
+   "mediaCount": 22,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000089",
+   "title": "獨當一面 - 實驗中國傳統劇場交流計劃",
+   "titleEn": "Solo - Experimenting Traditional Chinese Opera",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 2004,
+   "location": "台北",
+   "venue": "台北新舞台",
+   "directors": [
+    "吳興國",
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出照片"
+   ],
+   "mediaCount": 1,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000090",
+   "title": "浮士德 VS 浮士德",
+   "titleEn": "The Little Little Faust",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 2004,
+   "location": "香港",
+   "venue": "香港大會堂高座演奏廳",
+   "directors": [
+    "柯軍",
+    "松島誠"
+   ],
+   "materialTypes": [
+    "演出照片"
+   ],
+   "mediaCount": 10,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000091",
+   "title": "夜奔 (2004/09) (奧斯陸)",
+   "titleEn": "Flee by Night (2004/09) (Oslo)",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 2004,
+   "location": "奧斯陸",
+   "venue": "挪威奧斯陸音樂廳",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出照片"
+   ],
+   "mediaCount": 10,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000092",
+   "title": "城市文化交流會議 - 2005",
+   "titleEn": "City-to-City Cultural Exchange Conference- 2005",
+   "category": "活動",
+   "categoryKey": "event",
+   "year": 2005,
+   "location": "深圳",
+   "venue": "",
+   "directors": [],
+   "materialTypes": [
+    "活動照片"
+   ],
+   "mediaCount": 1,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000093",
+   "title": "《諸神會I: 實驗中國 - 群英會》",
+   "titleEn": "Congregation of the Heroes",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 2005,
+   "location": "香港",
+   "venue": "香港大會堂展覽廳",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出照片"
+   ],
+   "mediaCount": 31,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000094",
+   "title": "挑滑車 (新加坡重演)",
+   "titleEn": "The Outcast General (Singapore)",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 2006,
+   "location": "新加坡",
+   "venue": "新加坡濱海藝術中心小劇場",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出照片",
+    "舞台"
+   ],
+   "mediaCount": 22,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000095",
+   "title": "挑滑車‧潔本 (香港)",
+   "titleEn": "The Outcast General (Hong Kong)",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 2006,
+   "location": "香港",
+   "venue": "香港文化中心劇場",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出照片"
+   ],
+   "mediaCount": 22,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000096",
+   "title": "「香港非物質文化遺產（表演藝術)中心」發展計劃-專家會議",
+   "titleEn": "Establishment Plan for the Institute of Intangible Cultural Heritage (Performing Arts) in Hong Kong-Expert Meeting",
+   "category": "活動",
+   "categoryKey": "event",
+   "year": 2006,
+   "location": "香港",
+   "venue": "香港文物探知館演講廳",
+   "directors": [],
+   "materialTypes": [
+    "活動照片"
+   ],
+   "mediaCount": 4,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000097",
+   "title": "西遊荒山淚 (香港)",
+   "titleEn": "Tears of Barren Hill (Hong Kong)",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 2008,
+   "location": "香港",
+   "venue": "香港文化中心劇場",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "文章"
+   ],
+   "mediaCount": 1,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000099",
+   "title": "中國是個大花園 — 榮念曾劇場藝術",
+   "titleEn": "",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 2009,
+   "location": "香港",
+   "venue": "",
+   "directors": [],
+   "materialTypes": [
+    "書籍"
+   ],
+   "mediaCount": 1,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000100",
+   "title": "百年之孤寂 10.0 — 文化大革命",
+   "titleEn": "One Hundred Years of Solitude 10.0 - Cultural Revolution",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 2011,
+   "location": "香港",
+   "venue": "香港文化中心大劇院",
+   "directors": [
+    "榮念曾"
+   ],
+   "materialTypes": [
+    "演出花絮"
+   ],
+   "mediaCount": 1,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000102",
+   "title": "創意中國－榮念曾與香港的藝術政治",
+   "titleEn": "",
+   "category": "",
+   "categoryKey": "",
+   "year": 2012,
+   "location": "",
+   "venue": "",
+   "directors": [],
+   "materialTypes": [
+    "書籍"
+   ],
+   "mediaCount": 1,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000104",
+   "title": "",
+   "titleEn": "Transnational Chinese Theatres",
+   "category": "劇場",
+   "categoryKey": "theatre-production",
+   "year": 2020,
+   "location": "",
+   "venue": "",
+   "directors": [],
+   "materialTypes": [
+    "書籍"
+   ],
+   "mediaCount": 1,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000105",
+   "title": "其他-1996",
+   "titleEn": "Non-project-based-1996",
+   "category": "",
+   "categoryKey": "",
+   "year": 1996,
+   "location": "",
+   "venue": "",
+   "directors": [],
+   "materialTypes": [
+    "文章"
+   ],
+   "mediaCount": 1,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000106",
+   "title": "其他-1998",
+   "titleEn": "Non-project-based-1998",
+   "category": "",
+   "categoryKey": "",
+   "year": 1998,
+   "location": "",
+   "venue": "",
+   "directors": [],
+   "materialTypes": [],
+   "mediaCount": 1,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000107",
+   "title": "其他-2008",
+   "titleEn": "Non-project-based-2008",
+   "category": "",
+   "categoryKey": "",
+   "year": 2008,
+   "location": "",
+   "venue": "",
+   "directors": [],
+   "materialTypes": [],
+   "mediaCount": 1,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000108",
+   "title": "其他-2011",
+   "titleEn": "Non-project-based-2011",
+   "category": "",
+   "categoryKey": "",
+   "year": 2011,
+   "location": "",
+   "venue": "",
+   "directors": [],
+   "materialTypes": [],
+   "mediaCount": 1,
+   "href": "#"
+  },
+  {
+   "id": "DYP-000109",
+   "title": "其他-2020",
+   "titleEn": "Non-project-based-2020",
+   "category": "",
+   "categoryKey": "",
+   "year": 2020,
+   "location": "",
+   "venue": "",
+   "directors": [],
+   "materialTypes": [],
+   "mediaCount": 1,
+   "href": "#"
+  }
+ ]
+}

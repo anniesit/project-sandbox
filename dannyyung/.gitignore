@@ -1,0 +1,11 @@
+# Raw client deliveries stay local.
+# project-sandbox deploys to a PUBLIC Vercel URL, so anything committed here is
+# publicly downloadable. The spreadsheets carry fields the catalogue never shows
+# (copyright status, licence notes, storage filenames, acknowledgements), so only
+# the derived sample-data/catalogue-sample.json is tracked.
+# Regenerate it with: python3 sample-data/build-catalogue-sample.py
+data/*.xlsx
+data/*.xls
+data/*.csv
+
+.DS_Store

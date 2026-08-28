@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>榮念曾戲劇作品資料庫 · 目錄</title>
+    <style>
+      /* Demo-page chrome ONLY. The real styling lives in the Webflow design
+         system (.table, .dropdown, .input, .checkbox, .eyebrow, tokens). This
+         page exists so catalogue.js can be exercised without Webflow — it is a
+         behaviour harness, not a design reference. Do not copy styles from here. */
+      body { margin:0; padding:2rem clamp(1rem,4vw,3rem); background:#fff; color:#1d1c1a;
+             font-family:"Chiron Sung HK","Noto Serif HK",serif; }
+      .wrap { max-width:1200px; margin:0 auto; }
+      .catalogue-layout { display:grid; grid-template-columns:16rem 1fr; gap:40px; align-items:start; }
+      .catalogue-facets { display:flex; flex-direction:column; gap:2rem; padding-right:1.5rem; border-right:1px solid #cccabf; }
+      .facet { display:flex; flex-direction:column; gap:.5rem; }
+      .facet-options { display:flex; flex-direction:column; gap:.25rem; }
+      .eyebrow { font-size:.8rem; letter-spacing:.1em; opacity:.6; margin:0; }
+      .catalogue-toolbar { display:flex; flex-wrap:wrap; align-items:flex-end;
+                           justify-content:space-between; gap:24px; margin-bottom:1.5rem; }
+      .input { padding:.5rem .75rem; border:1px solid #cccabf; border-radius:.5rem; font:inherit; }
+      .cc-year { width:6rem; text-align:center; }
+      .input-group { display:flex; flex-direction:column; gap:.25rem; flex:1 1 20rem; max-width:32rem; }
+      .input-label { font-size:.8rem; opacity:.6; }
+      .facet-date-range { display:flex; align-items:center; gap:.5rem; }
+      .catalogue-sort { display:flex; align-items:center; gap:.5rem; }
+      .dropdown { position:relative; }
+      .dropdown-trigger { display:flex; align-items:center; justify-content:space-between; gap:.5rem;
+                          width:100%; padding:.5rem .75rem; border:1px solid #cccabf;
+                          border-radius:.5rem; background:none; font:inherit; cursor:pointer; }
+      .dropdown-trigger-icon { width:.75rem; flex:none; }
+      .dropdown-list { display:none; position:absolute; z-index:5; inset-inline:0; margin:.25rem 0 0;
+                       padding:.25rem; list-style:none; max-height:16rem; overflow:auto;
+                       background:#fff; border:1px solid #cccabf; border-radius:.5rem; }
+      .dropdown.is-open .dropdown-list { display:block; }
+      .dropdown-option { padding:.35rem .5rem; border-radius:.25rem; cursor:pointer; }
+      .dropdown-option:hover { background:#f0eee6; }
+      .dropdown-option[aria-selected="true"] { font-weight:600; }
+      .table-wrap { overflow-x:auto; }
+      .table { width:100%; border-collapse:collapse; }
+      .table-cell { padding:.5rem .75rem; text-align:start; vertical-align:top;
+                    border-bottom:1px solid #cccabf; }
+      .table-row.cc-head .table-cell { font-size:.9rem; opacity:.7; }
+      .table-cell p { margin:0; }
+      .checkbox { display:flex; align-items:center; gap:.5rem; cursor:pointer; }
+      .pagination { display:flex; flex-wrap:wrap; justify-content:center; align-items:center;
+                    gap:.25rem; margin-top:2rem; }
+      .pagination-btn { min-width:2.5rem; padding:.5rem .75rem; border:1px solid #cccabf;
+                        border-radius:.5rem; background:none; font:inherit; cursor:pointer; }
+      .pagination-btn.cc-current { background:#d14424; border-color:#d14424; color:#fff; }
+      .catalogue-empty { padding:3rem 0; text-align:center; opacity:.7; }
+      .paragraph-sm { font-size:.9rem; }
+      .cc-count { margin:0 0 .5rem; opacity:.7; }
+      .note { max-width:1200px; margin:0 auto 2rem; padding:.75rem 1rem; border-left:3px solid #d14424;
+              background:#faf7f4; font-size:.85rem; line-height:1.6; }
+    </style>
+  </head>
+  <body>
+    <p class="note">
+      <strong>Behaviour harness.</strong> Same <code>data-*</code> markup as the Webflow
+      catalogue page, with throwaway CSS so <code>catalogue.js</code> can be exercised
+      locally. Design happens in Webflow, not here.
+    </p>
+
+    <div class="wrap">
+      <h1>目錄</h1>
+
+      <div class="catalogue-layout" data-catalogue data-src="./sample-data/catalogue-sample.json">
+        <aside class="catalogue-facets" aria-label="篩選條件">
+          <div class="facet" data-facet="category">
+            <p class="eyebrow cc-facet">類別</p>
+            <div class="facet-options">
+              <label class="checkbox"><input class="checkbox-input" type="checkbox" data-facet-value="theatre-production" /><span class="checkbox-label">劇場</span></label>
+              <label class="checkbox"><input class="checkbox-input" type="checkbox" data-facet-value="visual-arts" /><span class="checkbox-label">視覺藝術</span></label>
+              <label class="checkbox"><input class="checkbox-input" type="checkbox" data-facet-value="event" /><span class="checkbox-label">活動</span></label>
+              <label class="checkbox"><input class="checkbox-input" type="checkbox" data-facet-value="performing-art" /><span class="checkbox-label">表演藝術</span></label>
+            </div>
+          </div>
+
+          <div class="facet" data-facet="year">
+            <p class="eyebrow cc-facet">年份</p>
+            <div class="facet-date-range">
+              <input class="input cc-year" type="number" inputmode="numeric" min="1974" max="2020" placeholder="1974" aria-label="起始年份" data-year-from />
+              <span aria-hidden="true">–</span>
+              <input class="input cc-year" type="number" inputmode="numeric" min="1974" max="2020" placeholder="2020" aria-label="結束年份" data-year-to />
+            </div>
+          </div>
+
+          <div class="facet" data-facet="location">
+            <p class="eyebrow cc-facet">地點</p>
+            <div class="dropdown" data-dropdown>
+              <button class="dropdown-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="篩選地點" data-dropdown-trigger>
+                <span class="dropdown-trigger-label" data-dropdown-value>全部</span>
+                <svg class="dropdown-trigger-icon" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true"><path d="M216.49,104.49l-80,80a12,12,0,0,1-17,0l-80-80a12,12,0,0,1,17-17L128,159l71.51-71.52a12,12,0,0,1,17,17Z"/></svg>
+              </button>
+              <ul class="dropdown-list" role="listbox" data-dropdown-list>
+                <li class="dropdown-option" role="option" aria-selected="true" tabindex="-1" data-value="all" data-dropdown-option><span class="dropdown-option-label" data-dropdown-option-label>全部</span></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="facet" data-facet="director">
+            <p class="eyebrow cc-facet">導演</p>
+            <div class="dropdown" data-dropdown>
+              <button class="dropdown-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="篩選導演" data-dropdown-trigger>
+                <span class="dropdown-trigger-label" data-dropdown-value>全部</span>
+                <svg class="dropdown-trigger-icon" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true"><path d="M216.49,104.49l-80,80a12,12,0,0,1-17,0l-80-80a12,12,0,0,1,17-17L128,159l71.51-71.52a12,12,0,0,1,17,17Z"/></svg>
+              </button>
+              <ul class="dropdown-list" role="listbox" data-dropdown-list>
+                <li class="dropdown-option" role="option" aria-selected="true" tabindex="-1" data-value="all" data-dropdown-option><span class="dropdown-option-label" data-dropdown-option-label>全部</span></li>
+              </ul>
+            </div>
+          </div>
+        </aside>
+
+        <div class="catalogue-results">
+          <div class="catalogue-toolbar">
+            <div class="input-group cc-search">
+              <label class="input-label" for="catalogue-search">搜尋</label>
+              <input class="input" type="search" id="catalogue-search" name="q" placeholder="搜尋作品、導演、地點…" data-search />
+            </div>
+            <div class="catalogue-sort">
+              <label class="input-label" for="catalogue-sort">排序</label>
+              <div class="dropdown" data-dropdown data-sort>
+                <button class="dropdown-trigger" type="button" id="catalogue-sort" aria-haspopup="listbox" aria-expanded="false" aria-label="排序方式" data-dropdown-trigger>
+                  <span class="dropdown-trigger-label" data-dropdown-value>年份（新至舊）</span>
+                  <svg class="dropdown-trigger-icon" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true"><path d="M216.49,104.49l-80,80a12,12,0,0,1-17,0l-80-80a12,12,0,0,1,17-17L128,159l71.51-71.52a12,12,0,0,1,17,17Z"/></svg>
+                </button>
+                <ul class="dropdown-list" role="listbox" data-dropdown-list>
+                  <li class="dropdown-option" role="option" aria-selected="true" tabindex="-1" data-value="year-desc" data-dropdown-option><span class="dropdown-option-label" data-dropdown-option-label>年份（新至舊）</span></li>
+                  <li class="dropdown-option" role="option" aria-selected="false" tabindex="-1" data-value="year-asc" data-dropdown-option><span class="dropdown-option-label" data-dropdown-option-label>年份（舊至新）</span></li>
+                  <li class="dropdown-option" role="option" aria-selected="false" tabindex="-1" data-value="title" data-dropdown-option><span class="dropdown-option-label" data-dropdown-option-label>標題</span></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <p class="paragraph-sm cc-count" data-count aria-live="polite">共 88 項</p>
+
+          <div class="table-wrap">
+            <table class="table">
+              <thead class="table-head">
+                <tr class="table-row cc-head">
+                  <th class="table-cell" scope="col"><p>標題</p></th>
+                  <th class="table-cell" scope="col"><p>類別</p></th>
+                  <th class="table-cell" scope="col"><p>年份</p></th>
+                  <th class="table-cell" scope="col"><p>地點</p></th>
+                  <th class="table-cell" scope="col"><p>導演</p></th>
+                </tr>
+              </thead>
+              <tbody class="table-body" data-rows>
+                <tr class="table-row" data-row-template>
+                  <td class="table-cell"><p data-field="title">標題</p></td>
+                  <td class="table-cell"><p data-field="category">類別</p></td>
+                  <td class="table-cell"><p data-field="year">1981</p></td>
+                  <td class="table-cell"><p data-field="location">香港</p></td>
+                  <td class="table-cell"><p data-field="director">榮念曾</p></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p class="catalogue-empty" data-empty hidden>沒有符合條件的作品。</p>
+          <nav class="pagination" data-pagination aria-label="分頁"></nav>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* Demo-page only: the design system's dropdown open/close behaviour, which
+         on the real site comes from the Mast bundle. Not part of catalogue.js. */
+      document.addEventListener("click", function (e) {
+        var t = e.target.closest("[data-dropdown-trigger]");
+        document.querySelectorAll(".dropdown.is-open").forEach(function (d) {
+          if (!t || d !== t.closest("[data-dropdown]")) d.classList.remove("is-open");
+        });
+        if (t) {
+          var dd = t.closest("[data-dropdown]");
+          dd.classList.toggle("is-open");
+          t.setAttribute("aria-expanded", dd.classList.contains("is-open"));
+        }
+        var opt = e.target.closest("[data-dropdown-option]");
+        if (opt) opt.closest("[data-dropdown]").classList.remove("is-open");
+      });
+    </script>
+    <script src="./catalogue.js" defer></script>
+  </body>
+</html>
