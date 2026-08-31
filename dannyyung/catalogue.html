@@ -71,6 +71,9 @@
       <strong>Behaviour harness.</strong> Same <code>data-*</code> markup as the Webflow
       catalogue page, with throwaway CSS so <code>catalogue.js</code> can be exercised
       locally. Design happens in Webflow, not here.
+      The <code>input[type=hidden]</code> in each dropdown is inert here, but the
+      design system's <code>forms.js</code> writes to it and throws without it — keep
+      it so this file stays a faithful mirror.
     </div>
 
     <div class="wrap">
@@ -102,6 +105,7 @@
           <div class="facet" data-facet="location">
             <div class="eyebrow cc-facet">地點</div>
             <div class="dropdown" data-dropdown>
+              <input type="hidden" name="location" value="all" />
               <button class="dropdown-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="篩選地點" data-dropdown-trigger>
                 <span class="dropdown-trigger-label" data-dropdown-value>全部</span>
                 <svg class="dropdown-trigger-icon" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true"><path d="M216.49,104.49l-80,80a12,12,0,0,1-17,0l-80-80a12,12,0,0,1,17-17L128,159l71.51-71.52a12,12,0,0,1,17,17Z"/></svg>
@@ -115,6 +119,7 @@
           <div class="facet" data-facet="director">
             <div class="eyebrow cc-facet">導演</div>
             <div class="dropdown" data-dropdown>
+              <input type="hidden" name="director" value="all" />
               <button class="dropdown-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="篩選導演" data-dropdown-trigger>
                 <span class="dropdown-trigger-label" data-dropdown-value>全部</span>
                 <svg class="dropdown-trigger-icon" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true"><path d="M216.49,104.49l-80,80a12,12,0,0,1-17,0l-80-80a12,12,0,0,1,17-17L128,159l71.51-71.52a12,12,0,0,1,17,17Z"/></svg>
@@ -135,6 +140,7 @@
             <div class="catalogue-sort">
               <label class="input-label" for="catalogue-sort">排序</label>
               <div class="dropdown" data-dropdown data-sort>
+                <input type="hidden" name="sort" value="year-desc" />
                 <button class="dropdown-trigger" type="button" id="catalogue-sort" aria-haspopup="listbox" aria-expanded="false" aria-label="排序方式" data-dropdown-trigger>
                   <span class="dropdown-trigger-label" data-dropdown-value>年份（新至舊）</span>
                   <svg class="dropdown-trigger-icon" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true"><path d="M216.49,104.49l-80,80a12,12,0,0,1-17,0l-80-80a12,12,0,0,1,17-17L128,159l71.51-71.52a12,12,0,0,1,17,17Z"/></svg>

@@ -300,6 +300,93 @@ This is a change to a **design system class on this site**, not a combo — it w
 asked for site-wide, and a combo would only square the radios that opted in.
 It does not touch the Mast Fork starter, so other projects keep round radios.
 
+## Two bugs that stopped the theme toggle working
+
+Worth reading before touching the Custom Code component or the dropdowns.
+
+### 1. The design system never reached the published site
+
+The `Custom Code Forked` component carries the DS `<link>` and `<script>` plus
+`DS_CONFIG`. Its **root block had element visibility = false**. The class
+`.custom-code-component` already sets `display: none`, so the flag was redundant
+for hiding — but in Webflow, visibility = false **strips the element from
+published output entirely**. The bundle therefore never shipped: the published
+HTML contained zero occurrences of `design-system.css`, `design-system.js` and
+`DS_CONFIG`.
+
+`mast-fork.webflow.io` publishes the same way, so **this is inherited from the
+starter** and every site duplicated from it has it. Fixed here by making the
+component root visible. Worth fixing in the starter.
+
+### 2. `forms.js` throws on a dropdown with no hidden input, and takes the
+### theme toggle down with it
+
+The design system's dropdown markup starts with `<input type="hidden">`.
+`forms.js` reads it once at init and assigns to it with no null guard:
+
+```js
+const hiddenInput = dropdown.querySelector('input[type="hidden"]');
+...
+hiddenInput.value = initiallySelected.dataset.value;   // TypeError if absent
+```
+
+The dropdowns here were built without it, so init threw
+`Uncaught TypeError: Cannot set properties of null (setting 'value')`.
+
+The bundle is one concatenated file: `forms.js` sits at line 164 and
+`theme-toggle.js` at line 1461. An uncaught throw in the first aborts everything
+after it — **the theme toggle never initialised, which is why it did nothing.**
+The symptom (a dead toggle) was three components away from the cause (a missing
+input in a dropdown).
+
+Fixed by adding the hidden input to all three dropdowns. It is inert for the
+preview — `catalogue.js` reads the selected option's `aria-selected`, not the
+input — but `forms.js` requires it, so **do not remove it**. The harness carries
+it too, for fidelity.
+
+`forms.js` would be more robust with a null guard; that is an upstream change.
+
+### 3. `theme-toggle.css` cannot switch anything (design system bug)
+
+Even with the bundle loading and no throw, the toggle still would not change
+colours. `theme-toggle.css` declares the Lightning CSS polyfill variables
+**directly inside `@media` blocks with no selector**:
+
+```css
+@media (prefers-color-scheme: dark) {
+  --lightningcss-light: ;        /* invalid — declarations need a rule */
+  --lightningcss-dark: initial;
+}
+```
+
+Browsers drop those, so both variables stay empty. Webflow compiles
+`light-dark(a, b)` to `var(--lightningcss-light, a) var(--lightningcss-dark, b)`,
+so with both empty every token resolves to **both values at once** — measured on
+the live page, `--primary--background` computed to the nonsense `white #1d1c1a`.
+That is why the page ignored the design system's colours and fell back to the
+browser's own dark canvas.
+
+The file also never defines what `.u-mode-light` / `.u-mode-dark` should do
+beyond recolouring a `<select>` arrow, so the class the toggle script sets on
+`<html>` has nothing to act on.
+
+Patched in the project override block (wrap the declarations in `:root`, and add
+real `html.u-mode-light` / `html.u-mode-dark` rules that set `color-scheme` and
+flip the polyfill variables). **The real fix belongs in
+`design-system/components/theme-toggle/theme-toggle.css`** — it affects every
+project on the system. Delete the patch from the override block once it lands.
+
+### Where site-wide overrides go
+
+The design system stylesheet is linked from the **body**, so it loads after
+Webflow's head stylesheet and beats any equal-specificity rule set in the
+Designer. A Designer rule that competes with the design system will save
+correctly and silently do nothing — this is how the square radio indicator was
+lost the first time.
+
+Anything that must beat the design system goes in the `<style>` block inside the
+Custom Code component's stylesheet embed, immediately after the `<link>`.
+
 ## Discrepancies between the client data and the wireframe
 
 Found while building. Each needs a decision.
