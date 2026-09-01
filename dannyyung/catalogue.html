@@ -37,11 +37,36 @@
       .dropdown-option { padding:.35rem .5rem; border-radius:.25rem; cursor:pointer; }
       .dropdown-option:hover { background:#f0eee6; }
       .dropdown-option[aria-selected="true"] { font-weight:600; }
-      .table-wrap { overflow-x:auto; }
-      .table { width:100%; border-collapse:collapse; }
-      .table-cell { padding:.5rem .75rem; text-align:start; vertical-align:top;
-                    border-bottom:1px solid #cccabf; }
-      .table-row.cc-head .table-cell { font-size:.9rem; opacity:.7; }
+      /* Result list — mirrors the Webflow classes created for the updated
+         Figma layout (result-list / result-item / result-meta / result-tag).
+         Typography on the real page comes from the DS .paragraph-xl and
+         .paragraph-lg utilities; approximated here. */
+      .result-list { display:flex; flex-direction:column; list-style:none; margin:0; padding:0; }
+      .result-item { display:flex; flex-direction:column; gap:.5rem;
+                     padding:.75rem 1rem; }
+      .result-title { margin:0; font-size:clamp(2rem,4vw,3.5rem); font-weight:500;
+                      line-height:1.35; }
+      .result-title-link { color:inherit; text-decoration:none; }
+      .result-title-link:hover { text-decoration:underline; }
+      .result-meta { display:flex; flex-wrap:wrap; align-items:flex-start;
+                     gap:.5rem 24px; }
+      .paragraph-xl.cc-result-facts { display:flex; flex-wrap:wrap; align-items:center;
+                      gap:.25rem 16px; font-size:1.5rem; line-height:1.7; }
+      .result-tag { display:inline-flex; align-items:center; justify-content:center;
+                    padding:0 16px; border:1px solid #cccabf; border-radius:0; }
+      .result-sep { opacity:.5; }
+      .paragraph-xl.cc-result-credit { display:flex; flex:1 1 16rem; min-width:0;
+                       align-items:baseline; gap:.25rem .5rem;
+                       font-size:1.5rem; line-height:1.7; }
+      .paragraph-lg.cc-result-credit-label { flex:none; white-space:nowrap;
+                             font-size:1.25rem; line-height:1.75; }
+      .input-clear-wrapper { position:relative; display:block; width:100%; }
+      .input-clear-wrapper .input { width:100%; padding-right:2rem; }
+      .input-clear-wrapper .input::-webkit-search-cancel-button { display:none; }
+      .input-clear-btn { position:absolute; top:0; right:0; bottom:0;
+                         padding:0 .25rem .0 .75rem; border:0; background:none;
+                         color:inherit; cursor:pointer; }
+      .input-clear-icon { width:1rem; height:1rem; }
       .radio { position:relative; display:flex; align-items:center; gap:.5rem; cursor:pointer; }
       /* the real site hides the native input this way; mirrored so the
          harness does not show a stray browser radio next to the control */
@@ -69,7 +94,7 @@
   <body>
     <div class="note">
       <strong>Behaviour harness.</strong> Same <code>data-*</code> markup as the Webflow
-      catalogue page, with throwaway CSS so <code>catalogue.js</code> can be exercised
+      catalogue page (results are a <code>&lt;ul&gt;</code>, not a table), with throwaway CSS so <code>catalogue.js</code> can be exercised
       locally. Design happens in Webflow, not here.
       The <code>input[type=hidden]</code> in each dropdown is inert here, but the
       design system's <code>forms.js</code> writes to it and throws without it — keep
@@ -134,8 +159,13 @@
         <div class="catalogue-results">
           <div class="catalogue-toolbar">
             <div class="input-group cc-search">
-              <label class="input-label" for="catalogue-search">搜尋</label>
-              <input class="input" type="search" id="catalogue-search" name="q" placeholder="搜尋作品、導演、地點…" data-search />
+              <label class="input-label cc-w-auto" for="catalogue-search">搜尋</label>
+              <div class="input-clear-wrapper">
+                <input class="input" type="search" id="catalogue-search" name="q" placeholder="搜尋作品、導演、地點…" data-search />
+                <button class="input-clear-btn" type="button" data-input-clear aria-label="清除搜尋" hidden>
+                  <svg class="input-clear-icon" xmlns="http://www.w3.org/2000/svg" width="100%" fill="currentColor" viewBox="0 0 256 256"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"/></svg>
+                </button>
+              </div>
             </div>
             <div class="catalogue-sort">
               <label class="input-label" for="catalogue-sort">排序</label>
@@ -156,28 +186,23 @@
 
           <div class="paragraph-sm cc-count" data-count aria-live="polite">共 88 項</div>
 
-          <div class="table-wrap">
-            <table class="table">
-              <thead class="table-head">
-                <tr class="table-row cc-head">
-                  <th class="table-cell" scope="col"><span>標題</span></th>
-                  <th class="table-cell" scope="col"><span>類別</span></th>
-                  <th class="table-cell" scope="col"><span>年份</span></th>
-                  <th class="table-cell" scope="col"><span>地點</span></th>
-                  <th class="table-cell" scope="col"><span>導演</span></th>
-                </tr>
-              </thead>
-              <tbody class="table-body" data-rows>
-                <tr class="table-row" data-row-template>
-                  <td class="table-cell"><span data-field="title">標題</span></td>
-                  <td class="table-cell"><span data-field="category">類別</span></td>
-                  <td class="table-cell"><span data-field="year">1981</span></td>
-                  <td class="table-cell"><span data-field="location">香港</span></td>
-                  <td class="table-cell"><span data-field="director">榮念曾</span></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          <ul class="result-list" role="list" data-rows>
+            <li class="result-item" data-row-template>
+              <h2 class="result-title"><a class="result-title-link" href="#" data-field-link data-field="title">標題</a></h2>
+              <div class="result-meta">
+                <div class="paragraph-xl cc-result-facts">
+                  <span class="result-tag" data-field-group="category"><span data-field="category">劇場</span></span>
+                  <span data-field="year">2004</span>
+                  <span class="result-sep" aria-hidden="true" data-field-group="location">/</span>
+                  <span data-field="location" data-field-group="location">台北</span>
+                </div>
+                <div class="paragraph-xl cc-result-credit" data-field-group="director">
+                  <span class="paragraph-lg cc-result-credit-label">導演：</span>
+                  <span data-field="director">榮念曾</span>
+                </div>
+              </div>
+            </li>
+          </ul>
 
           <div class="catalogue-empty" data-empty hidden>沒有符合條件的作品。</div>
           <nav class="pagination" data-pagination aria-label="分頁"></nav>
@@ -188,6 +213,21 @@
     <script>
       /* Demo-page only: the design system's dropdown open/close behaviour, which
          on the real site comes from the Mast bundle. Not part of catalogue.js. */
+      /* Demo-page only: the design system's input-clear behaviour, which on the
+         real site comes from forms.js. Not part of catalogue.js. */
+      document.querySelectorAll("[data-input-clear]").forEach(function (btn) {
+        var input = btn.parentElement.querySelector("input");
+        if (!input) return;
+        function sync() { btn.hidden = input.value === ""; }
+        input.addEventListener("input", sync);
+        btn.addEventListener("click", function () {
+          input.value = "";
+          input.dispatchEvent(new Event("input", { bubbles: true }));
+          input.focus();
+        });
+        sync();
+      });
+
       document.addEventListener("click", function (e) {
         var t = e.target.closest("[data-dropdown-trigger]");
         document.querySelectorAll(".dropdown.is-open").forEach(function (d) {

@@ -3,7 +3,7 @@
  *
  * Ownership split (same shape as the film/TV archive components):
  *   - catalogue.js (this file) owns the VISUAL: rendering records into the
- *     Webflow row template, filling the facet dropdowns, painting the
+ *     Webflow result-item template, filling the facet dropdowns, painting the
  *     pagination control, and firing an event when the user changes a filter.
  *   - The backend integration owns the STATE: fetching, which records match,
  *     sorting, and which page is current. It calls render() with each page of
@@ -48,10 +48,15 @@
  *
  * data-* contract (authored in Webflow; changing these breaks the page):
  *   [data-catalogue]                  the root; everything is queried inside it
- *   [data-rows]                       tbody rows are rendered into
- *   [data-row-template]               tr cloned per record, removed at runtime
+ *   [data-rows]                       the <ul> result items are rendered into
+ *   [data-row-template]               <li> cloned per record, removed at runtime
  *   [data-field=title|category|year|location|director]   text sinks: a SPAN
- *                                     inside each td, never a <p> — see below
+ *                                     (or the title <a>), never a <p> — see below
+ *   [data-field-group=category|location|director]   the fragment that is
+ *                                     removed from the clone when that field is
+ *                                     empty (the chip, the "/" + location, the
+ *                                     whole 導演： block)
+ *   [data-field-link]                 the title <a>; href is set per record
  *   [data-facet=category|year|location|director]         facet wrappers
  *   [data-facet-value]                category radio -> categoryKey; plus the
  *                                     two synthetic values "all" and "other"
@@ -128,8 +133,8 @@
     paint(root, page, pages);
   }
 
-  /* The row template is authored in Webflow and stays VISIBLE on the canvas so
-     it can be styled. It is lifted out of the DOM on first render. */
+  /* The result-item template is authored in Webflow and stays VISIBLE on the
+     canvas so it can be styled. It is lifted out of the DOM on first render. */
   function template(root) {
     if (root.__tpl) return root.__tpl;
     var el = root.querySelector("[data-row-template]");
@@ -142,25 +147,39 @@
   }
 
   function buildRow(tpl, item) {
-    var tr = tpl.cloneNode(true);
-    tr.setAttribute("data-clone", "");
-    tr.setAttribute("data-id", item.id || "");
-    setField(tr, "title", item.title || item.titleEn || "無標題");
-    setField(tr, "category", item.category);
-    setField(tr, "year", item.year);
-    setField(tr, "location", item.location);
-    setField(tr, "director", (item.directors || []).join("、"));
-    var link = tr.querySelector("a[data-field-link]");
+    var li = tpl.cloneNode(true);
+    li.setAttribute("data-clone", "");
+    li.setAttribute("data-id", item.id || "");
+    setField(li, "title", item.title || item.titleEn || "無標題");
+    setField(li, "category", item.category);
+    setField(li, "year", item.year);
+    setField(li, "location", item.location);
+    setField(li, "director", (item.directors || []).join("、"));
+    var link = li.querySelector("a[data-field-link]");
     if (link && item.href) link.setAttribute("href", item.href);
-    return tr;
+    return li;
   }
 
-  /* Empty values render as an em dash rather than collapsing the cell, so the
-     table keeps its rhythm. 19 of 88 sample records have no director. */
+  /* A missing value drops the whole fragment that carries it, rather than
+     printing an em dash. In the list layout an em dash reads as content —
+     "2004 / —" and a bare "導演：" both look like data errors. Any element
+     marked [data-field-group="<name>"] is removed from the clone when that
+     field is empty; the separator carries the location group, so "/" goes
+     with it. 16 of 88 sample records have no location, 19 no director, 6 no
+     category. Fields with no group (title, year) still fall back to an em
+     dash, since dropping them would leave the row headless. */
   function setField(row, name, value) {
+    var text = value == null || value === "" ? "" : String(value);
+    if (text === "") {
+      var groups = row.querySelectorAll('[data-field-group="' + name + '"]');
+      for (var g = 0; g < groups.length; g++) {
+        if (groups[g].parentNode) groups[g].parentNode.removeChild(groups[g]);
+      }
+    }
     var els = row.querySelectorAll('[data-field="' + name + '"]');
-    var text = value == null || value === "" ? "—" : String(value);
-    for (var i = 0; i < els.length; i++) els[i].textContent = text;
+    for (var i = 0; i < els.length; i++) {
+      els[i].textContent = text === "" ? "—" : text;
+    }
   }
 
   /* ---------- facet dropdowns ---------- */

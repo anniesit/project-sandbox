@@ -4,7 +4,10 @@
     {
       "name": "dannyyung-preview",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8761"],
+      "runtimeArgs": [
+        "/Users/libdir/Documents/Projects/Design System/project-sandbox/dannyyung/serve.py",
+        "8761"
+      ],
       "port": 8761
     }
   ]

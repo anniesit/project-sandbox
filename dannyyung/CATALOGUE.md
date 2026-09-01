@@ -3,9 +3,11 @@
 Webflow site `6a8fda591c4e266dbbb91533` (Danny Yung Archive, duplicated from Mast Fork).
 Page `6a8fe9ff31603947cc29fa0f`, slug `/catalogue`, Traditional Chinese.
 
-Built from the Figma wireframe `BrowseList` (file `PM7YYo9FuEQtVO82kvggvn`, node
-`56:91`). This is a **wireframe in Webflow**, not a finished design — structure,
-semantics and tokens are right; visual design is deliberately untouched.
+Built from the Figma frame `BrowseList` (file `PM7YYo9FuEQtVO82kvggvn`, node
+`394:1977`; the result item is `394:2173`). Everything except the result list is
+still a **wireframe in Webflow** — structure, semantics and tokens are right;
+visual design is deliberately untouched. The result list follows the designed
+layout.
 
 ## Page structure
 
@@ -37,12 +39,15 @@ Markup was copied from the site's own Components page, not invented:
 
 | Thing | Markup |
 |---|---|
-| Table | `.table-wrap` > `table.table` > `thead.table-head` > `tr.table-row.cc-head` > `th.table-cell[scope=col]`; `tbody.table-body` > `tr.table-row` > `td.table-cell` |
+| Text input + clear | `.input-group` > `label.input-label` + `.input-clear-wrapper` > `input.input` + `button.input-clear-btn[data-input-clear]` > `svg.input-clear-icon` (design system component #10) |
 | Radio | `label.radio` > `input.radio-input[type=radio][name=category]` + `span.radio-control[aria-hidden]` + `span.radio-label`. The indicator is the stylesheet's `.radio-control::after`, not markup |
 | Dropdown | `.dropdown[data-dropdown]` > `button.dropdown-trigger[data-dropdown-trigger]` (> `span.dropdown-trigger-label[data-dropdown-value]` + `svg.dropdown-trigger-icon`) + `ul.dropdown-list[role=listbox][data-dropdown-list]` > `li.dropdown-option[role=option][data-value][data-dropdown-option]` > `span.dropdown-option-label` |
 | Text input | `.input-group` > `label.input-label[for]` + `input.input` |
 
-No Webflow widget elements were used. Every input, button, list and table cell
+The table markup was used until the result layout was redesigned — see
+**The result list** below.
+
+No Webflow widget elements were used. Every input, button and list element
 is a `DOM` element with an explicit tag.
 
 ## New classes (all spacing and colour bound to variables by id)
@@ -50,10 +55,13 @@ is a `DOM` element with an explicit tag.
 Base: `catalogue-layout`, `catalogue-facets`, `catalogue-results`,
 `catalogue-toolbar`, `catalogue-sort`, `facet`, `facet-options`,
 `facet-date-range`, `pagination`, `pagination-btn`, `catalogue-empty`,
-`catalogue-script`, `catalogue-head`.
+`catalogue-script`, `catalogue-head`, `result-list`, `result-item`,
+`result-title`, `result-title-link`, `result-meta`, `result-tag`, `result-sep`.
 
 Combos: `.pagination-btn.cc-current`, `.eyebrow.cc-facet`,
-`.input-group.cc-search`, `.input.cc-year`, `.paragraph-sm.cc-count`.
+`.input-group.cc-search`, `.input.cc-year`, `.paragraph-sm.cc-count`,
+`.paragraph-xl.cc-result-facts`, `.paragraph-xl.cc-result-credit`,
+`.paragraph-lg.cc-result-credit-label`.
 
 Only longhand properties are written (`grid-column-gap`/`grid-row-gap`, the four
 padding/margin/border-radius longhands, per-side border longhands) so the
@@ -138,7 +146,7 @@ summary. **Its output shape is the contract** — keyed and readable:
   "title": "媒介事件一",           // zh-Hant; empty falls back to titleEn
   "titleEn": "Media Event 1",
   "category": "劇場",              // display label
-  "categoryKey": "theatre-production",  // stable key, matches the checkboxes
+  "categoryKey": "theatre-production",  // stable key, matches the radios
   "year": 1982,
   "location": "香港",
   "venue": "香港藝術中心演奏廳",
@@ -150,7 +158,7 @@ summary. **Its output shape is the contract** — keyed and readable:
 ```
 
 `categoryKey` exists so the Chinese labels can be retranslated without touching
-the checkbox markup — the English page will reuse the same keys.
+the radio markup — the English page will reuse the same keys.
 
 ### Local preview
 
@@ -167,10 +175,112 @@ It is **not** a design reference — the real styling is the design system's.
 ### Verified
 
 Exercised in that harness: 88 records load, 8 pages at 12 per page; the category
-checkboxes, year range, search, sort and both dropdowns all filter; the director
+radios, year range, search, sort and both dropdowns all filter; the director
 facet matches inside the multi-valued array (selecting 胡恩威 returns the 5 works
 where he is one of several directors); pagination repaints with the ellipsis
-window; the template row is lifted out of the DOM at runtime.
+window; the template item is lifted out of the DOM at runtime.
+
+Re-verified after the list rewrite: 12 `<li>` render, the empty-value groups
+drop (records with no location show no `/`, records with no director show no
+導演： block, the six with no category show no chip), the title is a real
+`h2 > a`, and typing in the search shows the × button, filters to 2 records,
+then clearing it restores all 88.
+
+## The result list
+
+The results were a `<table>` until the Figma result layout changed
+(node `394:2173`). They are now a `<ul>`. The reason is that the design stopped
+being tabular:
+
+- The old design was a five-column grid — title, category, year, location,
+  director — where reading *down* a column compared works on one axis. That is
+  what a table is for.
+- The new design is a stacked record: a 56px title, then one wrapping metadata
+  line. Nothing aligns column-to-column between two results, and the director
+  list runs to fourteen names on one record and is absent on nineteen others.
+- A single-column table with a hidden header lies to a screen reader: it
+  announces "row 3, column 2: 台北" for a value that has no column. A list
+  announces "list, 12 items" and reads each record as a unit, which is what it
+  is. Heading-level navigation then jumps between works, which a table does not
+  offer.
+
+The `<ul>` carries `role="list"`, because the design system removes the bullets
+and Safari stops announcing an unstyled `ul` as a list (the reason is written
+into `global/normalized.css` upstream).
+
+Markup:
+
+```
+ul.result-list[role=list][data-rows]
+  li.result-item[data-row-template]
+    h2.result-title
+      a.result-title-link[data-field-link][data-field=title]
+    div.result-meta
+      div.paragraph-xl.cc-result-facts
+        span.result-tag[data-field-group=category] > span[data-field=category]
+        span[data-field=year]
+        span.result-sep[aria-hidden][data-field-group=location]        "/"
+        span[data-field=location][data-field-group=location]
+      div.paragraph-xl.cc-result-credit[data-field-group=director]
+        span.paragraph-lg.cc-result-credit-label                       "導演："
+        span[data-field=director]
+```
+
+Notes on the build:
+
+- **The title is an `h2`, and its `--bottom-margin` is killed on
+  `.result-title`.** A class beats the design system's `h2` tag rule regardless
+  of stylesheet order, so this is safe — unlike a competing tag-level rule. The
+  heading itself carries no class of the design system's; the `h2` tag style
+  supplies the type.
+- **`data-field-group` is new.** A missing value used to render an em dash,
+  which was right in a table cell and wrong here — "2004 / —" and a bare
+  "導演：" both read as broken data. `catalogue.js` now removes any element
+  marked `[data-field-group="<name>"]` from the row clone when that field is
+  empty. The `/` separator carries the *location* group, so it leaves with the
+  location. Title and year have no group and still fall back to an em dash.
+- **No dividers, and no border around the list.** The Figma frame has a 1px
+  `#cccccc` stroke with a 4px radius around the whole list, but it renders
+  invisible, and both values are off-token (the site's radius tokens are all
+  `0rem`, and the border colour token is `#cccabf`). It was read as a leftover
+  wireframe frame and not built. If a container border is wanted, it belongs on
+  `.result-list` bound to `Primary/Border` + `Border Radius/SM`.
+- **The category chip is `.result-tag`**, a bordered span using
+  `Grid/Gap Button` for its side padding and `Primary/Border` +
+  `Border Width/SM` + `Border Radius/SM` for the box — the same tokens the
+  Figma chip uses.
+- Typography comes from the design system utilities, layered as combos
+  (`.paragraph-xl.cc-result-facts`) because two unrelated global classes cannot
+  share an element in Webflow. Each combo re-zeroes `margin-bottom`, which the
+  `.paragraph-*` classes set from a token.
+- Every text node was inserted with `data_whtml_builder` as a single root span,
+  for the no-`<p>` reason below. The `ul`, `li` and the tag span are
+  `data_element_builder` `DOM` elements; `BY_CUSTOM_TAG` would have coerced
+  them into Webflow's List widget.
+- One trap: `data_element_builder` gives a `Heading` a placeholder String child
+  ("Heading") *in addition to* the children you ask for. It has to be removed
+  explicitly, or the title renders as "Heading標題".
+
+## Keyword search
+
+The search field is the design system's **input clear** component (#10), pasted
+from the Components page and repointed at the catalogue search:
+
+| Attribute | Value |
+|---|---|
+| `label.input-label` `for` | `catalogue-search` (text 搜尋) |
+| `input.input` `id` | `catalogue-search` |
+| `input.input` `name` | `q` |
+| `input.input` `placeholder` | 搜尋作品、導演、地點… |
+| `input.input` `data-search` | present — this is the hook `catalogue.js` reads |
+| `button.input-clear-btn` `aria-label` | 清除搜尋 |
+
+The plain input that had no clear button was deleted. The clear button's
+behaviour comes from the design system's `forms.js` (`[data-input-clear]`),
+not from `catalogue.js` — clearing dispatches a bubbling `input` event, which
+is exactly what `catalogue.js` already listens for, so the results repaint with
+no extra wiring. The harness reimplements those few lines locally, since it
+does not load the bundle.
 
 ## No `<p>` anywhere on this page
 
@@ -210,8 +320,8 @@ Where the replacement went:
 | `span.dropdown-trigger-label > p` ×3 | `span.dropdown-trigger-label` with direct text |
 | `span.dropdown-option-label > p` ×5 | `span.dropdown-option-label` with direct text |
 | `label.input-label > p` ×2 | `label.input-label > span` |
-| `th.table-cell > p` ×5 | `th.table-cell > span` |
-| `td.table-cell > p[data-field]` ×5 | `td.table-cell > span[data-field]` |
+| `th.table-cell > p` ×5 | `th.table-cell > span` (table since removed) |
+| `td.table-cell > p[data-field]` ×5 | `td.table-cell > span[data-field]` (table since removed) |
 | `p.paragraph-sm.cc-count` | `div.paragraph-sm.cc-count` |
 | `p.catalogue-empty` | `div.catalogue-empty` |
 
@@ -400,7 +510,7 @@ Found while building. Each needs a decision.
 2. **Six records have no category at all.** Five are `其他-YYYY`
    ("Non-project-based-1996/1998/2008/2011/2020") — these look like catch-all
    buckets rather than works. The sixth is `創意中國－榮念曾與香港的藝術政治`.
-   They appear in the table with an em dash, and are now reachable through the
+   They appear in the list with no category chip, and are reachable through the
    其他 radio option. Still decide whether the `其他-` records belong in a
    public catalogue at all.
 
@@ -418,9 +528,10 @@ Found while building. Each needs a decision.
 
 6. **Director is multi-valued and sometimes enormous.** 44 distinct names;
    `DYP-000072` lists **18** and `DYP-000069` lists 14, including Latin names.
-   The wireframe's Director column shows one short name. Rendered joined with
-   `、`, which will wrap to several lines on those rows. Decide: truncate with
-   "et al.", or move the full list to the entry page only.
+   Rendered joined with `、`. The new design accepts this — the Figma result
+   item is drawn with a 14-name list wrapping to three lines — so it is no
+   longer a column-width problem. Still decide whether an 18-name list belongs
+   in a result summary or only on the entry page.
 
 7. **19 of 88 records have no director**, 16 have no location.
 
@@ -440,12 +551,16 @@ Found while building. Each needs a decision.
     Chinese-first page these fall back to English. `DYP-000001` is junk data
     and should probably be withdrawn.
 
-11. **Pagination maths.** The wireframe shows "1 2 3 … 12", implying 144
+11. **Pagination maths.** The design shows "1 2 3 … 12", implying 144
     records. There are 88, so 8 pages at 12 per page.
 
-12. **Nothing links anywhere yet.** Rows carry `data-id` but no link — the
-    entry page does not exist. When it does, wrap the title cell's contents in
-    an `a` and add the `table-rowlink` add-on for whole-row clicks.
+12. **The title link points at `#`.** Each `<li>` carries `data-id`, and the
+    title is already an `a[data-field-link]` whose `href` `catalogue.js` sets
+    from the record's `href`. The sample data has `"href": "#"` for all 88
+    because the entry page does not exist yet. Once it does, the sample builder
+    should emit real paths — no markup change needed. The `table-rowlink` add-on
+    is no longer relevant: there is no table, and a list item does not need a
+    whole-row click surface.
 
 ## Second dataset, not used here
 
@@ -456,6 +571,10 @@ one column is a design problem worth knowing about before that page is drawn.
 
 ## State
 
-Built headlessly — **not visually verified**. Nothing has been published. The
+Built headlessly — **not visually verified in Webflow**. The layout and the
+behaviour were verified in the local harness (see above), but nobody has looked
+at the Webflow canvas or a published page, so the design system's own type
+scale, theme colours and breakpoints are unchecked on the real page. Nothing has
+been published. The
 Designer will show the page with one template row; the script only runs on a
 published or previewed page.
