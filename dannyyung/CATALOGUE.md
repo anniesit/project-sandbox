@@ -86,6 +86,34 @@ a comment saying where the real file lives.
 `vercel.json` carries a `/dannyyung/(.*)` CORS block so the JSON fetch works
 from the Webflow preview domain.
 
+### Paging returns to the top
+
+After a pagination click the reader is at the *bottom* of the previous page,
+with the new rows sitting above them. `returnToTop()` moves two things:
+
+- **the scroll position**, to the top of `[data-catalogue]`, minus a measured
+  sticky-header offset (measured rather than hardcoded, so it stays right if the
+  nav's height or position changes);
+- **focus**, because `paint()` rebuilds the pagination buttons including the one
+  just clicked. Without this, focus falls to `<body>` and a keyboard user is
+  dumped at the start of the tab order with no signal that anything happened.
+  It lands on the results list, so a screen reader announces "list, N items" and
+  the next Tab continues from the results.
+
+It is an **instant jump, not a smooth scroll**. Gliding past a thousand pixels
+of results nobody will read only delays them, it needs no
+`prefers-reduced-motion` branch — and `behavior: "smooth"` is not reliably
+honoured: it silently does nothing in some embedded browsers, which would leave
+the reader stranded at the bottom with no error to explain it.
+
+**Only pagination triggers it.** The pagination click sets `root.__pageChanged`
+and `render()` honours the flag once the new rows exist. It is a flag rather
+than something the click handler does directly because `render()` is not
+synchronous with the click once a real backend is behind it — the click emits,
+the backend fetches, render lands later, and scrolling in the handler would move
+the page before the rows changed. Filter and search changes must never scroll:
+doing it on every keystroke in the search box would be unusable.
+
 ### The catalogue view is addressable
 
 `catalogue.js` reflects its query in the URL and restores from it:

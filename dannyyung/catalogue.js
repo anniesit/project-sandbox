@@ -150,7 +150,66 @@
     if (emptyEl) emptyEl.hidden = items.length > 0;
 
     paint(root, page, pages);
+
+    /* Set by a pagination click, honoured here — after the new rows exist.
+       It is a flag rather than something the click handler does itself because
+       render() is not synchronous with the click once a real backend is behind
+       it: the click emits, the backend fetches, render lands later. Scrolling
+       in the click handler would move the page before the rows changed. */
+    if (root.__pageChanged) {
+      root.__pageChanged = false;
+      returnToTop(root);
+    }
   }
+
+  /* After paging, the reader is at the BOTTOM of the previous page and the new
+     rows have appeared above them — without this they are staring at the
+     pagination of a list they have not seen.
+
+     Two things move, not one:
+       - the scroll position, back to the top of the catalogue;
+       - FOCUS, because paint() destroys and rebuilds the pagination buttons,
+         including the one that was just clicked. Focus would otherwise fall to
+         <body> and a keyboard user would be dumped at the start of the tab
+         order with no idea the page changed. It lands on the results list, so
+         a screen reader announces "list, N items" and the next Tab continues
+         from the results rather than from the top of the document.
+
+     Only pagination does this. Filter and search changes must NOT — scrolling
+     the page on every keystroke in the search box would be unusable. */
+  function returnToTop(root) {
+    var list = root.querySelector("[data-rows]");
+    if (list) {
+      list.setAttribute("tabindex", "-1");
+      /* preventScroll: focus() would otherwise jump the list into view and
+         fight the smooth scroll below. */
+      try { list.focus({ preventScroll: true }); } catch (e) { list.focus(); }
+    }
+
+    /* An INSTANT jump, deliberately — not a smooth scroll.
+
+       Two reasons. It is what a page change should feel like: the content was
+       replaced wholesale, so gliding past a thousand pixels of results the
+       reader will never look at only delays them, and it needs no
+       prefers-reduced-motion branch. And `behavior: "smooth"` is not reliably
+       honoured — it silently does nothing in some embedded browsers (measured
+       in the preview pane used to verify this), which would leave the reader
+       stranded at the bottom with no error to explain it. */
+    var top = root.getBoundingClientRect().top + (window.pageYOffset || 0) - stickyOffset();
+    window.scrollTo(0, Math.max(0, top));
+  }
+
+  /* A sticky or fixed header would otherwise cover the top of the results.
+     Measured rather than hardcoded, so it stays right if the nav's height or
+     its position changes. */
+  function stickyOffset() {
+    var nav = document.querySelector(".nav_component, header, nav");
+    if (!nav) return 0;
+    var pos = window.getComputedStyle(nav).position;
+    if (pos !== "sticky" && pos !== "fixed") return 0;
+    return nav.getBoundingClientRect().height || 0;
+  }
+
 
   /* The result-item template is authored in Webflow and stays VISIBLE on the
      canvas so it can be styled. It is lifted out of the DOM on first render. */
@@ -264,6 +323,7 @@
     } else {
       if (value === current) b.setAttribute("aria-current", "page");
       b.addEventListener("click", function () {
+        root.__pageChanged = true;
         emit(root, value);
       });
     }
