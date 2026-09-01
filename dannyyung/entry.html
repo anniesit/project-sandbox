@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>榮念曾戲劇作品資料庫 · 作品</title>
+    <style>
+      /* Demo-page chrome ONLY. The real styling lives in the Webflow design
+         system. This page exists so entry.js can be exercised without Webflow
+         — it is a behaviour harness, not a design reference. */
+      body { margin:0; padding:2rem clamp(1rem,4vw,3rem); background:#fff; color:#1d1c1a;
+             font-family:"Chiron Sung HK","Noto Serif HK",serif; }
+      .wrap { max-width:1280px; margin:0 auto; }
+      .note { max-width:1280px; margin:0 auto 2rem; padding:.75rem 1rem;
+              border-left:3px solid #d14424; background:#faf7f4; font-size:.85rem;
+              line-height:1.6; }
+
+      .breadcrumb { display:flex; flex-wrap:wrap; align-items:center; gap:.5rem;
+                    font-size:.85rem; margin-bottom:1.5rem; }
+      .breadcrumb a { color:inherit; }
+      .breadcrumb-sep { opacity:.5; }
+
+      .entry-head { display:grid; grid-template-columns:1fr 448px; gap:40px;
+                    align-items:start; margin-bottom:3rem; }
+      .entry-tag { display:inline-flex; align-items:center; padding:.15rem .75rem;
+                   border:1px solid #cccabf; font-size:.8rem; letter-spacing:.1em; }
+      .entry-title { margin:.75rem 0 0; font-size:clamp(2rem,4vw,3.5rem);
+                     font-weight:500; line-height:1.35; }
+      .entry-hero { display:flex; align-items:center; justify-content:center;
+                    aspect-ratio:448/440; border:1px dashed #cccabf; opacity:.6;
+                    font-size:.85rem; }
+
+      /* Key/value rows. A definition list is the honest element: every row is
+         a term and its value. */
+      .kv { display:grid; grid-template-columns:9.5rem 1fr; margin:1.5rem 0 0; }
+      .kv-key { padding:1rem; border-top:1px solid #cccabf; font-size:.85rem; opacity:.7; }
+      .kv-val { padding:1rem; border-top:1px solid #cccabf; margin:0; }
+      /* notes is free text whose LINE BREAKS ARE CONTENT — 58 of 65 records
+         are multi-line. Without pre-line a 50-line note becomes one paragraph. */
+      .kv-val.cc-notes { white-space:pre-line; }
+
+      .materials-head { font-size:1.5rem; font-weight:500; margin:0 0 1.5rem; }
+      .materials { display:grid; grid-template-columns:321px 1fr; gap:24px;
+                   align-items:start; }
+      .material-groups { display:flex; flex-direction:column; gap:1.5rem; }
+      .material-group-label { display:flex; align-items:baseline; gap:.5rem;
+                              padding:.5rem; font-weight:500; }
+      .material-group-count { font-size:.8rem; opacity:.6; }
+      .thumb-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:1rem;
+                    padding:1rem .5rem; margin:0; list-style:none; }
+      .thumb-item { display:block; }
+      .thumb { display:flex; width:100%; align-items:center; justify-content:center;
+               aspect-ratio:130/80; padding:.25rem; border:1px solid #cccabf;
+               background:none; font:inherit; font-size:.7rem; text-align:center;
+               color:inherit; cursor:pointer; overflow:hidden; }
+      .thumb img { width:100%; height:100%; object-fit:cover; }
+      .thumb[aria-current="true"] { border-color:#d14424; outline:2px solid #d14424;
+                                    outline-offset:-2px; }
+
+      .viewer-stage { display:flex; align-items:center; justify-content:center;
+                      aspect-ratio:935/500; border:1px solid #cccabf; overflow:hidden; }
+      .viewer-stage img, .viewer-stage iframe, .viewer-stage video {
+        width:100%; height:100%; border:0; object-fit:contain; background:#000; }
+      .viewer-empty { flex-direction:column; gap:.5rem; border-style:dashed;
+                      opacity:.7; font-size:.85rem; text-align:center; }
+      .material-meta { margin-top:1.5rem; }
+      /* The `hidden` attribute is only display:none in the UA stylesheet, so a
+         class that sets a display beats it and every viewer state renders at
+         once. This rule is why exactly one shows. Mirrored in the Webflow
+         project override block. */
+      [hidden] { display:none !important; }
+    </style>
+  </head>
+  <body>
+    <div class="note">
+      <strong>Behaviour harness.</strong> Same <code>data-*</code> markup as the Webflow
+      entry page, with throwaway CSS so <code>entry.js</code> can be exercised locally.
+      Design happens in Webflow, not here. Try
+      <a href="?id=DYP-000012">?id=DYP-000012</a> (大路 / The Road — the record the
+      Figma frame is drawn from), <a href="?id=DYP-000079">?id=DYP-000079</a> (has
+      video), or <a href="?id=DYP-000074">?id=DYP-000074</a> (141 materials).
+    </div>
+
+    <div class="wrap">
+      <div data-entry data-src="./sample-data/entry-sample.json">
+        <nav class="breadcrumb" aria-label="麵包屑">
+          <a href="./catalogue.html">目錄</a>
+          <span class="breadcrumb-sep" aria-hidden="true">/</span>
+          <a href="./catalogue.html" data-crumb-category><span data-field="category">劇場</span></a>
+          <span class="breadcrumb-sep" aria-hidden="true">/</span>
+          <span aria-current="page" data-field="title">標題</span>
+        </nav>
+
+        <div class="entry-head">
+          <div class="entry-info">
+            <span class="entry-tag" data-field-group="category"><span data-field="category">劇場</span></span>
+            <h1 class="entry-title"><span data-field="title">標題</span></h1>
+
+            <dl class="kv">
+              <div style="display:contents" data-field-group="date">
+                <dt class="kv-key">日期</dt>
+                <dd class="kv-val"><span data-field="date">1981年11月11日</span></dd>
+              </div>
+              <div style="display:contents" data-field-group="venue">
+                <dt class="kv-key">場地</dt>
+                <dd class="kv-val"><span data-field="venue">香港大會堂展覽廳</span></dd>
+              </div>
+              <div style="display:contents" data-field-group="location">
+                <dt class="kv-key">地點</dt>
+                <dd class="kv-val"><span data-field="location">香港</span></dd>
+              </div>
+              <div style="display:contents" data-field-group="director">
+                <dt class="kv-key">導演</dt>
+                <dd class="kv-val"><span data-field="director">榮念曾</span></dd>
+              </div>
+              <div style="display:contents" data-field-group="notes">
+                <dt class="kv-key">備註</dt>
+                <dd class="kv-val cc-notes"><span data-field="notes">Notes</span></dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="entry-hero" data-hero>主圖（暫缺）</div>
+        </div>
+
+        <section class="materials-section" aria-labelledby="materials-head">
+          <h2 class="materials-head" id="materials-head">館藏資料</h2>
+
+          <div class="materials">
+            <div class="material-groups" data-groups>
+              <div class="material-group" data-group-template>
+                <div class="material-group-label">
+                  <span data-field="groupLabel">演出照片</span>
+                  <span class="material-group-count" data-field="groupCount">8</span>
+                </div>
+                <ul class="thumb-grid" role="list" data-group-items>
+                  <li class="thumb-item" data-thumb-template>
+                    <button class="thumb" type="button">
+                      <img data-thumb-image alt="" hidden />
+                      <span data-field="thumbLabel">檔案名稱</span>
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="material-viewer">
+              <div class="viewer-stage" data-viewer="image"><img alt="" /></div>
+              <div class="viewer-stage" data-viewer="pdf" hidden>
+                <iframe title="PDF" ></iframe>
+              </div>
+              <div class="viewer-stage" data-viewer="video" hidden>
+                <video controls preload="none"></video>
+              </div>
+              <div class="viewer-stage viewer-empty" data-viewer="empty" hidden>
+                <span>檔案尚未上載</span>
+                <span><span data-field="viewerKind">image</span> · <span data-field="viewerFilename">檔案名稱</span></span>
+              </div>
+
+              <div class="material-meta" data-material>
+                <div data-material-template>
+                  <span class="entry-tag" data-field-group="materialGroup"><span data-field="materialGroup">演出照片</span></span>
+                  <dl class="kv">
+                    <div style="display:contents" data-field-group="materialTitle">
+                      <dt class="kv-key">標題</dt>
+                      <dd class="kv-val"><span data-field="materialTitle">—</span></dd>
+                    </div>
+                    <div style="display:contents" data-field-group="materialType">
+                      <dt class="kv-key">類型</dt>
+                      <dd class="kv-val"><span data-field="materialType">Photograph</span></dd>
+                    </div>
+                    <div style="display:contents" data-field-group="materialAuthor">
+                      <dt class="kv-key">作者</dt>
+                      <dd class="kv-val"><span data-field="materialAuthor">—</span></dd>
+                    </div>
+                    <div style="display:contents" data-field-group="materialPublisher">
+                      <dt class="kv-key">出版</dt>
+                      <dd class="kv-val"><span data-field="materialPublisher">—</span></dd>
+                    </div>
+                    <div style="display:contents" data-field-group="materialPublished">
+                      <dt class="kv-key">出版日期</dt>
+                      <dd class="kv-val"><span data-field="materialPublished">—</span></dd>
+                    </div>
+                    <div style="display:contents" data-field-group="materialIssue">
+                      <dt class="kv-key">期數</dt>
+                      <dd class="kv-val"><span data-field="materialIssue">—</span></dd>
+                    </div>
+                    <div style="display:contents" data-field-group="materialPage">
+                      <dt class="kv-key">頁數</dt>
+                      <dd class="kv-val"><span data-field="materialPage">—</span></dd>
+                    </div>
+                    <div style="display:contents" data-field-group="materialFilename">
+                      <dt class="kv-key">檔案</dt>
+                      <dd class="kv-val"><span data-field="materialFilename">—</span></dd>
+                    </div>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <script src="./entry.js" defer></script>
+  </body>
+</html>

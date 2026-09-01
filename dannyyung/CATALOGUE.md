@@ -738,13 +738,11 @@ Found while building. Each needs a decision.
 11. **Pagination maths.** The design shows "1 2 3 … 12", implying 144
     records. There are 88, so 8 pages at 12 per page.
 
-12. **The title link points at `#`.** Each `<li>` carries `data-id`, and the
-    title is already an `a[data-field-link]` whose `href` `catalogue.js` sets
-    from the record's `href`. The sample data has `"href": "#"` for all 88
-    because the entry page does not exist yet. Once it does, the sample builder
-    should emit real paths — no markup change needed. The `table-rowlink` add-on
-    is no longer relevant: there is no table, and a list item does not need a
-    whole-row click surface.
+12. **Resolved 2026-09-01 — results link to the entry page.** `href` is now
+    `/entry?id=<id>` (`ENTRY_PATH` in the build script), carried onto the row's
+    `a.u-link-cover` by `catalogue.js`. There is no CMS, so one wireframe page
+    reads `?id=`; the backend swaps that one field for its real route and no
+    markup changes. See ENTRY.md.
 
 ## Second dataset, not used here
 

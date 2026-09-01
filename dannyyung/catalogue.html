@@ -222,6 +222,21 @@
     <script>
       /* Demo-page only: the design system's dropdown open/close behaviour, which
          on the real site comes from the Mast bundle. Not part of catalogue.js. */
+      /* Demo-page only: the sample data carries the REAL site path
+         (/entry?id=…), which this static server has no route for. Rewrite it to
+         the local harness file so the links are clickable here. Nothing in
+         catalogue.js knows about this — it only copies item.href onto the row
+         link, so the contract stays honest. */
+      document.addEventListener("click", function (e) {
+        var a = e.target.closest && e.target.closest("a[data-field-link]");
+        if (!a) return;
+        var href = a.getAttribute("href") || "";
+        if (href.indexOf("/entry?") === 0) {
+          e.preventDefault();
+          window.location.href = "." + href.replace("/entry?", "/entry.html?");
+        }
+      });
+
       /* Demo-page only: the design system's input-clear behaviour, which on the
          real site comes from forms.js. Not part of catalogue.js. */
       document.querySelectorAll("[data-input-clear]").forEach(function (btn) {

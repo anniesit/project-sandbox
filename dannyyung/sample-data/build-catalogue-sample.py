@@ -39,6 +39,10 @@ DATA = os.path.join(ROOT, "data")
 WORKS_XLSX = os.path.join(DATA, "DIR_current_data.xlsx")
 MEDIA_XLSX = os.path.join(DATA, "input_by_dept_media_meta_data.xlsx")
 
+# Where a result row links. Chinese sits at the site root, English will go in
+# /en/, so the Chinese entry page is /entry.
+ENTRY_PATH = "/entry"
+
 CATEGORY_KEY = {
     "劇場": "theatre-production",
     "視覺藝術": "visual-arts",
@@ -278,7 +282,12 @@ def main():
             "directors": pick_multi(w, "director"),
             "notes": notes_text(w.get("notes"), wid),
             "mediaCount": counts.get(wid, 0),
-            "href": "#",
+            # The entry page is ONE wireframe page that reads ?id= — there is no
+            # CMS behind these 88 works, so there are no 88 URLs to link to.
+            # The backend replaces this with whatever its real route is; the
+            # markup does not care, because catalogue.js only ever copies this
+            # string onto the row link's href.
+            "href": ENTRY_PATH + "?id=" + wid,
         })
 
     payload = {"items": items}
