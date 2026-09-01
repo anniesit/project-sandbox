@@ -85,7 +85,9 @@
  *                                     category, thumbnails nested inside
  *   [data-thumb-template]             a <button> cloned per material
  *   [data-viewer]                     wraps the four viewer states
- *   [data-viewer=image|pdf|video|empty]   exactly one is shown at a time
+ *   [data-viewer=image|pdf|video|empty]   exactly one is shown at a time —
+ *                                     hidden attribute AND .cc-hidden class,
+ *                                     see showViewer() for why both
  *   [data-material]                   the metadata panel under the viewer
  *   [data-back]                       the 返回 link; href is set from context
  *   [data-crumb-category]             the breadcrumb's category link; href is
@@ -434,16 +436,27 @@
     setField(panel, "materialFilename", m.filename);
   }
 
-  /* NOTE FOR THE PAGE'S CSS: the `hidden` attribute is only `display: none` in
-     the UA stylesheet, so ANY class on these elements that sets a display
-     (`display: flex` on the viewer stage, say) outranks it and all four states
-     render at once. The page needs a `[hidden] { display: none !important }`
-     rule — it is in the project override block in Webflow, and in the harness
-     stylesheet here. Toggling a class instead would hide the state from
-     assistive tech, which `hidden` does correctly. */
+  /* Two mechanisms on purpose, and the reason is not decorative.
+   *
+   * `hidden` is the correct semantics — it hides the state from assistive tech
+   * as well as from sight, which a class cannot do. But `hidden` is only
+   * `display: none` in the UA stylesheet, so `.viewer-stage { display: flex }`
+   * outranks it. That is covered by `[hidden] { display: none !important }` in
+   * the project override block.
+   *
+   * `.cc-hidden` exists because **the Webflow Designer canvas does not apply
+   * code embeds**, so that override rule is invisible while designing and all
+   * four stages stack ~500px each — a 2000px column nobody can lay out against.
+   * A real Webflow class the canvas honours is the only thing that fixes that.
+   *
+   * So: the attribute carries the meaning, the class carries the pixels, and
+   * this function is the single place that keeps them in step. Toggle one
+   * without the other and the canvas and the live page disagree. */
   function showViewer(root, kind) {
     all(root, "[data-viewer]").forEach(function (v) {
-      v.hidden = v.getAttribute("data-viewer") !== kind;
+      var off = v.getAttribute("data-viewer") !== kind;
+      v.hidden = off;
+      v.classList.toggle("cc-hidden", off);
     });
   }
 

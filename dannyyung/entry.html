@@ -103,6 +103,7 @@
          once. This rule is why exactly one shows. Mirrored in the Webflow
          project override block. */
       [hidden] { display:none !important; }
+      .viewer-stage.cc-hidden { display:none; }
     </style>
   </head>
   <body>
@@ -206,14 +207,20 @@
             </div>
 
             <div class="material-viewer">
-              <div class="viewer-stage" data-viewer="image"><img alt="" /></div>
-              <div class="viewer-stage" data-viewer="pdf" hidden>
+              <!-- The authored default is the "not uploaded" state, because that is
+                   what every material actually resolves to today (src is empty on
+                   all 1,164). It is also the only stage with text to design
+                   against. .cc-hidden is a real class, not just the hidden
+                   attribute, so the Webflow canvas — which does not apply code
+                   embeds — shows one stage instead of four. -->
+              <div class="viewer-stage cc-hidden" data-viewer="image" hidden><img alt="" /></div>
+              <div class="viewer-stage cc-hidden" data-viewer="pdf" hidden>
                 <iframe title="PDF" ></iframe>
               </div>
-              <div class="viewer-stage" data-viewer="video" hidden>
+              <div class="viewer-stage cc-hidden" data-viewer="video" hidden>
                 <video controls preload="none"></video>
               </div>
-              <div class="viewer-stage viewer-empty" data-viewer="empty" hidden>
+              <div class="viewer-stage viewer-empty" data-viewer="empty">
                 <span>檔案尚未上載</span>
                 <span><span data-field="viewerKind">image</span> · <span data-field="viewerFilename">檔案名稱</span></span>
               </div>

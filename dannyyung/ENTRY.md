@@ -229,6 +229,37 @@ Elements Webflow maps to native types — `Block` from a `div` or `nav`, `Link`
 from an `a`, `Span` from a `span` — come back clean, confirmed on the
 back/prev/next batch.
 
+## Designing this page in the canvas
+
+Two things about the Designer are worth knowing before rearranging anything
+here, because both have already caused a broken layout once.
+
+**The canvas does not apply code embeds.** The
+`[hidden] { display: none !important }` rule that makes exactly one viewer state
+show lives in the project override block, so while designing it does not exist —
+all four stages render at ~500px each, a 2000px column with nothing to lay out
+against. That is fixed with `.viewer-stage.cc-hidden`, a **real Webflow class**
+the canvas honours. `entry.js` toggles the class and the `hidden` attribute
+together in `showViewer()`: the attribute carries the meaning (it hides the
+state from assistive tech, which a class cannot), the class carries the pixels.
+Change one without the other and the canvas and the live page disagree.
+
+**The authored default state is `empty`, not `image`.** Every material resolves
+to the placeholder today because `src` is blank on all 1,164, so the canvas now
+shows what the page actually renders — and it is the only stage with text to
+design against. The other three carry `hidden` + `cc-hidden`.
+
+**`.materials` is a two-column grid and must keep exactly two children:**
+`.material-groups` and `.material-viewer`. The group template belongs *inside*
+`.material-groups`. Dragging it out gives the grid three children, and the
+viewer wraps onto row 2, column 1 — which looks like "the viewer moved into the
+left column". If that happens, put `[data-group-template]` back inside
+`[data-groups]`; nothing else is wrong.
+
+The Navigator names each stage (`Viewer: image`, `Viewer: PDF`, `Viewer: video`,
+`Viewer: not uploaded (default)`) so the hidden ones can be selected and styled
+without unhiding them.
+
 ## `hidden` needed a CSS rule to work at all
 
 The four viewer states are toggled with the `hidden` attribute. But `hidden` is
@@ -241,9 +272,11 @@ the image. Fixed with one rule in the project override block:
 ```
 
 It is **site-wide, not page-scoped**, because any component that toggles
-`hidden` on a flex or grid element has the same latent bug. Toggling a class
-instead would have hidden the state from CSS but not from assistive tech, which
-`hidden` does correctly.
+`hidden` on a flex or grid element has the same latent bug.
+
+That rule covers the published page. It does **not** cover the Designer canvas —
+see **Designing this page in the canvas** above for why `.cc-hidden` exists
+alongside it.
 
 ## The viewer picks its element from the file EXTENSION
 
