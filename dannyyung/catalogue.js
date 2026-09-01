@@ -19,6 +19,9 @@
  *     facets : { locations: [], directors: [] } to populate the dropdowns
  *              (optional; only needs sending once)
  *   window.dyCatalogue.getQuery(rootEl)  -> the current UI selection
+ *   window.dyCatalogue.applyQuery(rootEl, query)  -> set the controls to match
+ *     The inverse of getQuery. Fires nothing. Use it to restore a view from a
+ *     URL, a saved search, or a browser Back.
  *
  * Events (bubbling, on the [data-catalogue] root):
  *   "dy:query"  detail = { category, yearFrom, yearTo, location, director,
@@ -292,6 +295,52 @@
     root.dispatchEvent(new CustomEvent("dy:query", { detail: detail, bubbles: true }));
   }
 
+  /* Set the controls to match a query. The inverse of getQuery(), and the other
+     half of making a catalogue view addressable: whoever owns state (the mock
+     driver here, the backend in production) decides WHEN a query is restored;
+     this only knows HOW to show it.
+
+     Deliberately silent — it fires no "dy:query", because the caller already
+     has the query it just passed in. Emitting here would loop. */
+  function applyQuery(root, q) {
+    if (!root || !q) return;
+    var radios = root.querySelectorAll('[data-facet="category"] input[data-facet-value]');
+    for (var i = 0; i < radios.length; i++) {
+      radios[i].checked = radios[i].getAttribute("data-facet-value") === (q.category || "all");
+    }
+    setInput(root.querySelector("[data-year-from]"), q.yearFrom);
+    setInput(root.querySelector("[data-year-to]"), q.yearTo);
+    setInput(root.querySelector("[data-search]"), q.q);
+    selectOption(root.querySelector('[data-facet="location"]'), q.location || "all");
+    selectOption(root.querySelector('[data-facet="director"]'), q.director || "all");
+    selectOption(root.querySelector("[data-sort]"), q.sort || "year-desc");
+  }
+
+  function setInput(el, v) {
+    if (el) el.value = v == null || v === "" ? "" : String(v);
+  }
+
+  /* Mirrors what a user click does to a design system dropdown: aria-selected on
+     the options, the trigger's visible label, and the hidden input forms.js
+     reads. Missing any one of the three leaves the control lying about itself. */
+  function selectOption(scope, value) {
+    if (!scope) return;
+    var dd = scope.matches("[data-dropdown]") ? scope : scope.querySelector("[data-dropdown]");
+    if (!dd) return;
+    var opts = dd.querySelectorAll("[data-dropdown-option]");
+    var chosen = null;
+    for (var i = 0; i < opts.length; i++) {
+      var on = opts[i].getAttribute("data-value") === String(value);
+      opts[i].setAttribute("aria-selected", on ? "true" : "false");
+      if (on) chosen = opts[i];
+    }
+    if (!chosen) return;
+    var label = dd.querySelector("[data-dropdown-value]");
+    if (label) label.textContent = chosen.textContent.trim();
+    var hidden = dd.querySelector('input[type="hidden"]');
+    if (hidden) hidden.value = String(value);
+  }
+
   function selected(root, sel) {
     var dd = root.querySelector(sel);
     if (!dd) return "all";
@@ -408,12 +457,27 @@
             facets: first ? facets : null,
           });
           first = false;
+          mockWriteUrl(q);
+          mockSaveContext(list, q);
         }
 
         root.addEventListener("dy:query", function (e) {
           run(e.detail);
         });
-        run(getQuery(root, 1));
+
+        /* Restore the view from the URL before the first render, so a shared or
+           bookmarked catalogue link opens on the same results. The facets have
+           to exist first — the location and director options are generated from
+           the data — which is why this runs here and not at page load. */
+        var fromUrl = mockReadUrl();
+        if (fromUrl) {
+          render(root, { items: [], total: 0, page: 1, pages: 1, facets: facets });
+          first = false;
+          applyQuery(root, fromUrl);
+          run(fromUrl);
+        } else {
+          run(getQuery(root, 1));
+        }
       })
       .catch(function (err) {
         console.error("[catalogue] mock load failed (" + url + "):", err);
@@ -449,6 +513,86 @@
     });
   }
 
+  /* ---- the catalogue view as a URL ----
+     Only non-default values are written, so a plain /catalogue stays clean.
+     replaceState, not pushState: typing in the search box should not fill the
+     user's Back history with one entry per keystroke. */
+  var URL_KEYS = [
+    ["category", "category", "all"],
+    ["yearFrom", "from", null],
+    ["yearTo", "to", null],
+    ["location", "location", "all"],
+    ["director", "director", "all"],
+    ["q", "q", ""],
+    ["sort", "sort", "year-desc"],
+    ["page", "page", 1],
+  ];
+
+  function mockWriteUrl(q) {
+    if (!window.history || !window.history.replaceState) return;
+    var p = new URLSearchParams();
+    for (var i = 0; i < URL_KEYS.length; i++) {
+      var k = URL_KEYS[i][0], param = URL_KEYS[i][1], dflt = URL_KEYS[i][2];
+      var v = q[k];
+      if (v == null || v === "" || String(v) === String(dflt)) continue;
+      p.set(param, String(v));
+    }
+    var qs = p.toString();
+    history.replaceState(null, "", location.pathname + (qs ? "?" + qs : ""));
+  }
+
+  function mockReadUrl() {
+    var p = new URLSearchParams(location.search);
+    if (!p.toString()) return null;
+    var q = {};
+    for (var i = 0; i < URL_KEYS.length; i++) {
+      var k = URL_KEYS[i][0], param = URL_KEYS[i][1], dflt = URL_KEYS[i][2];
+      var raw = p.get(param);
+      if (raw == null) { q[k] = dflt; continue; }
+      q[k] = (k === "yearFrom" || k === "yearTo" || k === "page")
+        ? (parseInt(raw, 10) || dflt)
+        : raw;
+    }
+    q.page = q.page || 1;
+    return q;
+  }
+
+  /* ---- the handoff the ENTRY page reads ----
+     Stores the WHOLE matching, sorted id list — not just the visible page — so
+     the entry page's 上一項 / 下一項 walk the result set the user was actually
+     browsing, and can cross a page boundary. Plus the catalogue URL, which is
+     what 返回 goes back to.
+
+     sessionStorage, not localStorage: this is one browsing session's context,
+     and it must not leak into a new tab opened days later.
+
+     IN PRODUCTION the backend owns this. It can keep this shape, or answer
+     "neighbours of X given query Q" from the server — entry.js does not care,
+     because it is handed the answer rather than computing it. */
+  function mockSaveContext(list, q) {
+    try {
+      sessionStorage.setItem(
+        "dy:catalogue-context",
+        JSON.stringify({
+          url: location.pathname + location.search,
+          query: q,
+          ids: list.map(function (i) { return i.id; }),
+          titles: list.reduce(function (acc, i) {
+            acc[i.id] = i.title || i.titleEn || "";
+            return acc;
+          }, {}),
+          hrefs: list.reduce(function (acc, i) {
+            acc[i.id] = i.href || "";
+            return acc;
+          }, {}),
+        })
+      );
+    } catch (e) {
+      /* Private mode, or storage full. The entry page falls back to its own
+         default ordering, so this is a degraded experience, not a broken one. */
+    }
+  }
+
   function uniq(arr) {
     return arr
       .filter(function (v, i) {
@@ -461,5 +605,5 @@
   /* >>> END MOCK DRIVER <<< */
 
   /* ---------- public API (for backend integration) ---------- */
-  window.dyCatalogue = { render: render, getQuery: getQuery };
+  window.dyCatalogue = { render: render, getQuery: getQuery, applyQuery: applyQuery };
 })();

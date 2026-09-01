@@ -86,6 +86,34 @@ a comment saying where the real file lives.
 `vercel.json` carries a `/dannyyung/(.*)` CORS block so the JSON fetch works
 from the Webflow preview domain.
 
+### The catalogue view is addressable
+
+`catalogue.js` reflects its query in the URL and restores from it:
+
+```
+/catalogue?category=visual-arts&sort=title&page=2
+```
+
+Only non-default values are written, so a plain `/catalogue` stays clean, and
+`replaceState` is used rather than `pushState` — otherwise typing in the search
+box would fill the Back history with one entry per keystroke.
+
+Restoring is `dyCatalogue.applyQuery(root, query)`, the inverse of `getQuery`.
+It sets the radios, the year inputs, the search box, and all three dropdowns —
+options' `aria-selected`, the trigger's visible label, **and** the hidden input
+`forms.js` reads. Setting fewer than all three leaves the control lying about
+itself. It fires no `dy:query`: the caller already has the query it passed in,
+and emitting would loop.
+
+**It must run after the facets are filled.** The location and director options
+are generated from the data, and a value cannot be selected in a list that does
+not exist yet.
+
+The mock driver also stores the whole matching, sorted id list plus this URL in
+`sessionStorage` under `dy:catalogue-context`. That is what the entry page's
+返回 / 上一項 / 下一項 read — see ENTRY.md. In production the backend owns that
+handoff and can keep this shape or answer neighbour queries server-side.
+
 ### Ownership split
 
 Same as filmtv. `catalogue.js` owns the **visual**: rendering records into the

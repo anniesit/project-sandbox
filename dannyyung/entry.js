@@ -9,9 +9,12 @@
  *     where the media files live. It calls render() once with the record.
  *
  * Integration API (global):
- *   window.dyEntry.render(rootEl, record)
- *     rootEl : the [data-entry] element (or omit to render all instances)
- *     record : one item from entry-sample.json (shape below)
+ *   window.dyEntry.render(rootEl, record, context)
+ *     rootEl  : the [data-entry] element (or omit to render all instances)
+ *     record  : one item from entry-sample.json (shape below)
+ *     context : { backHref, prev, next } — where 返回 goes, and the neighbours
+ *               in the result set the user was browsing. Optional; without it
+ *               the two arrows hide and 返回 keeps its authored href.
  *   window.dyEntry.select(rootEl, materialId)   open a material by id
  *
  * Events (bubbling, on the [data-entry] root):
@@ -83,6 +86,10 @@
  *   [data-viewer]                     wraps the four viewer states
  *   [data-viewer=image|pdf|video|empty]   exactly one is shown at a time
  *   [data-material]                   the metadata panel under the viewer
+ *   [data-back]                       the 返回 link; href is set from context
+ *   [data-prev] / [data-next]         the neighbour links; hidden when there is
+ *                                     no neighbour
+ *   [data-field=prevTitle|nextTitle]  the neighbour's title inside each link
  *
  * Dependency-free, multi-instance safe, writes no inline element styles.
  * ============================================================ */
@@ -99,6 +106,11 @@
   /* >>> MOCK DATA URL <<< the backend replaces this (or removes the mock
      driver at the bottom of this file entirely and calls render() directly). */
   var DATA_URL = new URL("./sample-data/entry-sample.json", SELF).href;
+
+  /* >>> MOCK PATHS <<< only the mock driver's fallbacks use these — when there
+     is no stored catalogue context to take the real URLs from. */
+  var CATALOGUE_PATH = "/catalogue";
+  var ENTRY_PATH = "/entry";
 
   /* ---------- small helpers ---------- */
 
@@ -175,9 +187,9 @@
 
   /* ---------- rendering ---------- */
 
-  function render(root, record) {
+  function render(root, record, context) {
     if (!root) {
-      all(document, "[data-entry]").forEach(function (r) { render(r, record); });
+      all(document, "[data-entry]").forEach(function (r) { render(r, record, context); });
       return;
     }
     if (!record) return;
@@ -203,6 +215,7 @@
       crumb.setAttribute("data-category-key", record.categoryKey);
     }
 
+    renderNav(root, context);
     buildGroups(root, record.materialGroups || []);
 
     /* Open the first material so the viewer is never empty on load. */
@@ -211,6 +224,48 @@
     else showViewer(root, "empty");
 
     return root;
+  }
+
+  /* ---------- back / previous / next ----------
+   *
+   * This file does NOT work out what the neighbours are. It is handed them:
+   *
+   *   context = {
+   *     backHref: "/catalogue?category=…&sort=…&page=3",
+   *     prev: { id, title, href } | null,
+   *     next: { id, title, href } | null
+   *   }
+   *
+   * WHY NOT COMPUTE THEM HERE. "Previous" only means something relative to a
+   * result set. The user arrived from a catalogue that was filtered and sorted
+   * some way, and the neighbour they expect is the neighbour in THAT list —
+   * not the record with the adjacent id, which would be an unrelated work from
+   * a different decade. Whoever owns the query owns the answer: the mock driver
+   * below reads it from the catalogue's handoff, and the backend will answer it
+   * from the server. Same seam as everything else on these two pages.
+   *
+   * Absent neighbours are hidden rather than disabled — a dead control at the
+   * first and last record is noise. `.entry-nav-next` carries `margin-left:auto`
+   * so 下一項 stays hard right even when 上一項 is gone.
+   */
+  function renderNav(root, context) {
+    context = context || {};
+    var back = $(root, "[data-back]");
+    if (back && context.backHref) back.setAttribute("href", context.backHref);
+
+    ["prev", "next"].forEach(function (which) {
+      var el = $(root, "[data-" + which + "]");
+      if (!el) return;
+      var item = context[which];
+      if (!item || !item.href) {
+        el.hidden = true;
+        el.removeAttribute("href");
+        return;
+      }
+      el.hidden = false;
+      el.setAttribute("href", item.href);
+      setField(el, which + "Title", item.title || "");
+    });
   }
 
   function firstMaterial(record) {
@@ -441,13 +496,64 @@
             for (var i = 0; i < items.length && id; i++) {
               if (items[i].id === id) { rec = items[i]; break; }
             }
-            render(root, rec || items[0]);
+            rec = rec || items[0];
+            render(root, rec, mockContext(rec, items));
           });
         })
         .catch(function (err) {
           if (window.console) console.error("entry.js sample load failed:", err);
         });
     }
+    /* Work out 返回 / 上一項 / 下一項 from the context the CATALOGUE stored on
+       its way out (see mockSaveContext in catalogue.js).
+
+       Falls back to the full sample in its default order when there is no
+       stored context — someone opening an entry URL cold, from a bookmark or a
+       search engine. The arrows then still work; they just walk the default
+       list rather than a filtered one. That is the honest fallback: hiding
+       them would be worse, and guessing a filter would be a lie. */
+    function mockContext(record, items) {
+      var stored = null;
+      try {
+        stored = JSON.parse(sessionStorage.getItem("dy:catalogue-context") || "null");
+      } catch (e) {
+        stored = null;
+      }
+
+      var ids, titles, hrefs, backHref;
+      if (stored && stored.ids && stored.ids.indexOf(record.id) >= 0) {
+        ids = stored.ids;
+        titles = stored.titles || {};
+        hrefs = stored.hrefs || {};
+        backHref = stored.url || CATALOGUE_PATH;
+      } else {
+        /* Default order = newest year first, the catalogue's own default sort. */
+        var sorted = items.slice().sort(function (a, b) {
+          return (b.year || 0) - (a.year || 0);
+        });
+        ids = sorted.map(function (i) { return i.id; });
+        titles = {};
+        hrefs = {};
+        sorted.forEach(function (i) {
+          titles[i.id] = i.title || i.titleEn || "";
+          hrefs[i.id] = i.href || "";
+        });
+        backHref = CATALOGUE_PATH;
+      }
+
+      var at = ids.indexOf(record.id);
+      function neighbour(step) {
+        var id = ids[at + step];
+        if (at < 0 || !id) return null;
+        return {
+          id: id,
+          title: titles[id] || "",
+          href: hrefs[id] || (ENTRY_PATH + "?id=" + encodeURIComponent(id)),
+        };
+      }
+      return { backHref: backHref, prev: neighbour(-1), next: neighbour(1) };
+    }
+
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", run);
     } else {

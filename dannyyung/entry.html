@@ -21,6 +21,15 @@
       .breadcrumb a { color:inherit; }
       .breadcrumb-sep { opacity:.5; }
 
+      .entry-back { margin-bottom:1rem; }
+      .entry-nav { display:flex; align-items:baseline; gap:1rem;
+                   padding:1rem 0; border-top:1px solid #cccabf; }
+      .entry-nav-link { color:inherit; text-decoration:none; }
+      .entry-nav-link:hover { text-decoration:underline; }
+      /* margin-left:auto rather than space-between, so 下一項 stays hard right
+         even when 上一項 is hidden at the first record. */
+      .entry-nav-link.cc-next { margin-left:auto; text-align:right; }
+      .entry-nav-title { opacity:.6; padding-left:.5rem; }
       .entry-head { display:grid; grid-template-columns:1fr 448px; gap:40px;
                     align-items:start; margin-bottom:3rem; }
       .entry-tag { display:inline-flex; align-items:center; padding:.15rem .75rem;
@@ -116,6 +125,12 @@
           <span aria-current="page" data-field="title">標題</span>
         </nav>
 
+        <div class="entry-back">
+          <a class="entry-nav-link" href="./catalogue.html" data-back>
+            <span aria-hidden="true">←</span> 返回
+          </a>
+        </div>
+
         <div class="entry-head">
           <div class="entry-info">
             <span class="entry-tag" data-field-group="category"><span data-field="category">劇場</span></span>
@@ -159,6 +174,15 @@
 
           <div class="entry-hero" data-hero>主圖（暫缺）</div>
         </div>
+
+        <nav class="entry-nav" aria-label="上一項及下一項">
+          <a class="entry-nav-link" href="#" data-prev hidden>
+            <span aria-hidden="true">←</span> 上一項<span class="entry-nav-title" data-field="prevTitle"></span>
+          </a>
+          <a class="entry-nav-link cc-next" href="#" data-next hidden>
+            下一項<span class="entry-nav-title" data-field="nextTitle"></span> <span aria-hidden="true">→</span>
+          </a>
+        </nav>
 
         <section class="materials-section" aria-labelledby="materials-head">
           <h2 class="materials-head" id="materials-head">館藏資料</h2>
@@ -231,6 +255,27 @@
       </div>
     </div>
 
+    <script>
+      /* Demo-page only: the sample data carries the REAL site paths
+         (/entry?id=… , /catalogue), which this static server has no routes for.
+         Rewrite them to the harness files on click. entry.js knows nothing
+         about this — it only sets the hrefs it is handed, so the contract stays
+         honest. Same trick as catalogue.html. */
+      document.addEventListener("click", function (e) {
+        var a = e.target.closest && e.target.closest("a[href]");
+        if (!a) return;
+        var href = a.getAttribute("href") || "";
+        var local =
+          href.indexOf("/entry?") === 0 ? "." + href.replace("/entry?", "/entry.html?") :
+          href === "/entry" ? "./entry.html" :
+          href.indexOf("/catalogue?") === 0 ? "." + href.replace("/catalogue?", "/catalogue.html?") :
+          href === "/catalogue" ? "./catalogue.html" : null;
+        if (local) {
+          e.preventDefault();
+          window.location.href = local;
+        }
+      });
+    </script>
     <script src="./entry.js" defer></script>
   </body>
 </html>

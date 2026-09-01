@@ -35,6 +35,7 @@ That rewrite lives in the harness's own demo script, not in `catalogue.js`.
 .container
   div[data-entry][data-src]                        ← entry.js renders into this
     nav.entry-breadcrumb          目錄 / 類別 / 標題
+    .entry-back > a[data-back]    ← 返回
     .entry-head                   grid: 1fr 28rem
       .entry-info
         span.result-tag           the category chip (reused from the catalogue)
@@ -42,6 +43,7 @@ That rewrite lives in the harness's own demo script, not in `catalogue.js`.
         dl.kv                     日期 / 場地 / 地點 / 導演
         details.accordion-component.cc-kv   備註 — see below
       .entry-hero[data-hero]      placeholder — no hero images exist yet
+    nav.entry-nav                 ← 上一項  /  下一項 →
     section.materials-section
       h2.entry-section-head       館藏資料
       .materials                  grid: 20rem 1fr
@@ -64,6 +66,86 @@ That rewrite lives in the harness's own demo script, not in `catalogue.js`.
 `.result-tag` is reused verbatim from the catalogue rather than redrawn — it is
 the same bordered token box, and it is used for both the work's category and
 the material's content category.
+
+## 返回 / 上一項 / 下一項
+
+Added 2026-09-01 from Figma `394:1251`: 返回 sits above the head, the two
+neighbour links below it.
+
+### Previous and next follow the SORT, not the id
+
+An id-ordered "next" would throw the reader from a 1981 theatre production into
+an unrelated 1994 exhibition, because the ids are an accession order nobody is
+browsing by. "Previous" only means something relative to a **result set** — the
+one the user filtered and sorted on the catalogue — so that is what the arrows
+walk. Filter to 視覺藝術 sorted by title, open the second of four, and the arrows
+move within those four.
+
+They also cross page boundaries: the catalogue hands over the **whole matching
+list**, not just the twelve rows on screen, so item 12 → item 13 works without
+going back to paginate.
+
+**`entry.js` does not compute this.** It is handed a context and renders it:
+
+```js
+window.dyEntry.render(root, record, {
+  backHref: "/catalogue?category=visual-arts",
+  prev: { id, title, href } | null,
+  next: { id, title, href } | null
+});
+```
+
+Whoever owns the query owns the answer — the mock driver reads it from the
+catalogue's handoff, the backend will answer it from the server. Same seam as
+`dy:query`. A backend that paginates and never sees the full list can answer
+"neighbours of X given query Q" instead; `entry.js` is unaffected.
+
+At the first and last record the missing arrow is **hidden, not disabled** — a
+dead control there is noise. `.entry-nav-link.cc-next` carries `margin-left:
+auto` rather than the nav using `space-between`, so 下一項 stays hard right when
+上一項 is gone.
+
+### 返回 goes back to the catalogue you were browsing
+
+Yes — and making that true needed the catalogue view to be **addressable**,
+which it was not. `catalogue.js` now:
+
+- writes its query to the URL (`/catalogue?category=visual-arts&sort=title`)
+  with `replaceState` — not `pushState`, or typing in the search box would fill
+  the Back history with one entry per keystroke;
+- restores from that URL on load via the new `dyCatalogue.applyQuery(root, q)`,
+  which sets the radios, the year inputs, the search box and all three dropdowns
+  (options, trigger label **and** the hidden input `forms.js` reads — miss any
+  one and the control lies about itself);
+- stores that URL, plus the ordered id list, in `sessionStorage` under
+  `dy:catalogue-context` on its way out.
+
+`返回`'s href is that stored URL, so it returns to the exact filtered, sorted,
+paginated view. Not `history.back()`: a real `href` also works from a cold
+landing, survives a middle-click into a new tab, and is a real link for anything
+crawling the page.
+
+Restoration has to happen **after the facets are built**, because the location
+and director options are generated from the data — a value cannot be selected in
+a list that does not exist yet. That is why it runs inside the mock driver's
+fetch callback rather than at page load.
+
+`sessionStorage`, not `localStorage`: this is one session's browsing context and
+must not leak into a tab opened days later.
+
+**Fallbacks.** Landing on an entry URL cold — a bookmark, a search result, a
+shared link — means no stored context. 返回 then goes to plain `/catalogue`, and
+the arrows walk the full list in the catalogue's default sort (newest first).
+The arrows still work; they just walk an unfiltered list. Hiding them would be
+worse, and inventing a filter would be a lie.
+
+**Side effect worth having:** catalogue views are now shareable. `/catalogue?location=台北&sort=title`
+opens on those five results.
+
+**Worth a look when you review:** the breadcrumb's first crumb (目錄) and 返回
+now do nearly the same job. 返回 is the smarter one — it restores state — while
+the breadcrumb is a position indicator. Both are in the Figma; keeping both is
+defensible, but it is a duplication you may want to resolve.
 
 ## 備註 is the design system's accordion
 
@@ -110,12 +192,17 @@ and a whole nested subtree lands in **one** action. The coercion problem is
 limited to `form/input/select/ul/li/label`. That turned ~30 element-builder
 calls into two WHTML calls.
 
-The cost: **WHTML also writes a literal `class` attribute** alongside the
-Webflow style, so `<dt class="kv-key">` comes back with both, and would publish
-as `class="kv-key kv-key"` — worse, the raw attribute survives a rename in the
-Designer and would keep matching a stale selector. Every one was removed after
-the build (`remove_attribute` on `class`); a final query for
+The cost: **WHTML writes a literal `class` attribute on DOM-tagged elements**
+alongside the Webflow style, so `<dt class="kv-key">` comes back with both, and
+would publish as `class="kv-key kv-key"` — worse, the raw attribute survives a
+rename in the Designer and would keep matching a stale selector. Every one was
+removed after the build (`remove_attribute` on `class`); a final query for
 `attribute_name: "class"` returns 0. **Do this cleanup after any WHTML batch.**
+
+It only affects elements that come back as type `DOM` (`dl`, `dt`, `dd`, `svg`).
+Elements Webflow maps to native types — `Block` from a `div` or `nav`, `Link`
+from an `a`, `Span` from a `span` — come back clean, confirmed on the
+back/prev/next batch.
 
 ## `hidden` needed a CSS rule to work at all
 
