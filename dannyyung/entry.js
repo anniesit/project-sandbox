@@ -90,6 +90,8 @@
  *                                     see showViewer() for why both
  *   [data-material]                   the metadata panel under the viewer
  *   [data-back]                       the 返回 link; href is set from context
+ *   [data-back-region]                the wrapper hidden entirely when there is
+ *                                     no context.backHref to go back to
  *   [data-crumb-category]             the breadcrumb's category link; href is
  *                                     set from context.categoryHref
  *   [data-prev] / [data-next]         the neighbour links; hidden when there is
@@ -263,8 +265,22 @@
    */
   function renderNav(root, context) {
     context = context || {};
+    /* 返回 only exists when there IS somewhere to go back to. Arriving by a
+       direct URL — a bookmark, a shared link, a search result — leaves no
+       stored catalogue context, and a "back" that goes somewhere the reader has
+       never been is a lie. The breadcrumb still offers 目錄 and the category,
+       so nothing is unreachable; it just stops promising a return.
+
+       The whole .entry-back region is hidden, not only the anchor, or its
+       bottom margin would leave a gap where the link used to be. */
     var back = $(root, "[data-back]");
-    if (back && context.backHref) back.setAttribute("href", context.backHref);
+    var backRegion = $(root, "[data-back-region]") || (back && back.parentElement);
+    if (back && context.backHref) {
+      back.setAttribute("href", context.backHref);
+      if (backRegion) backRegion.hidden = false;
+    } else if (backRegion) {
+      backRegion.hidden = true;
+    }
 
     ["prev", "next"].forEach(function (which) {
       var el = $(root, "[data-" + which + "]");
@@ -549,7 +565,7 @@
         ids = stored.ids;
         titles = stored.titles || {};
         hrefs = stored.hrefs || {};
-        backHref = stored.url || CATALOGUE_PATH;
+        backHref = stored.url || "";
       } else {
         /* Default order = newest year first, the catalogue's own default sort. */
         var sorted = items.slice().sort(function (a, b) {
@@ -562,7 +578,9 @@
           titles[i.id] = i.title || i.titleEn || "";
           hrefs[i.id] = i.href || "";
         });
-        backHref = CATALOGUE_PATH;
+        /* No stored context: no back link. Deliberately empty rather than
+           CATALOGUE_PATH — see renderNav. */
+        backHref = "";
       }
 
       var at = ids.indexOf(record.id);

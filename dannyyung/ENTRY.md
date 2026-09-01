@@ -151,11 +151,12 @@ They look redundant and are not:
 | 返回 | "take me back to what I was doing" | the user's whole query — filters, sort, page |
 | 目錄 / 劇場 crumb | "where am I, and what is this a part of" | nothing, or just the category |
 
-**返回 is always present.** On a cold landing — a bookmark, a shared link, a
-search result — there is no stored context, so it falls back to plain
-`/catalogue` rather than disappearing. A control that sometimes vanishes is
-worse than one that degrades. (Kept 2026-09-01 after review; if it should hide
-instead, that is one branch in `renderNav`.)
+**返回 appears only when there is somewhere to go back to.** On a cold landing —
+a bookmark, a shared link, a search result — there is no stored catalogue
+context, and a "back" that leads somewhere the reader has never been is a lie.
+The whole `[data-back-region]` wrapper is hidden, not just the anchor, or its
+bottom margin would leave a gap. Nothing becomes unreachable: the breadcrumb
+still offers 目錄 and the category.
 
 ### The category crumb goes to the filtered catalogue
 
@@ -171,6 +172,31 @@ The **six records with no category** get no crumb at all. The anchor and the
 separator after it both carry `data-field-group="category"`, so the existing
 empty-field rule removes both and the breadcrumb reads 目錄 / 標題 with one
 separator, not two.
+
+## The material groups are accordions too
+
+Each content category is the same design system accordion as 備註, with a
+`cc-group` combo set instead of `cc-kv`: no card border, a bottom rule under the
+header, the count beside the title and the icon pushed right with
+`margin-left: auto`.
+
+**They start open** (`data-accordion-start-open="true"` plus `open`). The mockup
+exists so the client can see their data, so nothing hides by default. Collapsing
+earns its place on the worst record: `DYP-000074` has **141 materials in three
+groups**, and its left column measures **7,769px** — the accordion is the only
+thing that makes that record reviewable.
+
+**Two global classes cannot share an element in Webflow**, so the old
+`.material-group` and `.material-group-label` are gone; the accordion classes
+plus `cc-group` carry the styling. Both dead classes were deleted.
+
+**Known limitation: the cloned groups animate natively, not smoothly.** The
+design system's `accordion.js` collects `document.querySelectorAll("details")`
+once at `DOMContentLoaded`, and `entry.js` clones its groups later, after the
+data arrives — so the clones never get the height animation the 備註 accordion
+has. They still open and close correctly, because `<details>` needs no JS. Worth
+knowing before someone reports it as a bug: it is the initialisation order, not
+the markup.
 
 ## 備註 is the design system's accordion
 

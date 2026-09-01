@@ -91,9 +91,9 @@ from the Webflow preview domain.
 After a pagination click the reader is at the *bottom* of the previous page,
 with the new rows sitting above them. `returnToTop()` moves two things:
 
-- **the scroll position**, to the top of `[data-catalogue]`, minus a measured
-  sticky-header offset (measured rather than hardcoded, so it stays right if the
-  nav's height or position changes);
+- **the scroll position**, to the top of the document — the whole page, nav and
+  all, not just the top of the result list. No sticky-header offset is needed as
+  a result;
 - **focus**, because `paint()` rebuilds the pagination buttons including the one
   just clicked. Without this, focus falls to `<body>` and a keyboard user is
   dumped at the start of the tab order with no signal that anything happened.

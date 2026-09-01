@@ -167,7 +167,7 @@
      pagination of a list they have not seen.
 
      Two things move, not one:
-       - the scroll position, back to the top of the catalogue;
+       - the scroll position, back to the top of the page;
        - FOCUS, because paint() destroys and rebuilds the pagination buttons,
          including the one that was just clicked. Focus would otherwise fall to
          <body> and a keyboard user would be dumped at the start of the tab
@@ -186,28 +186,18 @@
       try { list.focus({ preventScroll: true }); } catch (e) { list.focus(); }
     }
 
-    /* An INSTANT jump, deliberately — not a smooth scroll.
+    /* The top of the DOCUMENT, not the top of the results — a page change
+       should put the reader back at the start of the page, nav and all.
+       No sticky-header offset is needed as a result.
 
-       Two reasons. It is what a page change should feel like: the content was
-       replaced wholesale, so gliding past a thousand pixels of results the
-       reader will never look at only delays them, and it needs no
-       prefers-reduced-motion branch. And `behavior: "smooth"` is not reliably
-       honoured — it silently does nothing in some embedded browsers (measured
-       in the preview pane used to verify this), which would leave the reader
-       stranded at the bottom with no error to explain it. */
-    var top = root.getBoundingClientRect().top + (window.pageYOffset || 0) - stickyOffset();
-    window.scrollTo(0, Math.max(0, top));
-  }
-
-  /* A sticky or fixed header would otherwise cover the top of the results.
-     Measured rather than hardcoded, so it stays right if the nav's height or
-     its position changes. */
-  function stickyOffset() {
-    var nav = document.querySelector(".nav_component, header, nav");
-    if (!nav) return 0;
-    var pos = window.getComputedStyle(nav).position;
-    if (pos !== "sticky" && pos !== "fixed") return 0;
-    return nav.getBoundingClientRect().height || 0;
+       An INSTANT jump, deliberately. The content was replaced wholesale, so
+       gliding past a thousand pixels of results the reader will never look at
+       only delays them, and it needs no prefers-reduced-motion branch. It is
+       also the only reliable option: `behavior: "smooth"` silently does nothing
+       in some embedded browsers (measured in the preview pane used to verify
+       this), which would leave the reader stranded at the bottom with no error
+       to explain it. */
+    window.scrollTo(0, 0);
   }
 
 
