@@ -142,10 +142,35 @@ worse, and inventing a filter would be a lie.
 **Side effect worth having:** catalogue views are now shareable. `/catalogue?location=台北&sort=title`
 opens on those five results.
 
-**Worth a look when you review:** the breadcrumb's first crumb (目錄) and 返回
-now do nearly the same job. 返回 is the smarter one — it restores state — while
-the breadcrumb is a position indicator. Both are in the Figma; keeping both is
-defensible, but it is a duplication you may want to resolve.
+### The breadcrumb and 返回 are kept as a deliberate pair
+
+They look redundant and are not:
+
+| | Answers | Carries |
+|---|---|---|
+| 返回 | "take me back to what I was doing" | the user's whole query — filters, sort, page |
+| 目錄 / 劇場 crumb | "where am I, and what is this a part of" | nothing, or just the category |
+
+**返回 is always present.** On a cold landing — a bookmark, a shared link, a
+search result — there is no stored context, so it falls back to plain
+`/catalogue` rather than disappearing. A control that sometimes vanishes is
+worse than one that degrades. (Kept 2026-09-01 after review; if it should hide
+instead, that is one branch in `renderNav`.)
+
+### The category crumb goes to the filtered catalogue
+
+`/catalogue?category=theatre-production` — "all 劇場 works". It deliberately
+carries **only** the category, not the user's other filters or their page: it is
+a position in the hierarchy, not a return to a session. 返回 is the control that
+resumes a session.
+
+The href comes from `context.categoryHref`, not from `entry.js` — routing is the
+backend's, same as prev/next and for the same reason.
+
+The **six records with no category** get no crumb at all. The anchor and the
+separator after it both carry `data-field-group="category"`, so the existing
+empty-field rule removes both and the breadcrumb reads 目錄 / 標題 with one
+separator, not two.
 
 ## 備註 is the design system's accordion
 

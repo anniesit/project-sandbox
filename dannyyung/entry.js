@@ -12,7 +12,8 @@
  *   window.dyEntry.render(rootEl, record, context)
  *     rootEl  : the [data-entry] element (or omit to render all instances)
  *     record  : one item from entry-sample.json (shape below)
- *     context : { backHref, prev, next } — where 返回 goes, and the neighbours
+ *     context : { backHref, categoryHref, prev, next } — where 返回 and the
+ *               breadcrumb's category crumb go, and the neighbours
  *               in the result set the user was browsing. Optional; without it
  *               the two arrows hide and 返回 keeps its authored href.
  *   window.dyEntry.select(rootEl, materialId)   open a material by id
@@ -87,6 +88,8 @@
  *   [data-viewer=image|pdf|video|empty]   exactly one is shown at a time
  *   [data-material]                   the metadata panel under the viewer
  *   [data-back]                       the 返回 link; href is set from context
+ *   [data-crumb-category]             the breadcrumb's category link; href is
+ *                                     set from context.categoryHref
  *   [data-prev] / [data-next]         the neighbour links; hidden when there is
  *                                     no neighbour
  *   [data-field=prevTitle|nextTitle]  the neighbour's title inside each link
@@ -206,13 +209,21 @@
     setField(root, "notes", record.notes);
     setField(root, "mediaCount", record.mediaCount);
 
-    /* The breadcrumb's middle crumb is the category, and it links back to the
-       catalogue filtered to that category. The catalogue reads the radio
-       group, not the URL, so this is a hint for the backend to honour — it is
-       set as a data attribute rather than a live filter. */
+    /* The breadcrumb's middle crumb links to the catalogue filtered to this
+       category — "all 劇場 works", a fresh view. It deliberately carries only
+       the category and none of the user's other filters or their page: it is a
+       position in the hierarchy, not a return to what they were doing. 返回 is
+       the control that does that.
+
+       The URL comes from `context`, not from this file. Routing is the
+       backend's, same as prev/next and for the same reason.
+
+       The six records with no category get no crumb at all: the anchor and the
+       separator after it both carry data-field-group="category", so setField
+       above has already removed them, and the breadcrumb reads 目錄 / 標題. */
     var crumb = $(root, "[data-crumb-category]");
-    if (crumb && record.categoryKey) {
-      crumb.setAttribute("data-category-key", record.categoryKey);
+    if (crumb && context && context.categoryHref) {
+      crumb.setAttribute("href", context.categoryHref);
     }
 
     renderNav(root, context);
@@ -551,7 +562,14 @@
           href: hrefs[id] || (ENTRY_PATH + "?id=" + encodeURIComponent(id)),
         };
       }
-      return { backHref: backHref, prev: neighbour(-1), next: neighbour(1) };
+      return {
+        backHref: backHref,
+        categoryHref: record.categoryKey
+          ? CATALOGUE_PATH + "?category=" + encodeURIComponent(record.categoryKey)
+          : "",
+        prev: neighbour(-1),
+        next: neighbour(1),
+      };
     }
 
     if (document.readyState === "loading") {
