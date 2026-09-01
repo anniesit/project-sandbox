@@ -147,8 +147,9 @@ Three viewers, one per kind:
 "Digital Document" for scanned house-programme pages that are really `.jpg` —
 **14 of its 37 "Digital Document" rows are images**. Trusting it would wrap a
 PDF viewer around a photograph. The build script derives a `viewer` field from
-the extension; `entry.js` switches on that and never reads `contentType`. The
-content type is still shown, because it is what the page displays.
+the extension; `entry.js` switches on that and never reads `contentType`.
+`contentType` is still emitted, but since the 類型 row was removed it is no
+longer displayed anywhere — see **Rows removed by hand**.
 
 The design system's `inline-video` component is deliberately **not** used — it
 is for decorative autoplay/hover video, not an archival player with controls.
