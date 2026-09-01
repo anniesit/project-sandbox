@@ -39,7 +39,8 @@ That rewrite lives in the harness's own demo script, not in `catalogue.js`.
       .entry-info
         span.result-tag           the category chip (reused from the catalogue)
         h1.entry-title
-        dl.kv                     日期 / 場地 / 地點 / 導演 / 備註
+        dl.kv                     日期 / 場地 / 地點 / 導演
+        details.accordion-component.cc-kv   備註 — see below
       .entry-hero[data-hero]      placeholder — no hero images exist yet
     section.materials-section
       h2.entry-section-head       館藏資料
@@ -63,6 +64,38 @@ That rewrite lives in the harness's own demo script, not in `catalogue.js`.
 `.result-tag` is reused verbatim from the catalogue rather than redrawn — it is
 the same bordered token box, and it is used for both the work's category and
 the material's content category.
+
+## 備註 is the design system's accordion
+
+The notes field is long — up to 50 lines — so it collapses. It uses the design
+system's accordion (`components/accordion`), which is a native
+`<details>`/`<summary>`: the CSS rotates `.accordion-icon` 45° when open (a plus
+becoming a cross) and the JS only adds the open/close height animation. The JS
+skips any `<details>` without both a `<summary>` and a
+`[data-accordion="content"]` child, so that hook is required, not decorative.
+
+The classes shipped with the Mast starter but **had never been placed on this
+site** — there was no instance anywhere to copy, so the markup was built from
+the class names and the JS's own requirements.
+
+**The design system's base classes were not touched.** Five `cc-kv` combos make
+the accordion sit flush with the `dl` above it instead of reading as a bordered
+card:
+
+| Combo | What it changes |
+|---|---|
+| `.accordion-component.cc-kv` | drops the right/bottom/left borders and the radius, keeping only the top border so it continues the rows' rhythm |
+| `.accordion-trigger.cc-kv` | zeroes the card padding; `align-items: flex-start` so the icon sits on the first line |
+| `.accordion-title.cc-kv` | `width: 9.5rem` and the exact padding of `.kv-key`, so 備註 lands in the same column |
+| `.accordion-icon.cc-kv` | 2em → 1rem, matching the dropdown chevrons |
+| `.accordion-content.cc-kv` | `padding-left: 9.5rem`, so the note starts where every other value does |
+| `.accordion-content_spacer.cc-kv` | the bottom padding and `white-space: pre-line` |
+
+Measured in the harness: the title box is 152px wide starting at x=60, identical
+to `.kv-key`; the open note starts at x=212, identical to `.kv-val`.
+
+`white-space: pre-line` moved here from `.kv-val.cc-notes`, which no longer
+exists — the notes row is not a `kv-row` any more.
 
 ## The key/value rows are a real `<dl>`
 
@@ -173,7 +206,7 @@ builds cannot drift.
                         "items": [ {
     "id": "10012", "order": 1,
     "groupKey": "performance-photo", "group": "演出照片",
-    "contentType": "Photograph",   // DISPLAYED. Does not pick the viewer.
+    "contentType": "Photograph",   // still emitted; no longer shown (see below)
     "title": "", "author": "", "publisher": "",
     "publishedDate": "1981", "issue": "", "pageNumber": "",
     "filename": "The Road_001.jpg",
@@ -189,9 +222,9 @@ year-only date renders as `1981年`, never `1981年1月`.
 
 ### `notes` needs `white-space: pre-line`
 
-`.kv-val.cc-notes` carries it. 58 of the 65 filled notes are multi-line and the
-longest is 50 lines; without it the whole note collapses to one paragraph. See
-CATALOGUE.md for why the field is displayed verbatim.
+`.accordion-content_spacer.cc-kv` carries it. 58 of the 65 filled notes are
+multi-line and the longest is 50 lines; without it the whole note collapses to
+one paragraph. See CATALOGUE.md for why the field is displayed verbatim.
 
 ### Empty fields disappear
 
@@ -200,6 +233,18 @@ empty is removed from the clone rather than printing an em dash. The material
 metadata panel is **rebuilt from its own template on every selection** — without
 that, one material with no author would remove the author row for every material
 after it.
+
+## Rows removed by hand
+
+`materialType` and `materialFilename` were deleted from the material metadata
+panel in the Designer on 2026-09-01. The material panel now shows: the content
+category chip, 標題, 作者, 出版, 出版日期, 期數, 頁數.
+
+`entry.js` still calls `setField` for both. That is deliberate — `setField` on a
+missing sink is a no-op, so re-adding either row in Webflow makes it fill again
+with no JS change, and the data still carries both fields. The filename is still
+shown in the *placeholder* (`[data-field="viewerFilename"]`), which is a
+different sink and still earns its place while no files exist.
 
 ## Responsive — planned for, not built
 

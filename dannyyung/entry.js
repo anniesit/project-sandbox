@@ -353,6 +353,11 @@
     }
     var L = lang(root);
     setField(panel, "materialGroup", m.group);
+    /* materialType and materialFilename have no sink on the page any more —
+       both rows were removed by hand on 2026-09-01. The calls stay because
+       setField on a missing sink is a no-op, and re-adding either row in
+       Webflow makes it fill again with no JS change. The data still carries
+       both fields; the page just does not show them. */
     setField(panel, "materialType", m.contentType);
     setField(panel, "materialTitle", m.title);
     setField(panel, "materialAuthor", m.author);

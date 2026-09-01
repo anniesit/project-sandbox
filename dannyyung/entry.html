@@ -8,6 +8,7 @@
       /* Demo-page chrome ONLY. The real styling lives in the Webflow design
          system. This page exists so entry.js can be exercised without Webflow
          — it is a behaviour harness, not a design reference. */
+      *, *::before, *::after { box-sizing:border-box; }
       body { margin:0; padding:2rem clamp(1rem,4vw,3rem); background:#fff; color:#1d1c1a;
              font-family:"Chiron Sung HK","Noto Serif HK",serif; }
       .wrap { max-width:1280px; margin:0 auto; }
@@ -31,13 +32,14 @@
                     font-size:.85rem; }
 
       /* Key/value rows. A definition list is the honest element: every row is
-         a term and its value. */
-      .kv { display:grid; grid-template-columns:9.5rem 1fr; margin:1.5rem 0 0; }
-      .kv-key { padding:1rem; border-top:1px solid #cccabf; font-size:.85rem; opacity:.7; }
-      .kv-val { padding:1rem; border-top:1px solid #cccabf; margin:0; }
-      /* notes is free text whose LINE BREAKS ARE CONTENT — 58 of 65 records
-         are multi-line. Without pre-line a 50-line note becomes one paragraph. */
-      .kv-val.cc-notes { white-space:pre-line; }
+         a term and its value. Flex, not grid — each row must be one
+         [data-field-group] that can be removed whole, and the accordion below
+         has to line up with the same two columns. Mirrors the Webflow classes. */
+      .kv { display:flex; flex-direction:column; margin:1.5rem 0 0; }
+      .kv-row { display:flex; flex-wrap:wrap; align-items:flex-start;
+                border-top:1px solid #cccabf; }
+      .kv-key { width:9.5rem; flex:none; padding:1rem .5rem 1rem 1rem; opacity:.7; }
+      .kv-val { flex:1 1 16rem; min-width:0; padding:1rem 0; margin:0; }
 
       .materials-head { font-size:1.5rem; font-weight:500; margin:0 0 1.5rem; }
       .materials { display:grid; grid-template-columns:321px 1fr; gap:24px;
@@ -64,6 +66,29 @@
       .viewer-empty { flex-direction:column; gap:.5rem; border-style:dashed;
                       opacity:.7; font-size:.85rem; text-align:center; }
       .material-meta { margin-top:1.5rem; }
+
+      /* Design system accordion classes + the project's cc-kv combos.
+         Approximated here; the real values are Webflow variables. */
+      .accordion-component { position:relative; display:flex; flex-direction:column;
+                             border:1px solid #cccabf; text-align:left; }
+      .accordion-component.cc-kv { width:100%; border-right:0; border-bottom:0;
+                                   border-left:0; border-radius:0; }
+      .accordion-trigger { display:flex; width:100%; justify-content:space-between;
+                           align-items:center; background:none; cursor:pointer;
+                           list-style:none; }
+      .accordion-trigger::-webkit-details-marker { display:none; }
+      .accordion-trigger.cc-kv { padding:0 1rem 0 0; align-items:flex-start; }
+      .accordion-title { margin-bottom:0; padding-right:.5em; pointer-events:none;
+                         text-align:left; }
+      .accordion-title.cc-kv { width:9.5rem; flex:none; padding:1rem .5rem 1rem 1rem;
+                               opacity:.7; }
+      .accordion-icon { width:2em; height:2em; flex:none;
+                        transition:transform .3s cubic-bezier(.165,.84,.44,1); }
+      .accordion-icon.cc-kv { width:1rem; height:1rem; margin-top:1rem; }
+      details[open] .accordion-icon { transform:rotate(45deg); }
+      .accordion-content { overflow:hidden; width:100%; }
+      .accordion-content.cc-kv { padding-left:9.5rem; padding-right:0; }
+      .accordion-content_spacer.cc-kv { padding-bottom:1rem; white-space:pre-line; }
       /* The `hidden` attribute is only display:none in the UA stylesheet, so a
          class that sets a display beats it and every viewer state renders at
          once. This rule is why exactly one shows. Mirrored in the Webflow
@@ -97,27 +122,39 @@
             <h1 class="entry-title"><span data-field="title">標題</span></h1>
 
             <dl class="kv">
-              <div style="display:contents" data-field-group="date">
+              <div class="kv-row" data-field-group="date">
                 <dt class="kv-key">日期</dt>
                 <dd class="kv-val"><span data-field="date">1981年11月11日</span></dd>
               </div>
-              <div style="display:contents" data-field-group="venue">
+              <div class="kv-row" data-field-group="venue">
                 <dt class="kv-key">場地</dt>
                 <dd class="kv-val"><span data-field="venue">香港大會堂展覽廳</span></dd>
               </div>
-              <div style="display:contents" data-field-group="location">
+              <div class="kv-row" data-field-group="location">
                 <dt class="kv-key">地點</dt>
                 <dd class="kv-val"><span data-field="location">香港</span></dd>
               </div>
-              <div style="display:contents" data-field-group="director">
+              <div class="kv-row" data-field-group="director">
                 <dt class="kv-key">導演</dt>
                 <dd class="kv-val"><span data-field="director">榮念曾</span></dd>
               </div>
-              <div style="display:contents" data-field-group="notes">
-                <dt class="kv-key">備註</dt>
-                <dd class="kv-val cc-notes"><span data-field="notes">Notes</span></dd>
-              </div>
             </dl>
+
+            <!-- The design system's accordion (components/accordion) is a native
+                 <details>/<summary>; its JS only adds the open/close height
+                 animation and needs [data-accordion="content"]. Without the
+                 bundle — as here — the disclosure still works natively. The
+                 cc-kv combos make it sit flush with the kv rows above instead
+                 of reading as a bordered card. -->
+            <details class="accordion-component cc-kv" data-field-group="notes">
+              <summary class="accordion-trigger cc-kv">
+                <span class="accordion-title cc-kv">備註</span>
+                <svg class="accordion-icon cc-kv" xmlns="http://www.w3.org/2000/svg" width="100%" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true"><path d="M228,128a12,12,0,0,1-12,12H140v76a12,12,0,0,1-24,0V140H40a12,12,0,0,1,0-24h76V40a12,12,0,0,1,24,0v76h76A12,12,0,0,1,228,128Z"/></svg>
+              </summary>
+              <div class="accordion-content cc-kv" data-accordion="content">
+                <div class="accordion-content_spacer cc-kv"><span data-field="notes">Notes</span></div>
+              </div>
+            </details>
           </div>
 
           <div class="entry-hero" data-hero>主圖（暫缺）</div>
@@ -161,37 +198,29 @@
                 <div data-material-template>
                   <span class="entry-tag" data-field-group="materialGroup"><span data-field="materialGroup">演出照片</span></span>
                   <dl class="kv">
-                    <div style="display:contents" data-field-group="materialTitle">
+                    <div class="kv-row" data-field-group="materialTitle">
                       <dt class="kv-key">標題</dt>
                       <dd class="kv-val"><span data-field="materialTitle">—</span></dd>
                     </div>
-                    <div style="display:contents" data-field-group="materialType">
-                      <dt class="kv-key">類型</dt>
-                      <dd class="kv-val"><span data-field="materialType">Photograph</span></dd>
-                    </div>
-                    <div style="display:contents" data-field-group="materialAuthor">
+                    <div class="kv-row" data-field-group="materialAuthor">
                       <dt class="kv-key">作者</dt>
                       <dd class="kv-val"><span data-field="materialAuthor">—</span></dd>
                     </div>
-                    <div style="display:contents" data-field-group="materialPublisher">
+                    <div class="kv-row" data-field-group="materialPublisher">
                       <dt class="kv-key">出版</dt>
                       <dd class="kv-val"><span data-field="materialPublisher">—</span></dd>
                     </div>
-                    <div style="display:contents" data-field-group="materialPublished">
+                    <div class="kv-row" data-field-group="materialPublished">
                       <dt class="kv-key">出版日期</dt>
                       <dd class="kv-val"><span data-field="materialPublished">—</span></dd>
                     </div>
-                    <div style="display:contents" data-field-group="materialIssue">
+                    <div class="kv-row" data-field-group="materialIssue">
                       <dt class="kv-key">期數</dt>
                       <dd class="kv-val"><span data-field="materialIssue">—</span></dd>
                     </div>
-                    <div style="display:contents" data-field-group="materialPage">
+                    <div class="kv-row" data-field-group="materialPage">
                       <dt class="kv-key">頁數</dt>
                       <dd class="kv-val"><span data-field="materialPage">—</span></dd>
-                    </div>
-                    <div style="display:contents" data-field-group="materialFilename">
-                      <dt class="kv-key">檔案</dt>
-                      <dd class="kv-val"><span data-field="materialFilename">—</span></dd>
                     </div>
                   </dl>
                 </div>
