@@ -41,7 +41,6 @@
  *     "location": "香港",
  *     "venue": "香港藝術中心演奏廳",
  *     "directors": ["沈聖德", "榮念曾"],     // multi-valued, sometimes 18 long
- *     "materialTypes": ["演出照片", "場刊"],
  *     "mediaCount": 2,
  *     "href": "#"
  *   }
@@ -50,13 +49,22 @@
  *   [data-catalogue]                  the root; everything is queried inside it
  *   [data-rows]                       the <ul> result items are rendered into
  *   [data-row-template]               <li> cloned per record, removed at runtime
- *   [data-field=title|category|year|location|director]   text sinks: a SPAN
- *                                     (or the title <a>), never a <p> — see below
+ *   [data-field=title|category|year|location|director]   text sinks: a SPAN,
+ *                                     never a <p> — see below. `title` has TWO
+ *                                     sinks per item and both are written: the
+ *                                     visible one in the <h2>, and the
+ *                                     .u-sr-only one inside the cover link that
+ *                                     gives that link its accessible name.
  *   [data-field-group=category|location|director]   the fragment that is
  *                                     removed from the clone when that field is
  *                                     empty (the chip, the "/" + location, the
  *                                     whole 導演： block)
- *   [data-field-link]                 the title <a>; href is set per record
+ *   [data-field-link]                 the a.u-link-cover stretched over the
+ *                                     whole <li>. Its href is THE record's
+ *                                     destination and the only one — nothing
+ *                                     else on the item carries a URL or a click
+ *                                     handler. Setting a second one is how the
+ *                                     two drift apart.
  *   [data-facet=category|year|location|director]         facet wrappers
  *   [data-facet-value]                category radio -> categoryKey; plus the
  *                                     two synthetic values "all" and "other"

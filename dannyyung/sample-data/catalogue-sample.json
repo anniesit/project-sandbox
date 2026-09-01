@@ -10,9 +10,6 @@
    "location": "紐約",
    "venue": "",
    "directors": [],
-   "materialTypes": [
-    "演出照片"
-   ],
    "mediaCount": 4,
    "href": "#"
   },
@@ -27,9 +24,6 @@
    "venue": "",
    "directors": [
     "榮念曾"
-   ],
-   "materialTypes": [
-    "演出照片"
    ],
    "mediaCount": 1,
    "href": "#"
@@ -46,9 +40,6 @@
    "directors": [
     "榮念曾"
    ],
-   "materialTypes": [
-    "演出錄像"
-   ],
    "mediaCount": 1,
    "href": "#"
   },
@@ -63,9 +54,6 @@
    "venue": "",
    "directors": [
     "榮念曾"
-   ],
-   "materialTypes": [
-    "演出錄像"
    ],
    "mediaCount": 1,
    "href": "#"
@@ -82,9 +70,6 @@
    "directors": [
     "榮念曾"
    ],
-   "materialTypes": [
-    "演出錄像"
-   ],
    "mediaCount": 1,
    "href": "#"
   },
@@ -99,9 +84,6 @@
    "venue": "香港藝術中心畫廊",
    "directors": [
     "榮念曾"
-   ],
-   "materialTypes": [
-    "手稿"
    ],
    "mediaCount": 2,
    "href": "#"
@@ -118,10 +100,6 @@
    "directors": [
     "榮念曾"
    ],
-   "materialTypes": [
-    "演出照片",
-    "演出錄像"
-   ],
    "mediaCount": 4,
    "href": "#"
   },
@@ -136,9 +114,6 @@
    "venue": "香港藝術中心壽臣劇院",
    "directors": [
     "榮念曾"
-   ],
-   "materialTypes": [
-    "演出照片"
    ],
    "mediaCount": 1,
    "href": "#"
@@ -155,9 +130,6 @@
    "directors": [
     "榮念曾"
    ],
-   "materialTypes": [
-    "演出照片"
-   ],
    "mediaCount": 6,
    "href": "#"
   },
@@ -172,9 +144,6 @@
    "venue": "香港藝術中心麥高利小劇場",
    "directors": [
     "榮念曾"
-   ],
-   "materialTypes": [
-    "演出錄像"
    ],
    "mediaCount": 1,
    "href": "#"
@@ -191,11 +160,6 @@
    "directors": [
     "榮念曾"
    ],
-   "materialTypes": [
-    "演出照片",
-    "文章",
-    "媒體文章"
-   ],
    "mediaCount": 14,
    "href": "#"
   },
@@ -210,10 +174,6 @@
    "venue": "台北國軍英雄紀念館",
    "directors": [
     "榮念曾"
-   ],
-   "materialTypes": [
-    "演出照片",
-    "媒體文章"
    ],
    "mediaCount": 2,
    "href": "#"
@@ -231,10 +191,6 @@
     "沈聖德",
     "榮念曾"
    ],
-   "materialTypes": [
-    "演出照片",
-    "場刊"
-   ],
    "mediaCount": 2,
    "href": "#"
   },
@@ -250,9 +206,6 @@
    "directors": [
     "沈聖德",
     "榮念曾"
-   ],
-   "materialTypes": [
-    "場刊"
    ],
    "mediaCount": 1,
    "href": "#"
@@ -270,10 +223,6 @@
     "沈聖德",
     "榮念曾"
    ],
-   "materialTypes": [
-    "場刊",
-    "演出錄像"
-   ],
    "mediaCount": 2,
    "href": "#"
   },
@@ -290,9 +239,6 @@
     "沈聖德",
     "榮念曾"
    ],
-   "materialTypes": [
-    "演出錄像"
-   ],
    "mediaCount": 1,
    "href": "#"
   },
@@ -307,9 +253,6 @@
    "venue": "香港高山劇場",
    "directors": [
     "榮念曾"
-   ],
-   "materialTypes": [
-    "演出錄像"
    ],
    "mediaCount": 1,
    "href": "#"
@@ -326,9 +269,6 @@
    "directors": [
     "榮念曾"
    ],
-   "materialTypes": [
-    "錄像藝術"
-   ],
    "mediaCount": 1,
    "href": "#"
   },
@@ -343,9 +283,6 @@
    "venue": "",
    "directors": [
     "榮念曾"
-   ],
-   "materialTypes": [
-    "演出錄像"
    ],
    "mediaCount": 1,
    "href": "#"
@@ -362,9 +299,6 @@
    "directors": [
     "榮念曾"
    ],
-   "materialTypes": [
-    "演出錄像"
-   ],
    "mediaCount": 2,
    "href": "#"
   },
@@ -379,9 +313,6 @@
    "venue": "台北國立藝術館",
    "directors": [
     "榮念曾"
-   ],
-   "materialTypes": [
-    "媒體文章"
    ],
    "mediaCount": 4,
    "href": "#"
@@ -398,9 +329,6 @@
    "directors": [
     "榮念曾"
    ],
-   "materialTypes": [
-    "場刊"
-   ],
    "mediaCount": 6,
    "href": "#"
   },
@@ -415,9 +343,6 @@
    "venue": "",
    "directors": [
     "榮念曾"
-   ],
-   "materialTypes": [
-    "錄像藝術"
    ],
    "mediaCount": 1,
    "href": "#"
@@ -436,9 +361,6 @@
     "榮念曾",
     "劉索拉"
    ],
-   "materialTypes": [
-    "演出照片"
-   ],
    "mediaCount": 28,
    "href": "#"
   },
@@ -453,9 +375,6 @@
    "venue": "香港文化中心大劇院",
    "directors": [
     "榮念曾"
-   ],
-   "materialTypes": [
-    "演出照片"
    ],
    "mediaCount": 40,
    "href": "#"
@@ -472,9 +391,6 @@
    "directors": [
     "榮念曾"
    ],
-   "materialTypes": [
-    "演出照片"
-   ],
    "mediaCount": 19,
    "href": "#"
   },
@@ -489,10 +405,6 @@
    "venue": "東京水戶藝術館",
    "directors": [
     "榮念曾"
-   ],
-   "materialTypes": [
-    "演出錄像",
-    "演出照片"
    ],
    "mediaCount": 5,
    "href": "#"
@@ -509,9 +421,6 @@
    "directors": [
     "榮念曾"
    ],
-   "materialTypes": [
-    "演出照片"
-   ],
    "mediaCount": 51,
    "href": "#"
   },
@@ -526,9 +435,6 @@
    "venue": "香港沙田大會堂演奏廳",
    "directors": [
     "榮念曾"
-   ],
-   "materialTypes": [
-    "演出照片"
    ],
    "mediaCount": 13,
    "href": "#"
@@ -546,9 +452,6 @@
     "集體創作",
     "榮念曾"
    ],
-   "materialTypes": [
-    "演出照片"
-   ],
    "mediaCount": 16,
    "href": "#"
   },
@@ -563,10 +466,6 @@
    "venue": "香港沙田大會堂演奏廳",
    "directors": [
     "榮念曾"
-   ],
-   "materialTypes": [
-    "演出照片",
-    "舞台"
    ],
    "mediaCount": 21,
    "href": "#"
@@ -583,9 +482,6 @@
    "directors": [
     "榮念曾"
    ],
-   "materialTypes": [
-    "錄像藝術"
-   ],
    "mediaCount": 1,
    "href": "#"
   },
@@ -600,10 +496,6 @@
    "venue": "香港文化中心劇場",
    "directors": [
     "榮念曾"
-   ],
-   "materialTypes": [
-    "演出照片",
-    "宣傳資料"
    ],
    "mediaCount": 27,
    "href": "#"
@@ -620,10 +512,6 @@
    "directors": [
     "榮念曾"
    ],
-   "materialTypes": [
-    "演出照片",
-    "活動照片"
-   ],
    "mediaCount": 50,
    "href": "#"
   },
@@ -638,10 +526,6 @@
    "venue": "比利時露娜廣場",
    "directors": [
     "榮念曾"
-   ],
-   "materialTypes": [
-    "演出照片",
-    "舞台"
    ],
    "mediaCount": 36,
    "href": "#"
@@ -659,9 +543,6 @@
     "榮念曾",
     "鄭志銳"
    ],
-   "materialTypes": [
-    "演出照片"
-   ],
    "mediaCount": 22,
    "href": "#"
   },
@@ -676,10 +557,6 @@
    "venue": "香港文化中心大劇院",
    "directors": [
     "榮念曾"
-   ],
-   "materialTypes": [
-    "演出照片",
-    "舞台"
    ],
    "mediaCount": 47,
    "href": "#"
@@ -699,9 +576,6 @@
     "劉澤源",
     "胡恩威"
    ],
-   "materialTypes": [
-    "演出照片"
-   ],
    "mediaCount": 26,
    "href": "#"
   },
@@ -716,9 +590,6 @@
    "venue": "東京日本文化交流基金會中心",
    "directors": [
     "榮念曾"
-   ],
-   "materialTypes": [
-    "演出照片"
    ],
    "mediaCount": 7,
    "href": "#"
@@ -735,9 +606,6 @@
    "directors": [
     "榮念曾"
    ],
-   "materialTypes": [
-    "舞台"
-   ],
    "mediaCount": 6,
    "href": "#"
   },
@@ -752,10 +620,6 @@
    "venue": "香港文化中心大劇院",
    "directors": [
     "榮念曾"
-   ],
-   "materialTypes": [
-    "演出照片",
-    "舞台"
    ],
    "mediaCount": 29,
    "href": "#"
@@ -773,10 +637,6 @@
     "潘德恕",
     "孟京輝"
    ],
-   "materialTypes": [
-    "演出照片",
-    "場刊"
-   ],
    "mediaCount": 15,
    "href": "#"
   },
@@ -791,9 +651,6 @@
    "venue": "",
    "directors": [
     "榮念曾"
-   ],
-   "materialTypes": [
-    "錄像藝術"
    ],
    "mediaCount": 1,
    "href": "#"
@@ -816,10 +673,6 @@
     "榮念曾",
     "林兆華"
    ],
-   "materialTypes": [
-    "演出照片",
-    "舞台"
-   ],
    "mediaCount": 34,
    "href": "#"
   },
@@ -835,9 +688,6 @@
    "directors": [
     "榮念曾"
    ],
-   "materialTypes": [
-    "演出照片"
-   ],
    "mediaCount": 9,
    "href": "#"
   },
@@ -851,9 +701,6 @@
    "location": "香港",
    "venue": "香港大會堂展覽廳",
    "directors": [],
-   "materialTypes": [
-    "演出照片"
-   ],
    "mediaCount": 4,
    "href": "#"
   },
@@ -868,9 +715,6 @@
    "venue": "德國慕尼黑瑪弗浩藝術中心",
    "directors": [
     "榮念曾"
-   ],
-   "materialTypes": [
-    "演出照片"
    ],
    "mediaCount": 16,
    "href": "#"
@@ -889,10 +733,6 @@
     "胡恩威",
     "于逸堯"
    ],
-   "materialTypes": [
-    "演出照片",
-    "舞台"
-   ],
    "mediaCount": 24,
    "href": "#"
   },
@@ -908,10 +748,6 @@
    "directors": [
     "榮念曾",
     "胡恩威"
-   ],
-   "materialTypes": [
-    "演出照片",
-    "舞台"
    ],
    "mediaCount": 18,
    "href": "#"
@@ -933,9 +769,6 @@
     "李銳俊",
     "榮念曾"
    ],
-   "materialTypes": [
-    "演出照片"
-   ],
    "mediaCount": 4,
    "href": "#"
   },
@@ -952,10 +785,6 @@
     "榮念曾",
     "胡恩威"
    ],
-   "materialTypes": [
-    "演出照片",
-    "舞台"
-   ],
    "mediaCount": 23,
    "href": "#"
   },
@@ -969,9 +798,6 @@
    "location": "香港",
    "venue": "香港科技大學",
    "directors": [],
-   "materialTypes": [
-    "活動照片"
-   ],
    "mediaCount": 2,
    "href": "#"
   },
@@ -990,11 +816,6 @@
     "賴聲川",
     "楊德昌"
    ],
-   "materialTypes": [
-    "書信",
-    "演出照片",
-    "舞台"
-   ],
    "mediaCount": 37,
    "href": "#"
   },
@@ -1009,9 +830,6 @@
    "venue": "香港藝術中心壽臣劇院",
    "directors": [
     "榮念曾"
-   ],
-   "materialTypes": [
-    "演出照片"
    ],
    "mediaCount": 22,
    "href": "#"
@@ -1041,9 +859,6 @@
     "崔明慧",
     "林奕華"
    ],
-   "materialTypes": [
-    "演出照片"
-   ],
    "mediaCount": 41,
    "href": "#"
   },
@@ -1057,9 +872,6 @@
    "location": "德國",
    "venue": "",
    "directors": [],
-   "materialTypes": [
-    "活動照片"
-   ],
    "mediaCount": 10,
    "href": "#"
   },
@@ -1074,10 +886,6 @@
    "venue": "栢林世界文化中心展覽廳",
    "directors": [
     "榮念曾"
-   ],
-   "materialTypes": [
-    "演出照片",
-    "舞台"
    ],
    "mediaCount": 7,
    "href": "#"
@@ -1111,9 +919,6 @@
     "Rilo Chmielorz",
     "VA Wolfl"
    ],
-   "materialTypes": [
-    "演出照片"
-   ],
    "mediaCount": 4,
    "href": "#"
   },
@@ -1127,9 +932,6 @@
    "location": "香港",
    "venue": "",
    "directors": [],
-   "materialTypes": [
-    "活動照片"
-   ],
    "mediaCount": 1,
    "href": "#"
   },
@@ -1143,11 +945,6 @@
    "location": "香港",
    "venue": "添馬艦",
    "directors": [],
-   "materialTypes": [
-    "宣傳海報",
-    "活動照片",
-    "演出照片"
-   ],
    "mediaCount": 141,
    "href": "#"
   },
@@ -1161,9 +958,6 @@
    "location": "香港",
    "venue": "上環文娛中心演講廳／葵青劇院展覽廳",
    "directors": [],
-   "materialTypes": [
-    "演出照片"
-   ],
    "mediaCount": 7,
    "href": "#"
   },
@@ -1179,9 +973,6 @@
    "directors": [
     "魏瑛娟"
    ],
-   "materialTypes": [
-    "演出照片"
-   ],
    "mediaCount": 10,
    "href": "#"
   },
@@ -1195,9 +986,6 @@
    "location": "深圳",
    "venue": "",
    "directors": [],
-   "materialTypes": [
-    "活動照片"
-   ],
    "mediaCount": 2,
    "href": "#"
   },
@@ -1212,9 +1000,6 @@
    "venue": "香港大會堂劇院",
    "directors": [
     "榮念曾"
-   ],
-   "materialTypes": [
-    "演出照片"
    ],
    "mediaCount": 4,
    "href": "#"
@@ -1231,12 +1016,6 @@
    "directors": [
     "榮念曾"
    ],
-   "materialTypes": [
-    "活動宣傳",
-    "演出錄像",
-    "演出照片",
-    "場刊"
-   ],
    "mediaCount": 18,
    "href": "#"
   },
@@ -1251,9 +1030,6 @@
    "venue": "新加坡實踐表演藝術中心",
    "directors": [
     "榮念曾"
-   ],
-   "materialTypes": [
-    "演出照片"
    ],
    "mediaCount": 7,
    "href": "#"
@@ -1271,10 +1047,6 @@
     "榮念曾",
     "胡恩威"
    ],
-   "materialTypes": [
-    "文章",
-    "演出照片"
-   ],
    "mediaCount": 25,
    "href": "#"
   },
@@ -1288,9 +1060,6 @@
    "location": "台北",
    "venue": "",
    "directors": [],
-   "materialTypes": [
-    "活動照片"
-   ],
    "mediaCount": 2,
    "href": "#"
   },
@@ -1306,10 +1075,6 @@
    "directors": [
     "榮念曾"
    ],
-   "materialTypes": [
-    "演出照片",
-    "舞台"
-   ],
    "mediaCount": 39,
    "href": "#"
   },
@@ -1324,10 +1089,6 @@
    "venue": "新加坡濱海藝術中心",
    "directors": [
     "榮念曾"
-   ],
-   "materialTypes": [
-    "演出照片",
-    "舞台"
    ],
    "mediaCount": 22,
    "href": "#"
@@ -1345,9 +1106,6 @@
     "吳興國",
     "榮念曾"
    ],
-   "materialTypes": [
-    "演出照片"
-   ],
    "mediaCount": 1,
    "href": "#"
   },
@@ -1364,9 +1122,6 @@
     "柯軍",
     "松島誠"
    ],
-   "materialTypes": [
-    "演出照片"
-   ],
    "mediaCount": 10,
    "href": "#"
   },
@@ -1382,9 +1137,6 @@
    "directors": [
     "榮念曾"
    ],
-   "materialTypes": [
-    "演出照片"
-   ],
    "mediaCount": 10,
    "href": "#"
   },
@@ -1398,9 +1150,6 @@
    "location": "深圳",
    "venue": "",
    "directors": [],
-   "materialTypes": [
-    "活動照片"
-   ],
    "mediaCount": 1,
    "href": "#"
   },
@@ -1415,9 +1164,6 @@
    "venue": "香港大會堂展覽廳",
    "directors": [
     "榮念曾"
-   ],
-   "materialTypes": [
-    "演出照片"
    ],
    "mediaCount": 31,
    "href": "#"
@@ -1434,10 +1180,6 @@
    "directors": [
     "榮念曾"
    ],
-   "materialTypes": [
-    "演出照片",
-    "舞台"
-   ],
    "mediaCount": 22,
    "href": "#"
   },
@@ -1453,9 +1195,6 @@
    "directors": [
     "榮念曾"
    ],
-   "materialTypes": [
-    "演出照片"
-   ],
    "mediaCount": 22,
    "href": "#"
   },
@@ -1469,9 +1208,6 @@
    "location": "香港",
    "venue": "香港文物探知館演講廳",
    "directors": [],
-   "materialTypes": [
-    "活動照片"
-   ],
    "mediaCount": 4,
    "href": "#"
   },
@@ -1487,9 +1223,6 @@
    "directors": [
     "榮念曾"
    ],
-   "materialTypes": [
-    "文章"
-   ],
    "mediaCount": 1,
    "href": "#"
   },
@@ -1503,9 +1236,6 @@
    "location": "香港",
    "venue": "",
    "directors": [],
-   "materialTypes": [
-    "書籍"
-   ],
    "mediaCount": 1,
    "href": "#"
   },
@@ -1521,9 +1251,6 @@
    "directors": [
     "榮念曾"
    ],
-   "materialTypes": [
-    "演出花絮"
-   ],
    "mediaCount": 1,
    "href": "#"
   },
@@ -1537,9 +1264,6 @@
    "location": "",
    "venue": "",
    "directors": [],
-   "materialTypes": [
-    "書籍"
-   ],
    "mediaCount": 1,
    "href": "#"
   },
@@ -1553,9 +1277,6 @@
    "location": "",
    "venue": "",
    "directors": [],
-   "materialTypes": [
-    "書籍"
-   ],
    "mediaCount": 1,
    "href": "#"
   },
@@ -1569,9 +1290,6 @@
    "location": "",
    "venue": "",
    "directors": [],
-   "materialTypes": [
-    "文章"
-   ],
    "mediaCount": 1,
    "href": "#"
   },
@@ -1585,7 +1303,6 @@
    "location": "",
    "venue": "",
    "directors": [],
-   "materialTypes": [],
    "mediaCount": 1,
    "href": "#"
   },
@@ -1599,7 +1316,6 @@
    "location": "",
    "venue": "",
    "directors": [],
-   "materialTypes": [],
    "mediaCount": 1,
    "href": "#"
   },
@@ -1613,7 +1329,6 @@
    "location": "",
    "venue": "",
    "directors": [],
-   "materialTypes": [],
    "mediaCount": 1,
    "href": "#"
   },
@@ -1627,7 +1342,6 @@
    "location": "",
    "venue": "",
    "directors": [],
-   "materialTypes": [],
    "mediaCount": 1,
    "href": "#"
   }

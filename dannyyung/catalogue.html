@@ -42,12 +42,20 @@
          Typography on the real page comes from the DS .paragraph-xl and
          .paragraph-lg utilities; approximated here. */
       .result-list { display:flex; flex-direction:column; list-style:none; margin:0; padding:0; }
-      .result-item { display:flex; flex-direction:column; gap:.5rem;
-                     padding:.75rem 1rem; }
+      .result-item { position:relative; display:flex; flex-direction:column;
+                     gap:.5rem; padding:.75rem 1rem; }
       .result-title { margin:0; font-size:clamp(2rem,4vw,3.5rem); font-weight:500;
                       line-height:1.35; }
-      .result-title-link { color:inherit; text-decoration:none; }
-      .result-title-link:hover { text-decoration:underline; }
+      /* .u-link-cover and .u-sr-only are design system utilities; the real page
+         uses the site's own. The table-rowlink pointer-events hack is scoped to
+         .table-cell upstream, so a cover inside an <li> needs no add-on. */
+      .u-link-cover { position:absolute; inset:0; z-index:1; width:100%;
+                      height:100%; padding:0; background-color:transparent; }
+      .u-link-cover.cc-result-cover { outline-offset:-2px; }
+      .u-link-cover.cc-result-cover:focus-visible { outline:2px solid #d14424; }
+      .u-sr-only { position:absolute; overflow:hidden; width:1px; height:1px;
+                   margin-top:-1px; padding:0; border:0; white-space:nowrap; }
+      .result-item:hover .result-title { text-decoration:underline; }
       .result-meta { display:flex; flex-wrap:wrap; align-items:flex-start;
                      gap:.5rem 24px; }
       .paragraph-xl.cc-result-facts { display:flex; flex-wrap:wrap; align-items:center;
@@ -188,7 +196,8 @@
 
           <ul class="result-list" role="list" data-rows>
             <li class="result-item" data-row-template>
-              <h2 class="result-title"><a class="result-title-link" href="#" data-field-link data-field="title">標題</a></h2>
+              <a class="u-link-cover cc-result-cover" href="#" data-field-link><span class="u-sr-only" data-field="title">標題</span></a>
+              <h2 class="result-title"><span data-field="title">標題</span></h2>
               <div class="result-meta">
                 <div class="paragraph-xl cc-result-facts">
                   <span class="result-tag" data-field-group="category"><span data-field="category">劇場</span></span>

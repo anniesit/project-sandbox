@@ -61,7 +61,7 @@ Base: `catalogue-layout`, `catalogue-facets`, `catalogue-results`,
 Combos: `.pagination-btn.cc-current`, `.eyebrow.cc-facet`,
 `.input-group.cc-search`, `.input.cc-year`, `.paragraph-sm.cc-count`,
 `.paragraph-xl.cc-result-facts`, `.paragraph-xl.cc-result-credit`,
-`.paragraph-lg.cc-result-credit-label`.
+`.paragraph-lg.cc-result-credit-label`, `.u-link-cover.cc-result-cover`.
 
 Only longhand properties are written (`grid-column-gap`/`grid-row-gap`, the four
 padding/margin/border-radius longhands, per-side border longhands) so the
@@ -131,14 +131,17 @@ touching the file.
 
 ### Sample data
 
-`sample-data/catalogue-sample.json` is generated, never hand-edited:
+`sample-data/catalogue-sample.json` is generated from
+`data/DIR_current_data.xlsx` + `data/input_by_dept_media_meta_data.xlsx`, never
+hand-edited:
 
 ```
 python3 sample-data/build-catalogue-sample.py
 ```
 
-It reads both client spreadsheets from `data/` and prints a short data-quality
-summary. **Its output shape is the contract** — keyed and readable:
+It prints a short data-quality summary, and refuses to run if the works sheet
+grows a column that is not classified as public / media-level / internal — see
+**The source spreadsheet changed** above. **Its output shape is the contract** — keyed and readable:
 
 ```jsonc
 { "items": [ {
@@ -151,7 +154,6 @@ summary. **Its output shape is the contract** — keyed and readable:
   "location": "香港",
   "venue": "香港藝術中心演奏廳",
   "directors": ["沈聖德", "榮念曾"],
-  "materialTypes": ["演出照片", "場刊"],
   "mediaCount": 2,                 // joined from the media spreadsheet
   "href": "#"
 } ] }
@@ -212,9 +214,11 @@ Markup:
 
 ```
 ul.result-list[role=list][data-rows]
-  li.result-item[data-row-template]
+  li.result-item[data-row-template]                                position:relative
+    a.u-link-cover.cc-result-cover[data-field-link][href]          the row link
+      span.u-sr-only[data-field=title]                             its accessible name
     h2.result-title
-      a.result-title-link[data-field-link][data-field=title]
+      span[data-field=title]
     div.result-meta
       div.paragraph-xl.cc-result-facts
         span.result-tag[data-field-group=category] > span[data-field=category]
@@ -228,6 +232,31 @@ ul.result-list[role=list][data-rows]
 
 Notes on the build:
 
+- **The whole item is the link, not the title.** An `a.u-link-cover` is
+  stretched over the `<li>` (which is why `.result-item` is
+  `position: relative`). Its `href` is the record's destination and the *only*
+  one on the item — nothing else carries a URL or a click handler, per the
+  design system's handoff rule about single sources of truth. The title is
+  plain text again.
+
+  The cover would otherwise be a link with no text, so it holds a
+  `span.u-sr-only[data-field="title"]`. `catalogue.js` needs no special case:
+  `setField` already writes every `[data-field="title"]` in the clone, and there
+  are now two — the visible one in the `h2` and the hidden one in the link.
+  The cost is that a screen reader hears the title twice (once as the link, once
+  as the heading); that is the normal trade for a whole-row click target.
+
+  **The `table-rowlink` add-on is not needed and must not be added.** Its
+  `pointer-events: none` rule exists only because a stretched link blocks
+  sideways scrolling of a `<table>` on iPadOS, and it is scoped to
+  `.table-cell`. There is no table and no horizontal scroll here, so the cover
+  works natively — including Tab + Enter.
+
+  Keyboard focus is visible through `.u-link-cover.cc-result-cover:focus-visible`
+  (a 2px `Primary/Accent` outline, inset). The design system's own focus rule is
+  `.card:has(> .u-link-cover:focus-visible)`, which does not reach a
+  `.result-item`; putting the outline on the cover itself avoids needing `:has()`,
+  which the Designer cannot author.
 - **The title is an `h2`, and its `--bottom-margin` is killed on
   `.result-title`.** A class beats the design system's `h2` tag rule regardless
   of stylesheet order, so this is safe — unlike a competing tag-level rule. The
@@ -497,6 +526,113 @@ lost the first time.
 Anything that must beat the design system goes in the `<style>` block inside the
 Custom Code component's stylesheet embed, immediately after the `<link>`.
 
+## The source spreadsheet changed (2026-09-01)
+
+`data/DIR_current_data.xlsx` replaces `data/input_by_dept.xlsx` as the works
+file. The old one is kept in `data/` for comparison only — nothing reads it.
+
+**The catalogue's data did not change.** Rebuilding from the new file produces a
+`catalogue-sample.json` that is field-for-field identical to the old one across
+all 88 records; the only difference is that `materialTypes` is gone (see below).
+Same 88 ids, same 1974–2020 range, same 6 with no category, 19 with no director,
+16 with no location. That was verified by diffing the two builds, not assumed.
+
+### What actually differs in the sheet
+
+| Change | Size | Verdict |
+|---|---|---|
+| Empty cells are the literal string `"NULL"` | everywhere | **The one thing that will bite.** Any reader that does not treat `"NULL"` as empty prints it on the page. `text()` in the build script handles it |
+| Numbers are ints, not floats (`1974`, not `1974.0`) | all dates | Harmless; the float-stripping is kept anyway |
+| 32 new columns: every `_zh-Hans` twin, plus admin/rights fields | — | See the classification below |
+| `keywords` for `DYP-000058` and `DYP-000083` moved from `keywords_en` to `keywords_zh-Hant` | 2 rows | A **correction** — the values are Chinese and were in the English column |
+| `publisher_en` / `publisher_zh-Hant` emptied | **9 cells across 5 works** | **Data loss.** `DYP-000027` 自立早報, `DYP-000066` and `DYP-000083` 明報 / Ming Pao Daily News, `DYP-000097` 信報 / HK Economic Journal, `DYP-000099` 進念．二十面體 E+E, `DYP-000104` Palgrave Macmillan Cham. Both publisher columns are now empty for all 88. Ask whether this was deliberate — the media sheet has its own `Publisher/Publishing Venue` (16 rows filled), so it may have moved there on purpose |
+| `url_storage_filename` emptied | **84 works** | Presumably superseded by the media sheet's `media_filename`, which is filled for all 1,164 items. Worth confirming, because it is the only per-work file pointer that existed |
+| `department`, `copyright_status`, `license` filled in | 88 / 28 / 29 | Constants, internal |
+
+No other value changed anywhere. The 131 apparent differences in `date_mm` /
+`date_dd` are all `11.0` → `11`.
+
+### Which columns may be published
+
+The 77 columns are classified in `sample-data/build-catalogue-sample.py`
+(`PUBLIC_WORK`, `MEDIA_LEVEL`, `INTERNAL`). The script **fails loudly** if a
+re-export adds or renames a column, so a new column cannot leak by default.
+
+- **Public, work-level (27)** — id, the three title columns, category, date
+  parts, venue, director, location, abstract, keywords, `notes`, `language`.
+- **Media-level (23)** — carried on the works sheet but belonging to the media
+  sheet: `content_category_*`, `contributor_*`, `authors_*`, `publisher_*`,
+  `published_in_*`, `digital_object_type`, `video_length`, `issue`, `format`,
+  and the four `url_*` columns.
+- **Internal (27)** — `isPost`, `owner`, `department`, `work_type`,
+  `dataset_name_*`, the five `sort_*` columns, `date_certainty`, `no_date`,
+  `ocr_text`, `wikidata`, all `copyright_*` / `license*`, `acknowledgement_*`.
+
+`isPost` is the publication gate. It is `Y` on all 88 today, but a production
+feed should still filter on it rather than assume.
+
+### `materialTypes` is gone from the contract
+
+It was built from the works sheet's `content_category_zh-Hant`. That column is a
+semicolon roll-up of the work's media items, and it is **stale** — it disagrees
+with the media sheet on 6 of 88 works:
+
+| Work | Works sheet says | Media items actually are |
+|---|---|---|
+| `DYP-000006` | 手稿 | 手稿, 繪圖 |
+| `DYP-000012` | 媒體文章, 文章, 演出照片 | + 場刊 |
+| `DYP-000106/107/108` | (empty) | 文章 |
+
+The media sheet is the authority, and the entry page groups its material cards
+*by* the media-level value (Performance photo / House programme / Media
+write-up), so the roll-up has no consumer. Nothing on the catalogue page
+displayed it. Same story for `contributor_*`: 7 works carry one, while the media
+sheet has `media_author_zht` on 20 items — different granularity, different
+meaning. Read both from the media sheet on the entry page.
+
+### Open questions for the client
+
+1. **`notes` is a free-text field carrying structured data.** 65 of 88 works
+   have one, and they contain the things the entry page needs as fields:
+
+   ```
+   DYP-000012  Date: 1981-11-11 to 1981-11-13
+   DYP-000018  Date: 1982-06-13;1982-06-20
+   DYP-000022  Date: 1985-12–20 to 1985-12-22
+               Creative coordinators: Wong Kwan Sun;Edward Lam
+               Stage Manager: Lawrence Wong
+               Costume Design: Tenny …
+   DYP-000024  Languange in Cantonese
+   ```
+
+   This is where the entry page's `Date: 1981 November 11 - November 13` and its
+   (currently hidden) *Participating Artists* row come from. `date_yyyy/mm/dd`
+   holds only a single date — 68 works have a month, 63 a day — so **the run
+   range exists only inside `notes`**. Two routes: ask for `date_end_*` and
+   credit columns in the sheet, or parse `notes` and accept the breakage. The
+   notes are English-only, and `DYP-000022` already has a typo (`1985-12–20`,
+   en-dash) that any parser would have to survive. Recommend asking for columns.
+2. **The `sort_*` columns may be the missing "sort by latest added".** The
+   wireframe asked for it and nothing backed it (discrepancy 5). There are now
+   `sort_group_en/zh` (values 6 and 8) and `sort_en` / `sort_zh-Hant` /
+   `sort_zh-Hans` (1–17). They are **not** a total ordering — 13 works share
+   `sort_zh-Hant = 9` — so they look like a group-plus-rank scheme nobody has
+   documented. Classified internal until someone says what they mean.
+3. **Simplified Chinese has appeared.** Every translated column now has a
+   `_zh-Hans` twin, filled at roughly the same rate as `_zh-Hant`. The site is
+   scoped as zh-Hant + English. Is Simplified a third locale, or reference data?
+4. **26 columns are empty in every row**, including all three `abstract_*` and
+   all three `acknowledgement_*`. The entry page has a *Description* block
+   (hidden in the Figma frame) with nowhere to read from. Confirm whether
+   abstracts are coming.
+5. **Ten columns hold one constant across all 88 rows** — `isPost=Y`,
+   `owner=DIR`, `department`, `work_type`, `dataset_name_*`, `ocr_text=N`,
+   `copyright_status=copyrighted`, `license=open access`. Fine as provenance,
+   useless as facets.
+6. **Titles still have gaps.** No Chinese title on `DYP-000001`, `DYP-000032`,
+   `DYP-000104`; no English title on `DYP-000099`, `DYP-000102`. `DYP-000001`
+   is still the junk record whose English title is the placeholder `ID123`.
+
 ## Discrepancies between the client data and the wireframe
 
 Found while building. Each needs a decision.
@@ -522,7 +658,8 @@ Found while building. Each needs a decision.
    using `.input.cc-year`. A real slider is new component work.
 
 5. **"Sort by: Latest Added" has no backing field.** There is no created or
-   ingested date anywhere in the data. Sort options are 年份（新至舊）,
+   ingested date anywhere in the data — though see open question 2 above, the
+   new file's `sort_*` columns may be it. Sort options are 年份（新至舊）,
    年份（舊至新）, 標題, defaulting to newest year first. If "latest added" is
    wanted, the client has to supply an accession date.
 
