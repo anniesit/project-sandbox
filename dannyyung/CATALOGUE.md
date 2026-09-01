@@ -146,7 +146,7 @@ grows a column that is not classified as public / media-level / internal — see
 ```jsonc
 { "items": [ {
   "id": "DYP-000017",
-  "title": "媒介事件一",           // zh-Hant; empty falls back to titleEn
+  "title": "媒介事件一",           // resolved — see Language fallback below
   "titleEn": "Media Event 1",
   "category": "劇場",              // display label
   "categoryKey": "theatre-production",  // stable key, matches the radios
@@ -545,8 +545,8 @@ Same 88 ids, same 1974–2020 range, same 6 with no category, 19 with no directo
 | Numbers are ints, not floats (`1974`, not `1974.0`) | all dates | Harmless; the float-stripping is kept anyway |
 | 32 new columns: every `_zh-Hans` twin, plus admin/rights fields | — | See the classification below |
 | `keywords` for `DYP-000058` and `DYP-000083` moved from `keywords_en` to `keywords_zh-Hant` | 2 rows | A **correction** — the values are Chinese and were in the English column |
-| `publisher_en` / `publisher_zh-Hant` emptied | **9 cells across 5 works** | **Data loss.** `DYP-000027` 自立早報, `DYP-000066` and `DYP-000083` 明報 / Ming Pao Daily News, `DYP-000097` 信報 / HK Economic Journal, `DYP-000099` 進念．二十面體 E+E, `DYP-000104` Palgrave Macmillan Cham. Both publisher columns are now empty for all 88. Ask whether this was deliberate — the media sheet has its own `Publisher/Publishing Venue` (16 rows filled), so it may have moved there on purpose |
-| `url_storage_filename` emptied | **84 works** | Presumably superseded by the media sheet's `media_filename`, which is filled for all 1,164 items. Worth confirming, because it is the only per-work file pointer that existed |
+| `publisher_en` / `publisher_zh-Hant` emptied | 9 cells across 5 works | **Intentional** — confirmed 2026-09-01; the values moved to the media sheet. Was: `DYP-000027` 自立早報, `DYP-000066` and `DYP-000083` 明報 / Ming Pao Daily News, `DYP-000097` 信報 / HK Economic Journal, `DYP-000099` 進念．二十面體 E+E, `DYP-000104` Palgrave Macmillan Cham. |
+| `url_storage_filename` emptied | 84 works | **Intentional** — confirmed 2026-09-01; superseded by the media sheet's `media_filename`, filled for all 1,164 items |
 | `department`, `copyright_status`, `license` filled in | 88 / 28 / 29 | Constants, internal |
 
 No other value changed anywhere. The 131 apparent differences in `date_mm` /
@@ -555,11 +555,14 @@ No other value changed anywhere. The 131 apparent differences in `date_mm` /
 ### Which columns may be published
 
 The 77 columns are classified in `sample-data/build-catalogue-sample.py`
-(`PUBLIC_WORK`, `MEDIA_LEVEL`, `INTERNAL`). The script **fails loudly** if a
-re-export adds or renames a column, so a new column cannot leak by default.
+(`PUBLIC_WORK`, `SEARCH_ONLY`, `MEDIA_LEVEL`, `INTERNAL`). The script **fails
+loudly** if a re-export adds or renames a column, so a new column cannot leak by
+default.
 
-- **Public, work-level (27)** — id, the three title columns, category, date
-  parts, venue, director, location, abstract, keywords, `notes`, `language`.
+- **Public, work-level (20)** — id, the English and Traditional Chinese title,
+  category, date parts, venue, director, location, abstract, keywords, `notes`,
+  `language`.
+- **Search-only (7)** — every `_zh-Hans` column. Indexed, never displayed.
 - **Media-level (23)** — carried on the works sheet but belonging to the media
   sheet: `content_category_*`, `contributor_*`, `authors_*`, `publisher_*`,
   `published_in_*`, `digital_object_type`, `video_length`, `issue`, `format`,
@@ -590,48 +593,93 @@ displayed it. Same story for `contributor_*`: 7 works carry one, while the media
 sheet has `media_author_zht` on 20 items — different granularity, different
 meaning. Read both from the media sheet on the entry page.
 
-### Open questions for the client
+### Language fallback
 
-1. **`notes` is a free-text field carrying structured data.** 65 of 88 works
-   have one, and they contain the things the entry page needs as fields:
+**Preferred language, else the other language, else empty.** Many columns are
+filled in one language only, and hiding the value loses real information — a
+Chinese page showing "Haus der Kulturen der Welt" beats one showing nothing.
+`pick()` / `pick_multi()` in the build script apply this to title, category,
+location, venue and director, and the build prints every fallback it used.
 
-   ```
-   DYP-000012  Date: 1981-11-11 to 1981-11-13
-   DYP-000018  Date: 1982-06-13;1982-06-20
-   DYP-000022  Date: 1985-12–20 to 1985-12-22
-               Creative coordinators: Wong Kwan Sun;Edward Lam
-               Stage Manager: Lawrence Wong
-               Costume Design: Tenny …
-   DYP-000024  Languange in Cantonese
-   ```
+On the current data it fires 5 times: 3 titles and 2 venues. Category, location
+and director never fall back, because where the Chinese is missing the English
+is missing too. So this is a rule for the entry page and the English site more
+than a change to the catalogue.
 
-   This is where the entry page's `Date: 1981 November 11 - November 13` and its
-   (currently hidden) *Participating Artists* row come from. `date_yyyy/mm/dd`
-   holds only a single date — 68 works have a month, 63 a day — so **the run
-   range exists only inside `notes`**. Two routes: ask for `date_end_*` and
-   credit columns in the sheet, or parse `notes` and accept the breakage. The
-   notes are English-only, and `DYP-000022` already has a typo (`1985-12–20`,
-   en-dash) that any parser would have to survive. Recommend asking for columns.
-2. **The `sort_*` columns may be the missing "sort by latest added".** The
-   wireframe asked for it and nothing backed it (discrepancy 5). There are now
-   `sort_group_en/zh` (values 6 and 8) and `sort_en` / `sort_zh-Hant` /
-   `sort_zh-Hans` (1–17). They are **not** a total ordering — 13 works share
-   `sort_zh-Hant = 9` — so they look like a group-plus-rank scheme nobody has
-   documented. Classified internal until someone says what they mean.
-3. **Simplified Chinese has appeared.** Every translated column now has a
-   `_zh-Hans` twin, filled at roughly the same rate as `_zh-Hant`. The site is
-   scoped as zh-Hant + English. Is Simplified a third locale, or reference data?
-4. **26 columns are empty in every row**, including all three `abstract_*` and
+Two consequences to keep in mind:
+
+- **A value on a Chinese page may be English, and nothing marks which.** If the
+  entry page later needs a `lang` attribute on those runs (for font or for a
+  screen reader's pronunciation), `pick()` is the function that knows, and it
+  would have to start returning the language alongside the value.
+- **The facets inherit it.** A location or director dropdown built from these
+  values could show a mix of scripts. It does not today, because neither field
+  ever falls back.
+
+**The fallback belongs to the data layer, not to `catalogue.js`.** The component
+renders the string it is handed and never chooses a language. Implementing it in
+both places is how the two drift apart.
+
+### `notes` — shown verbatim, so it has to survive intact
+
+The client will display `notes` on the entry page as-is, so they can see what
+the field actually contains. Three things follow:
+
+1. **Line breaks are content, and HTML will eat them.** 58 of the 65 filled
+   notes are multi-line; the longest is 50 lines. Excel stores Alt+Enter as a
+   plain `\n`, openpyxl returns it and JSON preserves it — but HTML collapses
+   whitespace, so **the element that renders `notes` needs
+   `white-space: pre-line`**, or a 50-line note becomes one run-on paragraph.
+   In Webflow that is a Custom property on the class; no code embed needed.
+2. **The malformed date dash is corrected at build time.** `DYP-000022` reads
+   `1985-12–20` (en dash where a hyphen belongs). `BAD_DATE_DASH` in the build
+   script rewrites a non-ASCII dash **only when it sits between two digits**,
+   and the build prints every work it touched (`date dash fixed : ['DYP-000022']`).
+   The narrowness matters: the sheet holds 39 fullwidth hyphens inside Chinese
+   titles (`中國旅程之一－意圖`) and 6 legitimate en dashes inside English
+   subtitles (`Huayi – Chinese Festival of Arts 2004`), and none of them are
+   touched. If that count ever rises above one, it shows up in the build output
+   instead of quietly rewriting content.
+3. **The colons are mixed** — some notes label fields with `Date:` and some with
+   `Date：` (fullwidth). Left exactly as the client wrote them.
+
+Nothing parses `notes`. The run dates and the extra credits that live inside it
+are read by a human, not extracted.
+
+### Simplified Chinese is search fodder
+
+Every translated column has a `_zh-Hans` twin. They are **not a third locale and
+never displayed** — they exist so a visitor typing 剧场 finds 劇場. They sit in
+their own `SEARCH_ONLY` bucket in the build script rather than in `INTERNAL`,
+because the intent is different: internal means "do not ship", this means "ship
+to the search index, not to the page". The sample JSON carries none of them; the
+backend's index should.
+
+### Still open with the client
+
+1. **26 columns are empty in every row**, including all three `abstract_*` and
    all three `acknowledgement_*`. The entry page has a *Description* block
    (hidden in the Figma frame) with nowhere to read from. Confirm whether
    abstracts are coming.
-5. **Ten columns hold one constant across all 88 rows** — `isPost=Y`,
+2. **Ten columns hold one constant across all 88 rows** — `isPost=Y`,
    `owner=DIR`, `department`, `work_type`, `dataset_name_*`, `ocr_text=N`,
    `copyright_status=copyrighted`, `license=open access`. Fine as provenance,
    useless as facets.
-6. **Titles still have gaps.** No Chinese title on `DYP-000001`, `DYP-000032`,
-   `DYP-000104`; no English title on `DYP-000099`, `DYP-000102`. `DYP-000001`
-   is still the junk record whose English title is the placeholder `ID123`.
+3. **Titles still have gaps.** No Chinese title on `DYP-000001`, `DYP-000032`,
+   `DYP-000104` (all three now fall back to English); no English title on
+   `DYP-000099`, `DYP-000102`. `DYP-000001` is still the junk record whose
+   English title is the placeholder `ID123`.
+4. **`DYP-000022`'s `1985-12–20` typo** is patched at build time but not in the
+   source. Flagged to the client.
+
+### Settled
+
+- **Publisher loss and the emptied `url_storage_filename` are intentional.**
+  Confirmed 2026-09-01. Publisher moved to the media sheet's
+  `Publisher/Publishing Venue`; per-work filenames are superseded by the media
+  sheet's `media_filename`.
+- **The `sort_*` columns are not wanted.** "Sort by latest added" is dropped as
+  a requirement, so nothing needs to interpret them. They stay in `INTERNAL`.
 
 ## Discrepancies between the client data and the wireframe
 
@@ -657,11 +705,9 @@ Found while building. Each needs a decision.
    slider; the design system has no such control. Built as two year inputs
    using `.input.cc-year`. A real slider is new component work.
 
-5. **"Sort by: Latest Added" has no backing field.** There is no created or
-   ingested date anywhere in the data — though see open question 2 above, the
-   new file's `sort_*` columns may be it. Sort options are 年份（新至舊）,
-   年份（舊至新）, 標題, defaulting to newest year first. If "latest added" is
-   wanted, the client has to supply an accession date.
+5. **"Sort by: Latest Added" is dropped** (decided 2026-09-01). Sort options are
+   年份（新至舊）, 年份（舊至新）, 標題, defaulting to newest year first. The
+   new file's `sort_*` columns are not it and are not interpreted.
 
 6. **Director is multi-valued and sometimes enormous.** 44 distinct names;
    `DYP-000072` lists **18** and `DYP-000069` lists 14, including Latin names.
@@ -684,9 +730,10 @@ Found while building. Each needs a decision.
    needs two fields (city + country).
 
 10. **Three records have no Chinese title** — `DYP-000001` (whose English title
-    is the placeholder `ID123`), `DYP-000032`, `DYP-000104`. On a
-    Chinese-first page these fall back to English. `DYP-000001` is junk data
-    and should probably be withdrawn.
+    is the placeholder `ID123`), `DYP-000032`, `DYP-000104`. They fall back to
+    English at build time, which is now the general rule for every field — see
+    **Language fallback** above. `DYP-000001` is junk data and should probably
+    be withdrawn.
 
 11. **Pagination maths.** The design shows "1 2 3 … 12", implying 144
     records. There are 88, so 8 pages at 12 per page.

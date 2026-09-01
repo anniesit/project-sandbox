@@ -28,6 +28,7 @@ size limit to golf against.
 
 import json
 import os
+import re
 import collections
 import openpyxl
 
@@ -43,6 +44,12 @@ CATEGORY_KEY = {
     "視覺藝術": "visual-arts",
     "活動": "event",
     "表演藝術": "performing-art",
+    # The English labels map to the same keys, so a record that has only the
+    # English category still lands in the right facet. None do today.
+    "Theatre Production": "theatre-production",
+    "Visual Arts": "visual-arts",
+    "Event": "event",
+    "Performing Art": "performing-art",
 }
 
 # ---------------------------------------------------------------------------
@@ -57,16 +64,31 @@ CATEGORY_KEY = {
 # Work-level and safe to publish on the catalogue or entry page.
 PUBLIC_WORK = [
     "id",
-    "title_en", "title_zh-Hant", "title_zh-Hans",
-    "category_en", "category_zh-Hant", "category_zh-Hans",
+    "title_en", "title_zh-Hant",
+    "category_en", "category_zh-Hant",
     "date_yyyy", "date_mm", "date_dd",
-    "venue_en", "venue_zh-Hant", "venue_zh-Hans",
-    "director_en", "director_zh-Hant", "director_zh-Hans",
-    "location_en", "location_zh-Hant", "location_zh-Hans",
-    "abstract_en", "abstract_zh-Hant", "abstract_zh-Hans",
-    "keywords_en", "keywords_zh-Hant", "keywords_zh-Hans",
+    "venue_en", "venue_zh-Hant",
+    "director_en", "director_zh-Hant",
+    "location_en", "location_zh-Hant",
+    "abstract_en", "abstract_zh-Hant",
+    "keywords_en", "keywords_zh-Hant",
     "notes",
     "language",
+]
+
+# Simplified Chinese is **search fodder only** — never displayed, and not a
+# third locale. A visitor typing 剧场 should find 劇場, so these columns belong
+# in whatever index the backend searches, and nowhere else. They are listed
+# separately from INTERNAL so that intent survives: internal means "do not
+# ship", this means "ship to the index, not to the page".
+SEARCH_ONLY = [
+    "title_zh-Hans",
+    "category_zh-Hans",
+    "venue_zh-Hans",
+    "director_zh-Hans",
+    "location_zh-Hans",
+    "abstract_zh-Hans",
+    "keywords_zh-Hans",
 ]
 
 # Per-media-item facts that this sheet also carries, rolled up to the work.
@@ -147,18 +169,87 @@ def multi(v):
     return [x.strip() for x in s.split(";") if x.strip()] if s else []
 
 
+# Every fallback the build actually used, so the report can show the cost.
+FELL_BACK = collections.Counter()
+
+
+def pick(row, base, want="zh-Hant", other="en"):
+    """Preferred language, falling back to the other one before giving up.
+
+    Many columns are filled in one language only, and hiding the value would
+    lose real information — a Chinese page showing "Haus der Kulturen der Welt"
+    beats a Chinese page showing nothing. So the rule is: preferred language,
+    else the other language, else empty.
+
+    The consequence is that a value on the page may not be in the page's
+    language. Nothing marks which — see CATALOGUE.md; if the entry page ever
+    needs a `lang` attribute on those, this is the function that knows.
+    """
+    v = text(row.get("%s_%s" % (base, want)))
+    if v:
+        return v
+    v = text(row.get("%s_%s" % (base, other)))
+    if v:
+        FELL_BACK[base] += 1
+    return v
+
+
+def pick_multi(row, base, want="zh-Hant", other="en"):
+    """multi() over pick() — falls back as a whole list, never mixes languages."""
+    s = pick(row, base, want, other)
+    return [x.strip() for x in s.split(";") if x.strip()] if s else []
+
+
+# A dash between two digits that is not an ASCII hyphen. Deliberately narrow:
+# the sheet also holds 39 fullwidth hyphens inside Chinese titles
+# (創意中國－榮念曾…) and those must survive untouched. Today this matches
+# exactly one cell — DYP-000022's "1985-12–20", a typo the client has been told
+# about. Every substitution is reported, so the day it starts matching more,
+# that shows up in the build output instead of silently rewriting content.
+BAD_DATE_DASH = re.compile(r"(?<=\d)[\u2010-\u2015\u2212\uff0d](?=\d)")
+
+DASH_FIXES = []
+
+
+def notes_text(v, work_id=""):
+    """`notes` is free text shown verbatim on the entry page.
+
+    Two things it must survive:
+
+      * **Line breaks.** 58 of the 65 filled notes are multi-line (one runs to
+        52 lines) and the structure is the content. Excel stores Alt+Enter as a
+        plain \n, openpyxl returns it and JSON keeps it — but HTML collapses
+        it, so the element that renders this needs `white-space: pre-line` or
+        the whole note becomes one run-on line.
+      * **Mixed colons.** Some notes label their fields with an ASCII ":" and
+        some with a fullwidth "：". Left alone — it is the client's text.
+
+    Only the malformed date dash is corrected.
+    """
+    if v is None:
+        return ""
+    s = str(v).replace("\r\n", "\n").replace("\r", "\n").strip()
+    if s.upper() == "NULL":
+        return ""
+    fixed = BAD_DATE_DASH.sub("-", s)
+    if fixed != s:
+        DASH_FIXES.append(work_id)
+    return fixed
+
+
 def check_columns(header):
     """A re-export that adds or renames a column must fail here, not leak."""
-    known = set(PUBLIC_WORK) | set(MEDIA_LEVEL) | set(INTERNAL)
+    known = set(PUBLIC_WORK) | set(SEARCH_ONLY) | set(MEDIA_LEVEL) | set(INTERNAL)
     seen = [c for c in header if c]
     unclassified = [c for c in seen if c not in known]
     missing = [c for c in sorted(known) if c not in seen]
-    overlap = [c for c in seen if sum(c in b for b in (PUBLIC_WORK, MEDIA_LEVEL, INTERNAL)) > 1]
+    overlap = [c for c in seen
+               if sum(c in b for b in (PUBLIC_WORK, SEARCH_ONLY, MEDIA_LEVEL, INTERNAL)) > 1]
     if unclassified or overlap:
         raise SystemExit(
             "Column classification is out of date.\n"
             "  unclassified: %s\n  in two buckets: %s\n"
-            "Add each to PUBLIC_WORK, MEDIA_LEVEL or INTERNAL in this file."
+            "Add each to PUBLIC_WORK, SEARCH_ONLY, MEDIA_LEVEL or INTERNAL in this file."
             % (unclassified, overlap)
         )
     return missing
@@ -173,18 +264,20 @@ def main():
 
     items = []
     for w in works:
-        cat = text(w.get("category_zh-Hant"))
+        wid = text(w.get("id"))
+        cat = pick(w, "category")
         items.append({
-            "id": text(w.get("id")),
-            "title": text(w.get("title_zh-Hant")),
+            "id": wid,
+            "title": pick(w, "title"),
             "titleEn": text(w.get("title_en")),
             "category": cat,
             "categoryKey": CATEGORY_KEY.get(cat, ""),
             "year": year(w.get("date_yyyy")),
-            "location": text(w.get("location_zh-Hant")),
-            "venue": text(w.get("venue_zh-Hant")),
-            "directors": multi(w.get("director_zh-Hant")),
-            "mediaCount": counts.get(text(w.get("id")), 0),
+            "location": pick(w, "location"),
+            "venue": pick(w, "venue"),
+            "directors": pick_multi(w, "director"),
+            "notes": notes_text(w.get("notes"), wid),
+            "mediaCount": counts.get(wid, 0),
             "href": "#",
         })
 
@@ -196,8 +289,8 @@ def main():
     # ---- data quality report ------------------------------------------------
     print("source          :", os.path.basename(WORKS_XLSX))
     print("columns         :", len([c for c in header if c]),
-          "(public %d / media-level %d / internal %d)"
-          % (len(PUBLIC_WORK), len(MEDIA_LEVEL), len(INTERNAL)))
+          "(public %d / search-only %d / media-level %d / internal %d)"
+          % (len(PUBLIC_WORK), len(SEARCH_ONLY), len(MEDIA_LEVEL), len(INTERNAL)))
     if missing:
         print("  ! classified but absent from the sheet:", missing)
     print("works           :", len(items))
@@ -214,12 +307,18 @@ def main():
     print("orphan media    :",
           sum(v for k, v in counts.items() if k not in {i["id"] for i in items}))
 
-    # `notes` is free text that carries structured data the entry page needs
-    # (run dates, extra credits). Counted here so the size of that problem
-    # stays visible. See CATALOGUE.md "What the new file changes".
-    notes = [text(w.get("notes")) for w in works]
+    print("language fallback used:",
+          dict(FELL_BACK) if FELL_BACK else "none",
+          "(zh-Hant missing, English shown instead)")
+
+    # `notes` is free text shown verbatim on the entry page. Line-break and
+    # dash handling live in notes_text(); the counts are here so the shape of
+    # the field stays visible. See CATALOGUE.md.
+    notes = [i["notes"] for i in items]
     print("notes filled    :", sum(1 for n in notes if n),
-          "— of which carry 'Date:':", sum(1 for n in notes if "Date:" in n))
+          "— multi-line:", sum(1 for n in notes if "\n" in n),
+          "— longest:", max((n.count("\n") + 1) for n in notes if n), "lines")
+    print("date dash fixed :", DASH_FIXES or "none")
     print("date_mm filled  :", sum(1 for w in works if text(w.get("date_mm"))))
     print("date_dd filled  :", sum(1 for w in works if text(w.get("date_dd"))))
     print("wrote           :", out_path)

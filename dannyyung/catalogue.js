@@ -33,7 +33,7 @@
  * Record shape (see sample-data/catalogue-sample.json, which IS the contract):
  *   {
  *     "id": "DYP-000017",
- *     "title": "媒介事件一",          // zh-Hant; falls back to titleEn when empty
+ *     "title": "媒介事件一",
  *     "titleEn": "Media Event 1",
  *     "category": "劇場",             // display label
  *     "categoryKey": "theatre-production",  // stable key, matches the radio values
@@ -41,9 +41,17 @@
  *     "location": "香港",
  *     "venue": "香港藝術中心演奏廳",
  *     "directors": ["沈聖德", "榮念曾"],     // multi-valued, sometimes 18 long
+ *     "notes": "Date: …\nStage Manager: …",  // free text, MULTI-LINE, entry page
  *     "mediaCount": 2,
  *     "href": "#"
  *   }
+ *
+ * LANGUAGE FALLBACK IS THE DATA LAYER'S JOB, NOT THIS FILE'S. Many source
+ * columns are filled in one language only, so title / category / location /
+ * venue / directors arrive already resolved: preferred language, else the other
+ * one, else empty. A value on a Chinese page may therefore be English. This
+ * component renders whatever string it is handed and never chooses a language —
+ * keep it that way, or the rule ends up implemented in two places that drift.
  *
  * data-* contract (authored in Webflow; changing these breaks the page):
  *   [data-catalogue]                  the root; everything is queried inside it
