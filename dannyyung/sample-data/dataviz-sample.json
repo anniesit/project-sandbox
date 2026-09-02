@@ -1,0 +1,823 @@
+{
+ "lang": "zh-Hant",
+ "cataloguePath": "/catalogue",
+ "years": {
+  "min": 1974,
+  "max": 2020
+ },
+ "totals": {
+  "works": 88,
+  "dated": 88,
+  "undated": 0,
+  "collaborators": 43
+ },
+ "categories": [
+  {
+   "key": "theatre-production",
+   "label": "劇場",
+   "count": 69
+  },
+  {
+   "key": "event",
+   "label": "活動",
+   "count": 8
+  },
+  {
+   "key": "other",
+   "label": "其他",
+   "count": 6
+  },
+  {
+   "key": "visual-arts",
+   "label": "視覺藝術",
+   "count": 4
+  },
+  {
+   "key": "performing-art",
+   "label": "表演藝術",
+   "count": 1
+  }
+ ],
+ "locations": [
+  {
+   "slot": 0,
+   "label": "香港",
+   "count": 51,
+   "places": [
+    "香港"
+   ]
+  },
+  {
+   "slot": 1,
+   "label": "台北",
+   "count": 5,
+   "places": [
+    "台北"
+   ]
+  },
+  {
+   "slot": 2,
+   "label": "日本",
+   "count": 4,
+   "places": [
+    "日本"
+   ]
+  },
+  {
+   "slot": 3,
+   "label": "德國",
+   "count": 4,
+   "places": [
+    "德國"
+   ]
+  },
+  {
+   "slot": 4,
+   "label": "新加坡",
+   "count": 3,
+   "places": [
+    "新加坡"
+   ]
+  },
+  {
+   "slot": 5,
+   "label": "其他地點",
+   "count": 5,
+   "places": [
+    "奧斯陸",
+    "比利時",
+    "深圳",
+    "紐約"
+   ]
+  },
+  {
+   "slot": -1,
+   "label": "未註明",
+   "count": 16,
+   "places": []
+  }
+ ],
+ "bubbles": [
+  {
+   "year": 1974,
+   "categoryKey": "theatre-production",
+   "location": "紐約",
+   "locationSlot": 5,
+   "count": 1,
+   "href": "/catalogue?category=theatre-production&from=1974&to=1974&location=%E7%B4%90%E7%B4%84"
+  },
+  {
+   "year": 1977,
+   "categoryKey": "theatre-production",
+   "location": "",
+   "locationSlot": -1,
+   "count": 1,
+   "href": "/catalogue?category=theatre-production&from=1977&to=1977"
+  },
+  {
+   "year": 1978,
+   "categoryKey": "theatre-production",
+   "location": "",
+   "locationSlot": -1,
+   "count": 1,
+   "href": "/catalogue?category=theatre-production&from=1978&to=1978"
+  },
+  {
+   "year": 1979,
+   "categoryKey": "theatre-production",
+   "location": "",
+   "locationSlot": -1,
+   "count": 2,
+   "href": "/catalogue?category=theatre-production&from=1979&to=1979"
+  },
+  {
+   "year": 1979,
+   "categoryKey": "theatre-production",
+   "location": "香港",
+   "locationSlot": 0,
+   "count": 1,
+   "href": "/catalogue?category=theatre-production&from=1979&to=1979&location=%E9%A6%99%E6%B8%AF"
+  },
+  {
+   "year": 1980,
+   "categoryKey": "theatre-production",
+   "location": "香港",
+   "locationSlot": 0,
+   "count": 3,
+   "href": "/catalogue?category=theatre-production&from=1980&to=1980&location=%E9%A6%99%E6%B8%AF"
+  },
+  {
+   "year": 1981,
+   "categoryKey": "theatre-production",
+   "location": "香港",
+   "locationSlot": 0,
+   "count": 2,
+   "href": "/catalogue?category=theatre-production&from=1981&to=1981&location=%E9%A6%99%E6%B8%AF"
+  },
+  {
+   "year": 1982,
+   "categoryKey": "theatre-production",
+   "location": "台北",
+   "locationSlot": 1,
+   "count": 1,
+   "href": "/catalogue?category=theatre-production&from=1982&to=1982&location=%E5%8F%B0%E5%8C%97"
+  },
+  {
+   "year": 1982,
+   "categoryKey": "theatre-production",
+   "location": "香港",
+   "locationSlot": 0,
+   "count": 4,
+   "href": "/catalogue?category=theatre-production&from=1982&to=1982&location=%E9%A6%99%E6%B8%AF"
+  },
+  {
+   "year": 1985,
+   "categoryKey": "theatre-production",
+   "location": "香港",
+   "locationSlot": 0,
+   "count": 1,
+   "href": "/catalogue?category=theatre-production&from=1985&to=1985&location=%E9%A6%99%E6%B8%AF"
+  },
+  {
+   "year": 1986,
+   "categoryKey": "visual-arts",
+   "location": "",
+   "locationSlot": -1,
+   "count": 1,
+   "href": "/catalogue?category=visual-arts&from=1986&to=1986"
+  },
+  {
+   "year": 1987,
+   "categoryKey": "theatre-production",
+   "location": "",
+   "locationSlot": -1,
+   "count": 1,
+   "href": "/catalogue?category=theatre-production&from=1987&to=1987"
+  },
+  {
+   "year": 1987,
+   "categoryKey": "theatre-production",
+   "location": "香港",
+   "locationSlot": 0,
+   "count": 1,
+   "href": "/catalogue?category=theatre-production&from=1987&to=1987&location=%E9%A6%99%E6%B8%AF"
+  },
+  {
+   "year": 1988,
+   "categoryKey": "theatre-production",
+   "location": "台北",
+   "locationSlot": 1,
+   "count": 1,
+   "href": "/catalogue?category=theatre-production&from=1988&to=1988&location=%E5%8F%B0%E5%8C%97"
+  },
+  {
+   "year": 1989,
+   "categoryKey": "theatre-production",
+   "location": "日本",
+   "locationSlot": 2,
+   "count": 1,
+   "href": "/catalogue?category=theatre-production&from=1989&to=1989&location=%E6%97%A5%E6%9C%AC"
+  },
+  {
+   "year": 1990,
+   "categoryKey": "visual-arts",
+   "location": "",
+   "locationSlot": -1,
+   "count": 1,
+   "href": "/catalogue?category=visual-arts&from=1990&to=1990"
+  },
+  {
+   "year": 1991,
+   "categoryKey": "theatre-production",
+   "location": "香港",
+   "locationSlot": 0,
+   "count": 3,
+   "href": "/catalogue?category=theatre-production&from=1991&to=1991&location=%E9%A6%99%E6%B8%AF"
+  },
+  {
+   "year": 1992,
+   "categoryKey": "theatre-production",
+   "location": "日本",
+   "locationSlot": 2,
+   "count": 1,
+   "href": "/catalogue?category=theatre-production&from=1992&to=1992&location=%E6%97%A5%E6%9C%AC"
+  },
+  {
+   "year": 1992,
+   "categoryKey": "theatre-production",
+   "location": "香港",
+   "locationSlot": 0,
+   "count": 2,
+   "href": "/catalogue?category=theatre-production&from=1992&to=1992&location=%E9%A6%99%E6%B8%AF"
+  },
+  {
+   "year": 1993,
+   "categoryKey": "theatre-production",
+   "location": "香港",
+   "locationSlot": 0,
+   "count": 2,
+   "href": "/catalogue?category=theatre-production&from=1993&to=1993&location=%E9%A6%99%E6%B8%AF"
+  },
+  {
+   "year": 1993,
+   "categoryKey": "visual-arts",
+   "location": "",
+   "locationSlot": -1,
+   "count": 1,
+   "href": "/catalogue?category=visual-arts&from=1993&to=1993"
+  },
+  {
+   "year": 1994,
+   "categoryKey": "performing-art",
+   "location": "香港",
+   "locationSlot": 0,
+   "count": 1,
+   "href": "/catalogue?category=performing-art&from=1994&to=1994&location=%E9%A6%99%E6%B8%AF"
+  },
+  {
+   "year": 1994,
+   "categoryKey": "theatre-production",
+   "location": "比利時",
+   "locationSlot": 5,
+   "count": 1,
+   "href": "/catalogue?category=theatre-production&from=1994&to=1994&location=%E6%AF%94%E5%88%A9%E6%99%82"
+  },
+  {
+   "year": 1994,
+   "categoryKey": "theatre-production",
+   "location": "香港",
+   "locationSlot": 0,
+   "count": 2,
+   "href": "/catalogue?category=theatre-production&from=1994&to=1994&location=%E9%A6%99%E6%B8%AF"
+  },
+  {
+   "year": 1995,
+   "categoryKey": "theatre-production",
+   "location": "香港",
+   "locationSlot": 0,
+   "count": 2,
+   "href": "/catalogue?category=theatre-production&from=1995&to=1995&location=%E9%A6%99%E6%B8%AF"
+  },
+  {
+   "year": 1996,
+   "categoryKey": "other",
+   "location": "",
+   "locationSlot": -1,
+   "count": 1,
+   "href": "/catalogue?category=other&from=1996&to=1996"
+  },
+  {
+   "year": 1996,
+   "categoryKey": "theatre-production",
+   "location": "日本",
+   "locationSlot": 2,
+   "count": 1,
+   "href": "/catalogue?category=theatre-production&from=1996&to=1996&location=%E6%97%A5%E6%9C%AC"
+  },
+  {
+   "year": 1996,
+   "categoryKey": "theatre-production",
+   "location": "香港",
+   "locationSlot": 0,
+   "count": 3,
+   "href": "/catalogue?category=theatre-production&from=1996&to=1996&location=%E9%A6%99%E6%B8%AF"
+  },
+  {
+   "year": 1996,
+   "categoryKey": "visual-arts",
+   "location": "",
+   "locationSlot": -1,
+   "count": 1,
+   "href": "/catalogue?category=visual-arts&from=1996&to=1996"
+  },
+  {
+   "year": 1997,
+   "categoryKey": "theatre-production",
+   "location": "台北",
+   "locationSlot": 1,
+   "count": 1,
+   "href": "/catalogue?category=theatre-production&from=1997&to=1997&location=%E5%8F%B0%E5%8C%97"
+  },
+  {
+   "year": 1997,
+   "categoryKey": "theatre-production",
+   "location": "德國",
+   "locationSlot": 3,
+   "count": 1,
+   "href": "/catalogue?category=theatre-production&from=1997&to=1997&location=%E5%BE%B7%E5%9C%8B"
+  },
+  {
+   "year": 1997,
+   "categoryKey": "theatre-production",
+   "location": "香港",
+   "locationSlot": 0,
+   "count": 3,
+   "href": "/catalogue?category=theatre-production&from=1997&to=1997&location=%E9%A6%99%E6%B8%AF"
+  },
+  {
+   "year": 1998,
+   "categoryKey": "other",
+   "location": "",
+   "locationSlot": -1,
+   "count": 1,
+   "href": "/catalogue?category=other&from=1998&to=1998"
+  },
+  {
+   "year": 1998,
+   "categoryKey": "theatre-production",
+   "location": "香港",
+   "locationSlot": 0,
+   "count": 1,
+   "href": "/catalogue?category=theatre-production&from=1998&to=1998&location=%E9%A6%99%E6%B8%AF"
+  },
+  {
+   "year": 1999,
+   "categoryKey": "theatre-production",
+   "location": "香港",
+   "locationSlot": 0,
+   "count": 2,
+   "href": "/catalogue?category=theatre-production&from=1999&to=1999&location=%E9%A6%99%E6%B8%AF"
+  },
+  {
+   "year": 2000,
+   "categoryKey": "event",
+   "location": "德國",
+   "locationSlot": 3,
+   "count": 1,
+   "href": "/catalogue?category=event&from=2000&to=2000&location=%E5%BE%B7%E5%9C%8B"
+  },
+  {
+   "year": 2000,
+   "categoryKey": "event",
+   "location": "香港",
+   "locationSlot": 0,
+   "count": 3,
+   "href": "/catalogue?category=event&from=2000&to=2000&location=%E9%A6%99%E6%B8%AF"
+  },
+  {
+   "year": 2000,
+   "categoryKey": "theatre-production",
+   "location": "德國",
+   "locationSlot": 3,
+   "count": 2,
+   "href": "/catalogue?category=theatre-production&from=2000&to=2000&location=%E5%BE%B7%E5%9C%8B"
+  },
+  {
+   "year": 2000,
+   "categoryKey": "theatre-production",
+   "location": "香港",
+   "locationSlot": 0,
+   "count": 3,
+   "href": "/catalogue?category=theatre-production&from=2000&to=2000&location=%E9%A6%99%E6%B8%AF"
+  },
+  {
+   "year": 2001,
+   "categoryKey": "event",
+   "location": "深圳",
+   "locationSlot": 5,
+   "count": 1,
+   "href": "/catalogue?category=event&from=2001&to=2001&location=%E6%B7%B1%E5%9C%B3"
+  },
+  {
+   "year": 2001,
+   "categoryKey": "theatre-production",
+   "location": "香港",
+   "locationSlot": 0,
+   "count": 2,
+   "href": "/catalogue?category=theatre-production&from=2001&to=2001&location=%E9%A6%99%E6%B8%AF"
+  },
+  {
+   "year": 2002,
+   "categoryKey": "theatre-production",
+   "location": "新加坡",
+   "locationSlot": 4,
+   "count": 1,
+   "href": "/catalogue?category=theatre-production&from=2002&to=2002&location=%E6%96%B0%E5%8A%A0%E5%9D%A1"
+  },
+  {
+   "year": 2002,
+   "categoryKey": "theatre-production",
+   "location": "香港",
+   "locationSlot": 0,
+   "count": 2,
+   "href": "/catalogue?category=theatre-production&from=2002&to=2002&location=%E9%A6%99%E6%B8%AF"
+  },
+  {
+   "year": 2003,
+   "categoryKey": "event",
+   "location": "台北",
+   "locationSlot": 1,
+   "count": 1,
+   "href": "/catalogue?category=event&from=2003&to=2003&location=%E5%8F%B0%E5%8C%97"
+  },
+  {
+   "year": 2003,
+   "categoryKey": "theatre-production",
+   "location": "日本",
+   "locationSlot": 2,
+   "count": 1,
+   "href": "/catalogue?category=theatre-production&from=2003&to=2003&location=%E6%97%A5%E6%9C%AC"
+  },
+  {
+   "year": 2003,
+   "categoryKey": "theatre-production",
+   "location": "香港",
+   "locationSlot": 0,
+   "count": 1,
+   "href": "/catalogue?category=theatre-production&from=2003&to=2003&location=%E9%A6%99%E6%B8%AF"
+  },
+  {
+   "year": 2004,
+   "categoryKey": "theatre-production",
+   "location": "台北",
+   "locationSlot": 1,
+   "count": 1,
+   "href": "/catalogue?category=theatre-production&from=2004&to=2004&location=%E5%8F%B0%E5%8C%97"
+  },
+  {
+   "year": 2004,
+   "categoryKey": "theatre-production",
+   "location": "奧斯陸",
+   "locationSlot": 5,
+   "count": 1,
+   "href": "/catalogue?category=theatre-production&from=2004&to=2004&location=%E5%A5%A7%E6%96%AF%E9%99%B8"
+  },
+  {
+   "year": 2004,
+   "categoryKey": "theatre-production",
+   "location": "新加坡",
+   "locationSlot": 4,
+   "count": 1,
+   "href": "/catalogue?category=theatre-production&from=2004&to=2004&location=%E6%96%B0%E5%8A%A0%E5%9D%A1"
+  },
+  {
+   "year": 2004,
+   "categoryKey": "theatre-production",
+   "location": "香港",
+   "locationSlot": 0,
+   "count": 1,
+   "href": "/catalogue?category=theatre-production&from=2004&to=2004&location=%E9%A6%99%E6%B8%AF"
+  },
+  {
+   "year": 2005,
+   "categoryKey": "event",
+   "location": "深圳",
+   "locationSlot": 5,
+   "count": 1,
+   "href": "/catalogue?category=event&from=2005&to=2005&location=%E6%B7%B1%E5%9C%B3"
+  },
+  {
+   "year": 2005,
+   "categoryKey": "theatre-production",
+   "location": "香港",
+   "locationSlot": 0,
+   "count": 1,
+   "href": "/catalogue?category=theatre-production&from=2005&to=2005&location=%E9%A6%99%E6%B8%AF"
+  },
+  {
+   "year": 2006,
+   "categoryKey": "event",
+   "location": "香港",
+   "locationSlot": 0,
+   "count": 1,
+   "href": "/catalogue?category=event&from=2006&to=2006&location=%E9%A6%99%E6%B8%AF"
+  },
+  {
+   "year": 2006,
+   "categoryKey": "theatre-production",
+   "location": "新加坡",
+   "locationSlot": 4,
+   "count": 1,
+   "href": "/catalogue?category=theatre-production&from=2006&to=2006&location=%E6%96%B0%E5%8A%A0%E5%9D%A1"
+  },
+  {
+   "year": 2006,
+   "categoryKey": "theatre-production",
+   "location": "香港",
+   "locationSlot": 0,
+   "count": 1,
+   "href": "/catalogue?category=theatre-production&from=2006&to=2006&location=%E9%A6%99%E6%B8%AF"
+  },
+  {
+   "year": 2008,
+   "categoryKey": "other",
+   "location": "",
+   "locationSlot": -1,
+   "count": 1,
+   "href": "/catalogue?category=other&from=2008&to=2008"
+  },
+  {
+   "year": 2008,
+   "categoryKey": "theatre-production",
+   "location": "香港",
+   "locationSlot": 0,
+   "count": 1,
+   "href": "/catalogue?category=theatre-production&from=2008&to=2008&location=%E9%A6%99%E6%B8%AF"
+  },
+  {
+   "year": 2009,
+   "categoryKey": "theatre-production",
+   "location": "香港",
+   "locationSlot": 0,
+   "count": 1,
+   "href": "/catalogue?category=theatre-production&from=2009&to=2009&location=%E9%A6%99%E6%B8%AF"
+  },
+  {
+   "year": 2011,
+   "categoryKey": "other",
+   "location": "",
+   "locationSlot": -1,
+   "count": 1,
+   "href": "/catalogue?category=other&from=2011&to=2011"
+  },
+  {
+   "year": 2011,
+   "categoryKey": "theatre-production",
+   "location": "香港",
+   "locationSlot": 0,
+   "count": 1,
+   "href": "/catalogue?category=theatre-production&from=2011&to=2011&location=%E9%A6%99%E6%B8%AF"
+  },
+  {
+   "year": 2012,
+   "categoryKey": "other",
+   "location": "",
+   "locationSlot": -1,
+   "count": 1,
+   "href": "/catalogue?category=other&from=2012&to=2012"
+  },
+  {
+   "year": 2020,
+   "categoryKey": "other",
+   "location": "",
+   "locationSlot": -1,
+   "count": 1,
+   "href": "/catalogue?category=other&from=2020&to=2020"
+  },
+  {
+   "year": 2020,
+   "categoryKey": "theatre-production",
+   "location": "",
+   "locationSlot": -1,
+   "count": 1,
+   "href": "/catalogue?category=theatre-production&from=2020&to=2020"
+  }
+ ],
+ "collaborators": [
+  {
+   "name": "胡恩威",
+   "count": 5,
+   "href": "/catalogue?director=%E8%83%A1%E6%81%A9%E5%A8%81"
+  },
+  {
+   "name": "沈聖德",
+   "count": 4,
+   "href": "/catalogue?director=%E6%B2%88%E8%81%96%E5%BE%B7"
+  },
+  {
+   "name": "魏瑛娟",
+   "count": 4,
+   "href": "/catalogue?director=%E9%AD%8F%E7%91%9B%E5%A8%9F"
+  },
+  {
+   "name": "孟京輝",
+   "count": 3,
+   "href": "/catalogue?director=%E5%AD%9F%E4%BA%AC%E8%BC%9D"
+  },
+  {
+   "name": "李銳俊",
+   "count": 3,
+   "href": "/catalogue?director=%E6%9D%8E%E9%8A%B3%E4%BF%8A"
+  },
+  {
+   "name": "松島誠",
+   "count": 3,
+   "href": "/catalogue?director=%E6%9D%BE%E5%B3%B6%E8%AA%A0"
+  },
+  {
+   "name": "林奕華",
+   "count": 3,
+   "href": "/catalogue?director=%E6%9E%97%E5%A5%95%E8%8F%AF"
+  },
+  {
+   "name": "Astad Deboo",
+   "count": 2,
+   "href": "/catalogue?director=Astad+Deboo"
+  },
+  {
+   "name": "Shimizu Shinjin",
+   "count": 2,
+   "href": "/catalogue?director=Shimizu+Shinjin"
+  },
+  {
+   "name": "朱冥",
+   "count": 2,
+   "href": "/catalogue?director=%E6%9C%B1%E5%86%A5"
+  },
+  {
+   "name": "楊德昌",
+   "count": 2,
+   "href": "/catalogue?director=%E6%A5%8A%E5%BE%B7%E6%98%8C"
+  },
+  {
+   "name": "田蔓莎",
+   "count": 2,
+   "href": "/catalogue?director=%E7%94%B0%E8%94%93%E8%8E%8E"
+  },
+  {
+   "name": "龍植池",
+   "count": 2,
+   "href": "/catalogue?director=%E9%BE%8D%E6%A4%8D%E6%B1%A0"
+  },
+  {
+   "name": "Ann-Christin Rommen",
+   "count": 1,
+   "href": "/catalogue?director=Ann-Christin+Rommen"
+  },
+  {
+   "name": "Christopher Kondek",
+   "count": 1,
+   "href": "/catalogue?director=Christopher+Kondek"
+  },
+  {
+   "name": "Hobin Park",
+   "count": 1,
+   "href": "/catalogue?director=Hobin+Park"
+  },
+  {
+   "name": "Joh Seongjoo & Park Hobin",
+   "count": 1,
+   "href": "/catalogue?director=Joh+Seongjoo+%26+Park+Hobin"
+  },
+  {
+   "name": "Johannes Odenthal",
+   "count": 1,
+   "href": "/catalogue?director=Johannes+Odenthal"
+  },
+  {
+   "name": "Peeramon Chomdhavat & Paritat Tiphayakul",
+   "count": 1,
+   "href": "/catalogue?director=Peeramon+Chomdhavat+%26+Paritat+Tiphayakul"
+  },
+  {
+   "name": "Rilo Chmielorz",
+   "count": 1,
+   "href": "/catalogue?director=Rilo+Chmielorz"
+  },
+  {
+   "name": "Seongjoo Joh",
+   "count": 1,
+   "href": "/catalogue?director=Seongjoo+Joh"
+  },
+  {
+   "name": "Thomas Lehmen",
+   "count": 1,
+   "href": "/catalogue?director=Thomas+Lehmen"
+  },
+  {
+   "name": "VA Wolfl",
+   "count": 1,
+   "href": "/catalogue?director=VA+Wolfl"
+  },
+  {
+   "name": "于逸堯",
+   "count": 1,
+   "href": "/catalogue?director=%E4%BA%8E%E9%80%B8%E5%A0%AF"
+  },
+  {
+   "name": "何秀萍",
+   "count": 1,
+   "href": "/catalogue?director=%E4%BD%95%E7%A7%80%E8%90%8D"
+  },
+  {
+   "name": "劉澤源",
+   "count": 1,
+   "href": "/catalogue?director=%E5%8A%89%E6%BE%A4%E6%BA%90"
+  },
+  {
+   "name": "劉索拉",
+   "count": 1,
+   "href": "/catalogue?director=%E5%8A%89%E7%B4%A2%E6%8B%89"
+  },
+  {
+   "name": "吳興國",
+   "count": 1,
+   "href": "/catalogue?director=%E5%90%B3%E8%88%88%E5%9C%8B"
+  },
+  {
+   "name": "崔明慧",
+   "count": 1,
+   "href": "/catalogue?director=%E5%B4%94%E6%98%8E%E6%85%A7"
+  },
+  {
+   "name": "張獻",
+   "count": 1,
+   "href": "/catalogue?director=%E5%BC%B5%E7%8D%BB"
+  },
+  {
+   "name": "李六乙",
+   "count": 1,
+   "href": "/catalogue?director=%E6%9D%8E%E5%85%AD%E4%B9%99"
+  },
+  {
+   "name": "李國修",
+   "count": 1,
+   "href": "/catalogue?director=%E6%9D%8E%E5%9C%8B%E4%BF%AE"
+  },
+  {
+   "name": "林兆華",
+   "count": 1,
+   "href": "/catalogue?director=%E6%9E%97%E5%85%86%E8%8F%AF"
+  },
+  {
+   "name": "柯軍",
+   "count": 1,
+   "href": "/catalogue?director=%E6%9F%AF%E8%BB%8D"
+  },
+  {
+   "name": "洪信子",
+   "count": 1,
+   "href": "/catalogue?director=%E6%B4%AA%E4%BF%A1%E5%AD%90"
+  },
+  {
+   "name": "潘德恕",
+   "count": 1,
+   "href": "/catalogue?director=%E6%BD%98%E5%BE%B7%E6%81%95"
+  },
+  {
+   "name": "熊源偉",
+   "count": 1,
+   "href": "/catalogue?director=%E7%86%8A%E6%BA%90%E5%81%89"
+  },
+  {
+   "name": "賴聲川",
+   "count": 1,
+   "href": "/catalogue?director=%E8%B3%B4%E8%81%B2%E5%B7%9D"
+  },
+  {
+   "name": "鄧樹榮",
+   "count": 1,
+   "href": "/catalogue?director=%E9%84%A7%E6%A8%B9%E6%A6%AE"
+  },
+  {
+   "name": "鄭志銳",
+   "count": 1,
+   "href": "/catalogue?director=%E9%84%AD%E5%BF%97%E9%8A%B3"
+  },
+  {
+   "name": "關錦鵬",
+   "count": 1,
+   "href": "/catalogue?director=%E9%97%9C%E9%8C%A6%E9%B5%AC"
+  },
+  {
+   "name": "陳炳釗",
+   "count": 1,
+   "href": "/catalogue?director=%E9%99%B3%E7%82%B3%E9%87%97"
+  },
+  {
+   "name": "集體創作",
+   "count": 1,
+   "href": "/catalogue?director=%E9%9B%86%E9%AB%94%E5%89%B5%E4%BD%9C"
+  }
+ ]
+}

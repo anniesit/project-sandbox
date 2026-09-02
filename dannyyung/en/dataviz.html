@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Theatrical Works of Danny Ning-Tsun Yung · Data Visualization</title>
+    <style>
+      /* Demo-page chrome ONLY. The real styling lives in the Webflow design
+         system (.section, .container, .eyebrow, .paragraph-*, tokens). This page
+         exists so dataviz.js can be exercised without Webflow — it is a
+         behaviour harness, not a design reference. Do not copy styles from here.
+
+         The chart's OWN styling is not here either: dataviz.js injects it under
+         :where([data-dataviz]), which is zero-specificity, so anything below
+         would silently win. Nothing below targets .dyviz-*. */
+      body { margin:0; padding:2rem clamp(1rem,4vw,3rem); background:#fff; color:#1d1c1a;
+             font-family:"Chiron Sung HK","Noto Serif HK",serif; }
+      .wrap { max-width:1200px; margin:0 auto; }
+      h1 { font-size:2.5rem; font-weight:500; margin:0; }
+      .viz-head { display:flex; flex-direction:column; gap:.5rem; margin-bottom:2.5rem; }
+      .viz-intro { font-size:1rem; color:#6f6a60; }
+      .viz-stack { display:flex; flex-direction:column; gap:3rem; }
+      .viz-card { display:flex; flex-direction:column; gap:1.25rem;
+                  padding:2rem; border:1px solid #cccabf; }
+      .viz-card-head { display:flex; flex-direction:column; gap:.25rem; }
+      .viz-card-title { font-size:1.25rem; font-weight:600; margin:0; }
+      .viz-card-sub { font-size:.8rem; color:#8a857a; }
+      .eyebrow { font-size:.7rem; letter-spacing:.1em; text-transform:uppercase;
+                 color:#6f6a60; }
+      .viz-legend-group { display:flex; flex-direction:column; gap:.5rem; }
+      .viz-note { font-size:.8rem; line-height:1.6; color:#6f6a60; }
+      .viz-table > summary { font-size:.85rem; cursor:pointer; color:#6f6a60; }
+      .viz-table > div { max-height:22rem; overflow:auto; margin-top:.75rem; }
+      [hidden] { display:none !important; }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <div class="viz-head">
+        <h1>Archive Visualization</h1>
+        <span class="viz-intro">Spatial and temporal mappings of the archival collection of Danny Ning-Tsun Yung. Click any bubble or box to see that group of works in the catalog.</span>
+      </div>
+
+      <!-- ============================================================
+           This is the markup dataviz.js expects, and the same markup the
+           Webflow page carries. The two [data-plot] boxes are EMPTIED on every
+           render — never author anything inside them.
+           ============================================================ -->
+      <div class="viz-stack" data-dataviz data-src="../sample-data/dataviz-sample-en.json">
+
+        <section class="viz-card" data-chart="temporal">
+          <div class="viz-card-head">
+            <h2 class="viz-card-title">Entries by Year and Category</h2>
+            <span class="viz-card-sub">X axis: Year · Y axis: Category · Colour: Location · Area: number of works</span>
+          </div>
+          <div class="viz-legend-group">
+            <span class="eyebrow">Location (colour)</span>
+            <div data-legend></div>
+          </div>
+          <div data-plot></div>
+          <span class="viz-note" data-note></span>
+          <details class="viz-table">
+            <summary>View as a table</summary>
+            <div data-table></div>
+          </details>
+        </section>
+
+        <section class="viz-card" data-chart="collaborators">
+          <div class="viz-card-head">
+            <h2 class="viz-card-title">Collaborating Directors &amp; Collaborators</h2>
+            <span class="viz-card-sub">Area: number of works co-created</span>
+          </div>
+          <div class="viz-legend-group">
+            <span class="eyebrow">Key</span>
+            <div data-legend></div>
+          </div>
+          <div data-plot></div>
+          <span class="viz-note" data-note></span>
+          <details class="viz-table">
+            <summary>View as a table</summary>
+            <div data-table></div>
+          </details>
+        </section>
+
+      </div>
+    </main>
+
+    <script src="../dataviz.js" defer></script>
+  </body>
+</html>

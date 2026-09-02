@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>榮念曾戲劇作品資料庫 · 資料視覺化</title>
+    <style>
+      /* Demo-page chrome ONLY. The real styling lives in the Webflow design
+         system (.section, .container, .eyebrow, .paragraph-*, tokens). This page
+         exists so dataviz.js can be exercised without Webflow — it is a
+         behaviour harness, not a design reference. Do not copy styles from here.
+
+         The chart's OWN styling is not here either: dataviz.js injects it under
+         :where([data-dataviz]), which is zero-specificity, so anything below
+         would silently win. Nothing below targets .dyviz-*. */
+      body { margin:0; padding:2rem clamp(1rem,4vw,3rem); background:#fff; color:#1d1c1a;
+             font-family:"Chiron Sung HK","Noto Serif HK",serif; }
+      .wrap { max-width:1200px; margin:0 auto; }
+      h1 { font-size:2.5rem; font-weight:500; margin:0; }
+      .viz-head { display:flex; flex-direction:column; gap:.5rem; margin-bottom:2.5rem; }
+      .viz-intro { font-size:1rem; color:#6f6a60; }
+      .viz-stack { display:flex; flex-direction:column; gap:3rem; }
+      .viz-card { display:flex; flex-direction:column; gap:1.25rem;
+                  padding:2rem; border:1px solid #cccabf; }
+      .viz-card-head { display:flex; flex-direction:column; gap:.25rem; }
+      .viz-card-title { font-size:1.25rem; font-weight:600; margin:0; }
+      .viz-card-sub { font-size:.8rem; color:#8a857a; }
+      .eyebrow { font-size:.7rem; letter-spacing:.1em; text-transform:uppercase;
+                 color:#6f6a60; }
+      .viz-legend-group { display:flex; flex-direction:column; gap:.5rem; }
+      .viz-note { font-size:.8rem; line-height:1.6; color:#6f6a60; }
+      .viz-table > summary { font-size:.85rem; cursor:pointer; color:#6f6a60; }
+      .viz-table > div { max-height:22rem; overflow:auto; margin-top:.75rem; }
+      [hidden] { display:none !important; }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <div class="viz-head">
+        <h1>資料視覺化</h1>
+        <span class="viz-intro">榮念曾作品檔案的時間與空間分佈。點擊任何圓點或方塊，即可在目錄中查看該組作品。</span>
+      </div>
+
+      <!-- ============================================================
+           This is the markup dataviz.js expects, and the same markup the
+           Webflow page carries. The two [data-plot] boxes are EMPTIED on every
+           render — never author anything inside them.
+           ============================================================ -->
+      <div class="viz-stack" data-dataviz>
+
+        <section class="viz-card" data-chart="temporal">
+          <div class="viz-card-head">
+            <h2 class="viz-card-title">作品年份與類別</h2>
+            <span class="viz-card-sub">橫軸：年份 · 縱軸：類別 · 顏色：地點 · 面積：作品數</span>
+          </div>
+          <div class="viz-legend-group">
+            <span class="eyebrow">地點（顏色）</span>
+            <div data-legend></div>
+          </div>
+          <div data-plot></div>
+          <span class="viz-note" data-note></span>
+          <details class="viz-table">
+            <summary>以表格檢視</summary>
+            <div data-table></div>
+          </details>
+        </section>
+
+        <section class="viz-card" data-chart="collaborators">
+          <div class="viz-card-head">
+            <h2 class="viz-card-title">合作導演與創作者</h2>
+            <span class="viz-card-sub">面積：合作作品數</span>
+          </div>
+          <div class="viz-legend-group">
+            <span class="eyebrow">圖例</span>
+            <div data-legend></div>
+          </div>
+          <div data-plot></div>
+          <span class="viz-note" data-note></span>
+          <details class="viz-table">
+            <summary>以表格檢視</summary>
+            <div data-table></div>
+          </details>
+        </section>
+
+      </div>
+    </main>
+
+    <script src="./dataviz.js" defer></script>
+  </body>
+</html>
