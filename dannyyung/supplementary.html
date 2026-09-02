@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>榮念曾戲劇作品資料庫 · 其他資料</title>
+    <style>
+      /* Demo-page chrome ONLY — see catalogue.html's note. Not a design reference. */
+      body { margin:0; padding:2rem clamp(1rem,4vw,3rem); background:#fff; color:#1d1c1a;
+             font-family:"Chiron Sung HK","Noto Serif HK",serif; }
+      .wrap { max-width:900px; margin:0 auto; }
+      .supp-layout { display:block; }
+      .supp-toolbar { display:flex; flex-wrap:wrap; align-items:flex-end;
+                      justify-content:space-between; gap:24px; margin-bottom:1.5rem; }
+      .facet { display:flex; flex-direction:column; gap:.5rem; }
+      .eyebrow { font-size:.8rem; letter-spacing:.1em; opacity:.6; margin:0; }
+      .input { padding:.5rem .75rem; border:1px solid #cccabf; border-radius:.5rem; font:inherit; }
+      .cc-year { width:6rem; text-align:center; }
+      .input-group { display:flex; flex-direction:column; gap:.25rem; flex:1 1 20rem; max-width:32rem; }
+      .input-label { font-size:.8rem; opacity:.6; }
+      .facet-date-range { display:flex; align-items:center; gap:.5rem; }
+      .catalogue-sort { display:flex; align-items:center; gap:.5rem; }
+      .dropdown { position:relative; }
+      .dropdown-trigger { display:flex; align-items:center; justify-content:space-between; gap:.5rem;
+                          width:100%; padding:.5rem .75rem; border:1px solid #cccabf;
+                          border-radius:.5rem; background:none; font:inherit; cursor:pointer; }
+      .dropdown-trigger-icon { width:.75rem; flex:none; }
+      .dropdown-list { display:none; position:absolute; z-index:5; inset-inline:0; margin:.25rem 0 0;
+                       padding:.25rem; list-style:none; max-height:16rem; overflow:auto;
+                       background:#fff; border:1px solid #cccabf; border-radius:.5rem; }
+      .dropdown.is-open .dropdown-list { display:block; }
+      .dropdown-option { padding:.35rem .5rem; border-radius:.25rem; cursor:pointer; }
+      .dropdown-option:hover { background:#f0eee6; }
+      .dropdown-option[aria-selected="true"] { font-weight:600; }
+      .result-list { display:flex; flex-direction:column; list-style:none; margin:0; padding:0; }
+      .result-item { position:relative; display:flex; flex-direction:column;
+                     gap:.5rem; padding:.75rem 1rem; }
+      .result-title { margin:0; font-size:clamp(2rem,4vw,3.5rem); font-weight:500; line-height:1.35; }
+      .u-link-cover { position:absolute; inset:0; z-index:1; width:100%;
+                      height:100%; padding:0; background-color:transparent; }
+      .u-link-cover.cc-result-cover { outline-offset:-2px; }
+      .u-link-cover.cc-result-cover:focus-visible { outline:2px solid #d14424; }
+      .u-sr-only { position:absolute; overflow:hidden; width:1px; height:1px;
+                   margin-top:-1px; padding:0; border:0; white-space:nowrap; }
+      .result-item:hover .result-title { text-decoration:underline; }
+      .result-meta { display:flex; flex-wrap:wrap; align-items:flex-start; gap:.5rem 24px; }
+      .paragraph-xl.cc-result-facts { display:flex; flex-wrap:wrap; align-items:center;
+                      gap:.25rem 16px; font-size:1.5rem; line-height:1.7; }
+      .result-tag { display:inline-flex; align-items:center; justify-content:center;
+                    padding:0 16px; border:1px solid #cccabf; border-radius:0; }
+      .result-sep { opacity:.5; }
+      .paragraph-xl.cc-result-credit { display:flex; flex:1 1 16rem; min-width:0;
+                       align-items:baseline; gap:.25rem .5rem; font-size:1.5rem; line-height:1.7; }
+      .paragraph-lg.cc-result-credit-label { flex:none; white-space:nowrap;
+                             font-size:1.25rem; line-height:1.75; }
+      .input-clear-wrapper { position:relative; display:block; width:100%; }
+      .input-clear-wrapper .input { width:100%; padding-right:2rem; }
+      .input-clear-wrapper .input::-webkit-search-cancel-button { display:none; }
+      .input-clear-btn { position:absolute; top:0; right:0; bottom:0;
+                         padding:0 .25rem .0 .75rem; border:0; background:none; color:inherit; cursor:pointer; }
+      .input-clear-icon { width:1rem; height:1rem; }
+      .pagination { display:flex; flex-wrap:wrap; justify-content:center; align-items:center;
+                    gap:.25rem; margin-top:2rem; }
+      .pagination-btn { min-width:2.5rem; padding:.5rem .75rem; border:1px solid #cccabf;
+                        border-radius:.5rem; background:none; font:inherit; cursor:pointer; }
+      .pagination-btn.cc-current { background:#d14424; border-color:#d14424; color:#fff; }
+      .catalogue-empty { padding:3rem 0; text-align:center; opacity:.7; }
+      .paragraph-sm { font-size:.9rem; }
+      .cc-count { margin:0 0 .5rem; opacity:.7; }
+      .note { max-width:900px; margin:0 auto 2rem; padding:.75rem 1rem; border-left:3px solid #d14424;
+              background:#faf7f4; font-size:.85rem; line-height:1.6; }
+    </style>
+  </head>
+  <body>
+    <div class="note">
+      <strong>Behaviour harness.</strong> Same <code>data-*</code> markup as the Webflow
+      Supplementary Materials page (a duplicate of the Chinese Catalogue page, with the
+      category facet removed and the credit line switched from 導演 to 作者), so
+      <code>supplementary.js</code> can be exercised locally. Design happens in Webflow, not here.
+      The page title 其他資料 is a placeholder the client asked to reconsider — see SUPPLEMENTARY.md.
+    </div>
+
+    <div class="wrap">
+      <h1>其他資料</h1>
+
+      <div class="supp-layout" data-supplementary data-src="./sample-data/supplementary-sample.json">
+        <div class="supp-results">
+          <div class="supp-toolbar">
+            <div class="input-group cc-search">
+              <label class="input-label cc-w-auto" for="supp-search">搜尋</label>
+              <div class="input-clear-wrapper">
+                <input class="input" type="search" id="supp-search" name="q" placeholder="搜尋標題、作者…" data-search />
+                <button class="input-clear-btn" type="button" data-input-clear aria-label="清除搜尋" hidden>
+                  <svg class="input-clear-icon" xmlns="http://www.w3.org/2000/svg" width="100%" fill="currentColor" viewBox="0 0 256 256"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="facet cc-supp" data-facet="year">
+              <div class="eyebrow cc-facet">年份</div>
+              <div class="facet-date-range">
+                <input class="input cc-year" type="number" inputmode="numeric" min="1974" max="2020" placeholder="1974" aria-label="起始年份" data-year-from />
+                <span aria-hidden="true">–</span>
+                <input class="input cc-year" type="number" inputmode="numeric" min="1974" max="2020" placeholder="2020" aria-label="結束年份" data-year-to />
+              </div>
+            </div>
+
+            <div class="catalogue-sort">
+              <label class="input-label" for="supp-sort">排序</label>
+              <div class="dropdown" data-dropdown data-sort>
+                <input type="hidden" name="sort" value="year-desc" />
+                <button class="dropdown-trigger" type="button" id="supp-sort" aria-haspopup="listbox" aria-expanded="false" aria-label="排序方式" data-dropdown-trigger>
+                  <span class="dropdown-trigger-label" data-dropdown-value>年份（新至舊）</span>
+                  <svg class="dropdown-trigger-icon" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true"><path d="M216.49,104.49l-80,80a12,12,0,0,1-17,0l-80-80a12,12,0,0,1,17-17L128,159l71.51-71.52a12,12,0,0,1,17,17Z"/></svg>
+                </button>
+                <ul class="dropdown-list" role="listbox" data-dropdown-list>
+                  <li class="dropdown-option" role="option" aria-selected="true" tabindex="-1" data-value="year-desc" data-dropdown-option><span class="dropdown-option-label" data-dropdown-option-label>年份（新至舊）</span></li>
+                  <li class="dropdown-option" role="option" aria-selected="false" tabindex="-1" data-value="year-asc" data-dropdown-option><span class="dropdown-option-label" data-dropdown-option-label>年份（舊至新）</span></li>
+                  <li class="dropdown-option" role="option" aria-selected="false" tabindex="-1" data-value="title" data-dropdown-option><span class="dropdown-option-label" data-dropdown-option-label>標題</span></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="paragraph-sm cc-count cc-supp" data-count aria-live="polite">共 8 項</div>
+
+          <ul class="result-list" role="list" data-rows>
+            <li class="result-item cc-supp" data-row-template>
+              <a class="u-link-cover cc-result-cover" href="#" data-field-link><span class="u-sr-only" data-field="title">標題</span></a>
+              <h2 class="result-title"><span data-field="title">標題</span></h2>
+              <div class="result-meta">
+                <div class="paragraph-xl cc-result-facts">
+                  <span class="result-tag" data-field-group="category"><span data-field="category">劇場</span></span>
+                  <span data-field="year">2004</span>
+                  <span class="result-sep" aria-hidden="true" data-field-group="location">/</span>
+                  <span data-field="location" data-field-group="location">台北</span>
+                </div>
+                <div class="paragraph-xl cc-result-credit" data-field-group="author">
+                  <span class="paragraph-lg cc-result-credit-label">作者：</span>
+                  <span data-field="author">榮念曾</span>
+                </div>
+              </div>
+            </li>
+          </ul>
+
+          <div class="catalogue-empty" data-empty hidden>沒有符合條件的資料。</div>
+          <nav class="pagination" data-pagination aria-label="分頁"></nav>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* Demo-page only, same rewrites as catalogue.html — see there for why. */
+      document.addEventListener("click", function (e) {
+        var a = e.target.closest && e.target.closest("a[data-field-link]");
+        if (!a) return;
+        var href = a.getAttribute("href") || "";
+        if (href.indexOf("/entry?") === 0) {
+          e.preventDefault();
+          window.location.href = "." + href.replace("/entry?", "/entry.html?");
+        }
+      });
+
+      document.querySelectorAll("[data-input-clear]").forEach(function (btn) {
+        var input = btn.parentElement.querySelector("input");
+        if (!input) return;
+        function sync() { btn.hidden = input.value === ""; }
+        input.addEventListener("input", sync);
+        btn.addEventListener("click", function () {
+          input.value = "";
+          input.dispatchEvent(new Event("input", { bubbles: true }));
+          input.focus();
+        });
+        sync();
+      });
+
+      document.addEventListener("click", function (e) {
+        var t = e.target.closest("[data-dropdown-trigger]");
+        document.querySelectorAll(".dropdown.is-open").forEach(function (d) {
+          if (!t || d !== t.closest("[data-dropdown]")) d.classList.remove("is-open");
+        });
+        if (t) {
+          var dd = t.closest("[data-dropdown]");
+          dd.classList.toggle("is-open");
+          t.setAttribute("aria-expanded", dd.classList.contains("is-open"));
+        }
+        var opt = e.target.closest("[data-dropdown-option]");
+        if (opt) opt.closest("[data-dropdown]").classList.remove("is-open");
+      });
+    </script>
+    <script src="./supplementary.js" defer></script>
+  </body>
+</html>
