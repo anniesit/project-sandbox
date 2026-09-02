@@ -711,6 +711,60 @@ because the intent is different: internal means "do not ship", this means "ship
 to the search index, not to the page". The sample JSON carries none of them; the
 backend's index should.
 
+### Director names are unreliable as an identity — and two are wrong
+
+Found 2026-09-02 while testing whether URL parameters could be standardised on
+English. They cannot, for directors, and the reason is a data problem:
+
+**Two records have the Chinese and English name lists misaligned.** The columns
+are semicolon lists of equal length, so nothing looks wrong until they are
+zipped together:
+
+| Work | Chinese | English says | Should be |
+|---|---|---|---|
+| `DYP-000052` | 潘德恕 / 孟京輝 | Meng Jinghui / Pun Tak Shu | **swapped** |
+| `DYP-000066` | 賴聲川 / 楊德昌 | Edward Yang / Stan Lai | **swapped** |
+
+The English entry page currently credits the wrong person on both. 孟京輝 is
+Meng Jinghui; 楊德昌 is Edward Yang.
+
+**One person has three romanisations.** 魏瑛娟 appears as `Wei Ying-chuan`
+(`DYP-000063`), `Wei Ying Chuan` (`DYP-000069`) and `Wei Yingchuan`
+(`DYP-000072`, `DYP-000076`). The Creator facet therefore lists her once in
+Chinese and three times in English.
+
+**One likely typo:** `DYP-000069` has `Paritat Tiphayakul` in the Chinese column
+and `Paritat Tiphayakkul` (double k) in the English one.
+
+Location, by contrast, is clean: 9 values, exactly one-to-one in both
+directions, none missing on either side.
+
+### Why the language switcher drops location and creator
+
+Because a filter value has to mean the same thing in both languages, and only
+some do. `categoryKey` was given a stable key precisely for this; location and
+director never were, so they carry display text.
+
+**Standardising the URL parameter on English would fix location and break
+director.** For location it is safe — 1:1 and complete. For director, English is
+not an identity: it would split 魏瑛娟 into three separate filter values and, on
+the two records above, attribute works to the wrong person. It would encode the
+data's errors into shareable URLs.
+
+The general point is that English is still *display text* — it changes when
+someone standardises a romanisation or fixes a typo, and every bookmarked URL
+breaks with it. `categoryKey` survives because it is a slug nobody edits for
+presentation.
+
+**The durable fix** is a stable key per facet in the source data — for
+directors, realistically a person id, since romanisation has already proved
+unstable across three records. Then location and creator would survive a
+language switch exactly as category does.
+
+Until then the switcher clears them, which is the safe failure: the reader lands
+on a valid unfiltered view rather than an empty one, and no wrong identity is
+encoded in a URL.
+
 ### Still open with the client
 
 1. **26 columns are empty in every row**, including all three `abstract_*` and
