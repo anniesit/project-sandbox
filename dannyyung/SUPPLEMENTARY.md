@@ -59,6 +59,7 @@ Output shape (`supplementary-sample.json` / `-en.json`):
   "id": "DYP-000105",
   "title": "其他-1996",
   "titleEn": "Non-project-based-1996",
+  "category": "",
   "year": 1996,
   "location": "",
   "authors": ["榮念曾"],
@@ -68,19 +69,27 @@ Output shape (`supplementary-sample.json` / `-en.json`):
 }
 ```
 
-No `category` / `categoryKey` field is carried into the output — `099` and
-`104` do have a real category (`劇場`) today (see above, this is deliberate
-for the mockup), so `supplementary.js` hardcodes the category chip to empty
-rather than rendering whatever the source category happens to be, keeping
-every row on this page visually consistent. `authors` is the one field this
-page adds: it is **not** on the
-works sheet (there is no `author_*` column there). It is rolled up from
-`authors_zh-Hant` / `authors_en` on the MEDIA sheet, which `entry.js` already
-surfaces per material — this script just collects each record's media-item
-authors onto the work, deduplicated, in source order. Every record here
-happens to have exactly one media item today, so this is a 1:1 copy; a future
-record with several authored items would join them (same "、" convention as
-`directors`).
+**`category` is shown as is, not suppressed** — confirmed with the client
+2026-09-03. `DYP-000099` and `DYP-000104` keep their real `劇場` chip, even
+though a "theatre production" tag on a supplementary-materials page reads as
+a contradiction; hiding it would misrepresent what the spreadsheet actually
+says, and the mismatch is exactly the kind of thing that should surface
+during a concept review, not get quietly smoothed over. A record with a
+genuinely empty category (the five `其他-YYYY` records, and `DYP-000102`)
+still drops the chip, same rule as the catalogue page.
+
+**`authors` comes from the WORKS sheet's `authors_en` / `authors_zh-Hant`
+columns** (`data/DIR_current_data.xlsx`, sheet `DataTemplate`) — also
+confirmed 2026-09-03, after the first version rolled this up from the MEDIA
+sheet's per-material `authors_*` (the columns `entry.js` surfaces) and
+produced more names than the client expected on a list page. The two sources
+disagree in scale: the works sheet holds zero or one name per record, the
+media sheet can hold several (one per material item). Same
+preferred-language-else-other, semicolon-split convention as `director`. On
+the current 8 records this means the five `其他-YYYY` ones (`105`-`109`) show
+no author line at all, even though their individual articles are attributed
+to someone on the entry page's media cards — that gap is real, not a bug: the
+work-level field is genuinely blank.
 
 ## Rendering: `supplementary.js`
 
@@ -90,8 +99,9 @@ name of its own, a credit field that means something different). It reuses
 the exact `data-field` / `data-field-group` contract CATALOGUE.md documents,
 with `director` renamed to `author` throughout, and drops:
 
-- the category facet (radios) — every record shares one categoryKey, so a
-  radio group would have one live option;
+- the category facet (radios) — this page's records are hand-picked by ID,
+  not filtered by category, so a category filter would not describe what the
+  page actually shows;
 - the location and director/author facet dropdowns — the sample data does
   not have enough variety yet to make filtering by either worth the UI.
 

@@ -2,8 +2,10 @@
  * supplementary.js — Danny Yung archive SUPPLEMENTARY MATERIALS renderer
  *
  * Sibling of catalogue.js, not a variant of it loaded on the same page. The
- * two pages show disjoint record sets (categoryKey set vs. categoryKey empty
- * — see build-supplementary-sample.py) and the credit line means something
+ * two pages currently show OVERLAPPING record sets — this one is an explicit
+ * ID allowlist for a concept mockup, not a categoryKey filter, so a record
+ * can appear here and still carry a real category like "劇場" (see
+ * build-supplementary-sample.py) — and the credit line means something
  * different on each: 導演 (director) on the catalogue, 作者 (author) here,
  * because these records are books and commentary ABOUT Danny Yung's work,
  * not productions he directed. Keeping them as separate files means a fix to
@@ -34,6 +36,7 @@
  *     "id": "DYP-000105",
  *     "title": "其他-1996",
  *     "titleEn": "Non-project-based-1996",
+ *     "category": "",                  // shown as is; "" drops the chip
  *     "year": 1996,
  *     "location": "",
  *     "authors": ["榮念曾"],           // multi-valued, joined with "、"
@@ -41,11 +44,13 @@
  *     "mediaCount": 1,
  *     "href": "/entry?id=DYP-000105"
  *   }
- * There is no "category" here — every record in this file has none, by
- * definition (build-supplementary-sample.py's selection rule). The result
- * template still carries a category chip [data-field-group=category] left
- * over from duplicating the catalogue page; setField removes it the same way
- * an empty director used to disappear on the catalogue, so it never renders.
+ * category IS rendered here, and shown AS IS — including "劇場" on the two
+ * records (DYP-000099, DYP-000104) whose spreadsheet row still tags them a
+ * theatre production. That mismatch is deliberately visible, not hidden: see
+ * build-supplementary-sample.py's header for why this page's selection is an
+ * ID list rather than a categoryKey filter. A record with a genuinely empty
+ * category (the five 其他-YYYY records, and DYP-000102) still drops the chip
+ * via the same [data-field-group=category] rule the catalogue page uses.
  *
  * data-* contract (authored in Webflow; changing these breaks the page):
  *   [data-supplementary]              the root; everything queried inside it
@@ -63,9 +68,8 @@
  *   [data-pagination]                 nav; buttons generated into it
  *
  * No category facet and no author/location facet dropdowns — this page has
- * six records today, all sharing categoryKey "", so a category radio group
- * would have exactly one live option. If the set grows enough to need
- * filtering by author, add a facet the way catalogue.js adds director,
+ * 8 records today and no filtering need for either. If the set grows enough
+ * to need filtering by author, add a facet the way catalogue.js adds director,
  * rather than teaching this file categories it does not have.
  * ============================================================ */
 (function () {
@@ -168,7 +172,7 @@
     li.setAttribute("data-clone", "");
     li.setAttribute("data-id", item.id || "");
     setField(li, "title", item.title || item.titleEn || noTitle(root));
-    setField(li, "category", ""); // always empty here; drops the leftover chip
+    setField(li, "category", item.category);
     setField(li, "year", item.year);
     setField(li, "location", item.location);
     setField(li, "author", (item.authors || []).join("、"));
@@ -393,7 +397,7 @@
     if (q.yearFrom && (!item.year || item.year < q.yearFrom)) return false;
     if (q.yearTo && (!item.year || item.year > q.yearTo)) return false;
     if (q.q) {
-      var hay = [item.title, item.titleEn, item.location, (item.authors || []).join(" "), item.year]
+      var hay = [item.title, item.titleEn, item.category, item.location, (item.authors || []).join(" "), item.year]
         .join(" ")
         .toLowerCase();
       if (hay.indexOf(q.q.toLowerCase()) < 0) return false;
