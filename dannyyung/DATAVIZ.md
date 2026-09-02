@@ -19,26 +19,52 @@ half-working search UIs that disagree. The viz is a way *in*.
 
 | Chart | Encoding | A click lands on |
 |---|---|---|
-| 作品年份與類別 (bubble) | x = year · y = category band · colour = location · **area** = number of works | `/catalogue?category=…&from=Y&to=Y&location=…` |
+| 作品年份與類別 (bubble) | x = year · y = **category or location, switchable** · **area** = number of works | `/catalogue?category=…&from=Y&to=Y` or `/catalogue?location=…&from=Y&to=Y` |
 | 合作導演與創作者 (treemap) | area = number of credits · shade = the same count | `/catalogue?director=…` |
 
-## Why a bubble is a group, not a work
+The axis switch is the only control on the page, and it changes nothing but
+which view you are looking at — it fires no event and filters nothing.
 
-The Figma frame draws one dot per entry. This build draws one bubble per
-**(year × category × location)** group and sizes it by the count — 63 bubbles for
-88 works, 46 of which are still single works and look exactly like the frame's
-dots.
+## Why a bubble is a group, and why the axis switches
 
-The reason is the href. A mark's link has to be a catalogue *query*, and a
-catalogue query is exactly those three dimensions. A per-work dot could only link
-to that work's entry page, which is not what the design asks for. Grouping makes
-every mark reproducible: the bubble at 1982 · 劇場 · 香港 is sized 4 and its link
-returns those same 4 works. That equality is the page's one correctness
-property — see **Verified** below.
+The Figma frame draws one dot per entry, with y = category and colour =
+location. This build draws **one bubble per (year × row)** — every work sharing
+a year and a category, or a year and a location — and lets the reader switch
+which of the two the y axis carries.
 
-Bubbles that share a year and a category are **dodged** vertically around the
-band centre, ordered by colour slot. The order is deterministic on purpose: a
-random jitter would reshuffle every resize and read as the data changing.
+The grouping is chosen by the href, not by taste. A mark's link has to be a
+catalogue *query*, so a mark has to be exactly what a query selects. Clicking
+1982 · 劇場 lands on `?category=theatre-production&from=1982&to=1982` and gets
+the same 5 works the bubble is sized for. That equality is the page's one
+correctness property — see **Verified** below.
+
+An earlier draft grouped by (year × category × location) all at once, which drew
+63 near-identical dots that had to be dodged apart inside each band and could
+not be compared along a row. Splitting that third dimension out into a switch
+is what made the chart readable: 47 bubbles over 5 category rows, or 57 over 10
+location rows, one per year per row, nothing overlapping.
+
+Both axes ship in one payload rather than being re-fetched on toggle. They are
+two views of 88 records, the whole file is a few kilobytes, and a request per
+click would make an instant control feel like a page load.
+
+### Rows with nothing to filter on
+
+A work with **no location** cannot be expressed as a catalogue filter — there is
+no "location is empty" option in the facet. Those marks are drawn **hollow and
+carry no link at all**. Linking them to the year alone would quietly return
+every other place too, and a mark that lies about where it goes is worse than
+one that does not go anywhere. The chart's note says how many works that is
+(16 of 88 today).
+
+Dropping the row instead would hide nearly a fifth of the archive with nothing
+to show for it. The category axis has no equivalent problem: the catalogue's
+category facet has a synthetic "other" radio, so a record with no category is
+still filterable.
+
+A work with **no year** has no x position at all, so it is left off the chart
+and counted in the note ("88 項作品，88 項有年份可繪於圖上"). Today that number is
+zero, and the note is written so it stays true when it is not.
 
 ## Why Danny Yung is not in the treemap
 
@@ -54,38 +80,29 @@ wonder where he went.
 
 ## Colour
 
-Location is the only categorical encoding on the page, and it needed a real
-palette — the site's own tokens are one accent plus warm neutrals, which cannot
-tell six places apart.
+**The bubble chart has one mark colour, not a palette.** The y axis carries the
+category or the location, so colour could only repeat what position already
+says. A six-hue categorical scale on a site whose own palette is warm neutrals
+plus one brick accent reads as decoration, not as information.
 
-Six hues were **validated, not chosen by eye**, in both light and dark:
+An earlier draft *did* encode location as colour, with a validated six-hue
+palette, back when a bubble was split three ways inside a category band. The
+switchable axis replaced that dimension, and the palette went with it. What
+survives is the rule the palette work was there to satisfy: **nothing is
+identified by colour alone.** Every mark's value is in its row label, its
+tooltip, its accessible name, and the table under the chart. The one distinction
+colour still draws — filled versus hollow — is a real difference in what the
+mark does, not a category.
 
-```
-light  #c0442a  #1268a8  #b98600  #7b4fb5  #3f8a3a  #a8447e   (surface #fcfcfb)
-dark   #d8563c  #3e90cc  #b08514  #9878d4  #4da648  #c95a96   (surface #1d1c1a)
-```
+The mark defaults to the design system's own accent token
+(`var(--primary--accent, #c0442a)`), so it follows the site's colour and its
+light/dark modes with nothing to keep in step. The literal is only a fallback
+for a page that does not load the system — the local harness, mainly.
 
-Both sets pass the OKLCH lightness band, the chroma floor, colour-vision-
-deficiency separation (worst adjacent pair ΔE 10.1 deutan / 9.7 tritan), the
-normal-vision floor and ≥ 3:1 contrast against their surface. **Do not edit a hex
-without re-running that check** — the failure mode is invisible to the author and
-total for the reader.
-
-Three rules the build keeps:
-
-- **Colour is never the only encoding.** Location is in every tooltip, every
-  accessible name, the legend (with its count) and every row of the fallback
-  table.
-- **"No location recorded" is not a seventh hue.** It is a hollow ring. 16 of the
-  88 works have no location, so this is a large group, and giving absence a
-  colour would let it read as a place.
-- **A hue is bound to a place, not to a rank.** `LOCATION_SLOT` in the builder
-  keys on the place name, so a data update cannot repaint a location that did not
-  change. A new place lands in the shared "其他地點" bucket until someone adds it
-  to that map — deliberately, so nothing is silently given a colour.
-
-The treemap uses a five-step sequential ramp of the site's own warm neutral →
+The **treemap** keeps a five-step sequential ramp of the site's warm neutral →
 brick, plus a matching ink step per shade so labels stay legible on every one.
+There, colour restates size, which is legitimate redundancy on rectangles whose
+areas are hard to compare across a long tail.
 
 ### Dark is keyed on `html.u-mode-dark`, not on `prefers-color-scheme`
 
@@ -146,22 +163,26 @@ Output shape (this IS the contract):
   "cataloguePath": "/catalogue",
   "years":  { "min": 1974, "max": 2020 },
   "totals": { "works": 88, "dated": 88, "undated": 0, "collaborators": 43 },
-  "categories": [ { "key": "theatre-production", "label": "劇場", "count": 69 } ],
-  "locations":  [ { "slot": 0, "label": "香港", "count": 51, "places": ["香港"] } ],
-  "bubbles": [ {
-      "year": 1982, "categoryKey": "theatre-production",
-      "location": "香港", "locationSlot": 0, "count": 4,
-      "href": "/catalogue?category=theatre-production&from=1982&to=1982&location=%E9%A6%99%E6%B8%AF"
+
+  // One entry per switchable y axis. The first is the default view.
+  "axes": [ {
+      "key": "category",
+      "label": "類別",
+      "rows":   [ { "key": "theatre-production", "label": "劇場", "count": 69 } ],
+      "points": [ { "year": 1982, "row": "theatre-production", "count": 5,
+                    "href": "/catalogue?category=theatre-production&from=1982&to=1982" } ],
+      "unfilterable": 0
   } ],
+
   "collaborators": [ { "name": "胡恩威", "count": 5,
                        "href": "/catalogue?director=%E8%83%A1%E6%81%A9%E5%A8%81" } ]
 }
 ```
 
-`slot` is an index into the palette, `-1` meaning "no location recorded" (drawn
-hollow) and `5` the shared "elsewhere" bucket. `places` lists what a catch-all
-bucket actually covers, so 其他地點 is not a dead end — it becomes the legend
-item's `title`.
+`rows` are ordered busiest first, so the reader's eye starts where the data is;
+ties break on the label so the order is stable between rebuilds. `points` carry
+`"href": null` when the row's value cannot be filtered for, and `unfilterable`
+counts the works behind those marks so the chart's note can say so.
 
 **The `href`s are built by the builder, not by the component.** The param names
 and the omit-a-default rule are `catalogue.js`'s `URL_KEYS`; they live in one
@@ -183,23 +204,15 @@ your own aggregate, call `window.dyDataviz.render(root, payload)`. Nothing above
 the fence changes. Also delete the `>>> MOCK DATA URL <<<` constant at the top.
 A root may override the sample with `data-src="…"` for testing.
 
-### One thing the aggregate cannot express
-
-A work with **no location** has no catalogue filter — there is no "location is
-empty" option in the facet. Those bubbles therefore link on year + category only,
-and their accessible name says exactly what the link does rather than claiming a
-place. A link that narrows honestly beats one that silently returns other places
-too. Same for a work with **no year**: it has no x position, so it is left off the
-chart and counted in the note under it ("88 項作品，88 項有年份可繪於圖上"). Today
-that number is zero, and the note is written so it stays true when it is not.
-
 ## data-* contract (authored in Webflow; changing these breaks the page)
 
 ```
 [data-dataviz]                    the root; everything is queried inside it
   [data-chart="temporal"]         the bubble chart card
   [data-chart="collaborators"]    the treemap card
-    [data-legend]                 legend items are generated into it
+    [data-legend]                 the card's control / key strip. On the bubble
+                                chart it holds the Y-AXIS SWITCH; on the treemap
+                                it holds the shade key. Both are generated
     [data-plot]                   the chart is generated into it — it is EMPTIED
                                   on every render, so author nothing inside it
     [data-note]                   one line about what is and is not on the chart
@@ -207,9 +220,10 @@ that number is zero, and the note is written so it stays true when it is not.
 ```
 
 `[data-table]` is not a courtesy. It is the route to the same numbers without
-colour, without hover and without a pointer — and the only one that survives
-printing. Its cells carry the same links the marks do. It sits inside a
-`<details>` so it costs nothing until asked for.
+hover and without a pointer — and the only one that survives printing. Its cells
+carry the same links the marks do, and on the bubble chart it follows the axis
+switch, because it is that chart's other view rather than a separate dataset. It
+sits inside a `<details>` so it costs nothing until asked for.
 
 ## Local preview
 
@@ -226,31 +240,38 @@ a stray harness rule would silently win and hide a real bug.
 
 ## Verified
 
-In that harness, at 800px and 1400px wide, light and dark:
+In that harness, at 800px and 1000px wide, light and dark, both languages:
 
-- 63 bubbles over 5 category bands; 15 drawn hollow for "no location"; 43
-  treemap cells filling the box exactly (rightmost edge 760.0 of 762, bottom
-  548.0 of 550), smallest cell 66 × 62px — still a real click target.
+- **Category axis:** 5 rows, 47 bubbles, all linked. **Location axis:** 10 rows,
+  57 bubbles, 44 linked and 13 hollow (the 16 works with no location recorded).
+  The switch redraws only the bubble chart, rewrites the note and the table
+  header, and leaves focus on the button just pressed.
+- 43 treemap cells filling their box exactly (rightmost edge 760.0 of 762,
+  bottom 548.0 of 550), smallest cell 66 × 62px — still a real click target.
 - **Every link returns what its mark claims.** Spot-checked against the
-  catalogue harness: the 1982 · 劇場 · 香港 bubble is sized 4 and its href
-  returns "共 4 項"; the 1993 · 視覺藝術 bubble is sized 1 and returns "共 1 項";
-  the 胡恩威 box says 5 credits and its href returns "共 5 項" with the director
-  dropdown restored to 胡恩威.
+  catalogue harness: 香港 · 2000 is sized 6 and its href returns "共 6 項";
+  劇場 · 1982 is sized 5 and returns "共 5 項"; 德國 · 2000 is sized 3 and
+  returns "共 3 項"; the 胡恩威 treemap box says 5 credits and returns "共 5 項"
+  with the director dropdown restored to 胡恩威.
 - Tooltips fire on hover **and on focus**, so a keyboard reader gets the same
   reading a mouse does; both charts share one tooltip node, moved rather than
   rebuilt.
 - The English page reads its own aggregate and links to `/en/catalogue`.
   It reports 45 collaborators against Chinese's 43 — the two languages resolve a
-  few names to different strings, which is a data-layer question, not a chart one.
-- Resizing re-lays-out both charts (debounced, and ignored when the width has not
-  actually changed — a phone's URL bar collapsing is not a resize).
+  few names to different strings, which is a data-layer question, not a chart
+  one.
+- Resizing re-lays-out both charts (debounced, and ignored when the width has
+  not actually changed — a phone's URL bar collapsing is not a resize). The band
+  height shrinks as rows are added, so switching from 5 categories to 10
+  locations grows the chart by 110px, not by double.
 
 ## Still open
 
-- **The Figma frame is English-only.** The Chinese page's chart titles, axis
-  titles and card copy were written for this build; they have not been through
-  the client. The type on both cards is the design system's, not the frame's
-  11px Inter.
+- **The Figma frame is English-only, and it has no axis switch.** The frame
+  fixes y = category and colour = location; the switch, the single mark colour
+  and the Chinese chart titles, axis labels and card copy were all written for
+  this build and have not been through the client. The type on both cards is the
+  design system's, not the frame's 11px Inter.
 - The frame's 1px `#ccc` / 4px-radius card stroke is off-token, same as on the
   catalogue page. The card border is bound to `Primary/Border` +
   `Border Radius/SM` instead.

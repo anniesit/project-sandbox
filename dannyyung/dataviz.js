@@ -3,24 +3,34 @@
  *
  * Two charts, both of which exist to hand the reader a FILTERED CATALOGUE:
  *
- *   1. "作品年份與類別" — a bubble chart. x = year, y = category band,
- *      colour = location, area = how many works are in that exact cell.
- *      One bubble is one (year x category x location) group, NOT one work,
- *      because a bubble's href has to be a catalogue query and a query is
- *      exactly those three dimensions. Clicking 1982 · 劇場 · 香港 lands on
- *      /catalogue?category=theatre-production&from=1982&to=1982&location=香港
- *      showing the same 4 works the bubble is sized for.
+ *   1. "作品年份與類別" — a bubble chart with a SWITCHABLE Y AXIS.
+ *      x = year, y = category or location (the reader picks), area = how many
+ *      works are in that cell. One bubble is one (year x row) group — every
+ *      work sharing a year and a category, or a year and a location.
+ *
+ *      That grouping is chosen by the href, not by taste: a mark's link has to
+ *      be a catalogue query, so a mark has to be exactly what a query selects.
+ *      Clicking 1982 · 劇場 lands on
+ *      /catalogue?category=theatre-production&from=1982&to=1982
+ *      showing the same 5 works the bubble is sized for. The axis switch is
+ *      therefore also a switch between two kinds of catalogue link.
+ *
+ *      A cell with no value to filter on — a work with no location recorded —
+ *      is drawn hollow and carries no link at all, because the catalogue has no
+ *      "location is empty" option and a year-only link would quietly return
+ *      every other place too.
  *
  *   2. "合作導演與創作者" — a squarified treemap. Area = credits.
  *      Clicking a box lands on /catalogue?director=<name>.
  *
  * Ownership split (same shape as catalogue.js and entry.js):
  *   - dataviz.js (this file) owns the VISUAL: the scales, the layout maths,
- *     the SVG, the treemap rectangles, the legends, the tooltips and the
+ *     the SVG, the treemap rectangles, the axis switch, the tooltips and the
  *     fallback tables.
  *   - The backend owns the DATA: which works exist and how they aggregate.
  *     It calls render() with the payload below. This file computes no counts
- *     of its own and filters nothing.
+ *     of its own and filters nothing. Both axes ship in one payload, so the
+ *     switch is instant and needs no second request.
  *
  * Integration API (global):
  *   window.dyDataviz.render(rootEl, payload)
@@ -30,15 +40,19 @@
  *              aggregating the CATALOGUE's own published records — see that
  *              file for why it must not re-read the spreadsheets.
  *
- * There is no "dy:query" here. The page carries no controls: every mark is a
- * plain link, and the catalogue page is what owns filtering. That is the whole
- * design — the viz is a way in, not a second search UI.
+ * There is no "dy:query" here, and the axis switch fires no event. The page has
+ * no filtering of its own: every mark is a plain link and the catalogue page
+ * owns the query. That is the whole design — the viz is a way in, not a second
+ * search UI.
  *
  * data-* contract (authored in Webflow; changing these breaks the page):
  *   [data-dataviz]                       the root; everything is queried inside
  *   [data-chart="temporal"]              the bubble chart card
  *   [data-chart="collaborators"]         the treemap card
- *   [data-legend]      (inside a card)   legend items are generated into it
+ *   [data-legend]      (inside a card)   the card's control/key strip. On the
+ *                                        bubble chart it holds the Y-AXIS
+ *                                        SWITCH; on the treemap, the shade key.
+ *                                        Both are generated into it
  *   [data-plot]        (inside a card)   the chart is generated into it; it is
  *                                        emptied first, so nothing may be
  *                                        authored inside it in Webflow
@@ -47,7 +61,9 @@
  *   [data-table]       (inside a card)   the fallback <table> is generated into
  *                                        it (optional but strongly wanted — it
  *                                        is how the data is reachable without
- *                                        colour, hover or a pointer)
+ *                                        hover, without a pointer and on paper).
+ *                                        On the bubble chart it follows the
+ *                                        axis switch
  *
  * COLOUR LIVES IN CSS, GEOMETRY LIVES HERE. Positions and sizes are inline
  * attributes because they are computed per viewport and cannot be classes. Every
@@ -57,16 +73,12 @@
  * file. Re-declare --dyviz-* on .section, on [data-dataviz], or in the project
  * override block to retheme the charts.
  *
- * The location palette is validated, not chosen by eye: six hues checked for
- * the OKLCH lightness band, a chroma floor, colour-vision-deficiency separation
- * (worst adjacent pair ΔE 10.1 deutan), a normal-vision floor and >= 3:1
- * contrast against the chart surface, in BOTH light and dark. Do not edit a hex
- * here without re-running that check — the failure mode is silent for the author
- * and total for the reader.
- *
- * Colour is never the only encoding. Location is in every tooltip, every
- * accessible name and every row of the fallback table; the legend is always
- * present; "no location recorded" is a hollow ring rather than a seventh hue.
+ * The bubble chart uses ONE mark colour, defaulting to the design system's
+ * accent token. Colour is not an encoding there: the y axis already carries the
+ * category or the location, and a second scale saying the same thing would only
+ * be decoration. Nothing is identified by colour alone anywhere on the page —
+ * every mark's value is in its row label, its tooltip, its accessible name and
+ * the table under the chart.
  *
  * Dependency-free, multi-instance safe, re-renders on resize (debounced).
  * ============================================================ */
@@ -107,24 +119,26 @@
     zh: {
       en: false,
       year: "年份",
-      category: "類別",
+      yAxis: "縱軸",
       works: function (n) { return n + " 項作品"; },
       credits: function (n) { return n + " 項合作"; },
       filter: "篩選目錄：",
-      noLocation: "未註明地點",
-      legendLocation: "地點（顏色）",
+      unfilterable: "未註明，無法在目錄中篩選",
       legendCredits: "合作數量",
       fewer: "少",
       more: "多",
       tableYear: "年份",
-      tableCategory: "類別",
-      tableLocation: "地點",
       tableCount: "作品數",
       tableName: "姓名",
       tableCredits: "合作數",
       noteTemporal: function (d) {
-        return "共 " + d.works + " 項作品，" + d.dated + " 項有年份可繪於圖上。"
-          + "每個圓點代表同一年份、同一類別、同一地點的作品，面積為數量。";
+        var s = "共 " + d.works + " 項作品，" + d.dated + " 項有年份可繪於圖上。"
+          + "每個圓點是同一年、同一" + d.axis + "的所有作品，面積為數量。";
+        if (d.unfilterable) {
+          s += "其中 " + d.unfilterable + " 項未註明" + d.axis
+            + "，以空心圓表示，目錄沒有相應的篩選項，故不設連結。";
+        }
+        return s;
       },
       noteCollab: function (d) {
         return "共 " + d.n + " 位合作者。榮念曾本人不列於此圖：他參與大部分作品，"
@@ -135,25 +149,28 @@
     en: {
       en: true,
       year: "Year",
-      category: "Category",
+      yAxis: "Y axis",
       works: function (n) { return n + (n === 1 ? " work" : " works"); },
       credits: function (n) { return n + (n === 1 ? " credit" : " credits"); },
       filter: "Filter the catalogue: ",
-      noLocation: "No location recorded",
-      legendLocation: "Location (colour)",
+      unfilterable: "unspecified — the catalogue cannot filter for this",
       legendCredits: "Number of credits",
       fewer: "fewer",
       more: "more",
       tableYear: "Year",
-      tableCategory: "Category",
-      tableLocation: "Location",
       tableCount: "Works",
       tableName: "Name",
       tableCredits: "Credits",
       noteTemporal: function (d) {
-        return d.works + " works, " + d.dated + " of them dated and plottable. "
-          + "One bubble is every work sharing a year, a category and a location; "
-          + "its area is how many.";
+        var s = d.works + " works, " + d.dated + " of them dated and plottable. "
+          + "One bubble is every work sharing a year and a " + d.axis.toLowerCase()
+          + "; its area is how many.";
+        if (d.unfilterable) {
+          s += " " + d.unfilterable + " of them have no "
+            + d.axis.toLowerCase() + " recorded: those are drawn hollow and carry "
+            + "no link, because the catalogue has no filter for an empty value.";
+        }
+        return s;
       },
       noteCollab: function (d) {
         return d.n + " collaborators. Danny Yung himself is left off this chart — "
@@ -165,10 +182,23 @@
   };
 
   /* ---------- default colours (zero specificity — Webflow always wins) ----------
-     Six location hues + a hollow ring for "unrecorded", and a five-step
-     sequential ramp for the treemap. The dark values are SELECTED, not a flip of
-     the light ones: they were re-validated against the dark surface, because a
-     hue that clears contrast on paper-white does not on near-black.
+     ONE mark colour, not a palette. The bubble chart's y axis carries the
+     category or the location, so colour would only repeat what position already
+     says — and a redundant six-hue scale on a site whose own palette is warm
+     neutrals plus one brick accent reads as decoration. An earlier draft did
+     encode location as colour, back when a bubble was split three ways inside a
+     category band; the switchable axis replaced that, and the palette went with
+     it. Marks with no value to filter on are hollow, which is a real distinction
+     rather than another hue.
+
+     The mark defaults to the design system's own accent token, so it follows the
+     site's colour and its light/dark modes with nothing to keep in step. The
+     literal is only the fallback for a page that does not load the system —
+     the local harness, mainly.
+
+     The treemap keeps a five-step sequential ramp: there, colour restates size,
+     which is legitimate redundancy on rectangles whose areas are hard to compare
+     across a long tail.
 
      DARK IS KEYED ON html.u-mode-dark, NOT ON prefers-color-scheme. The design
      system's theme-toggle script owns that class: it seeds it from the OS
@@ -183,22 +213,19 @@
     ":where([data-dataviz]){" +
     "--dyviz-surface:#ffffff;--dyviz-ink:#1d1c1a;--dyviz-muted:#6f6a60;" +
     "--dyviz-line:#cccabf;--dyviz-grid:#e6e3da;" +
-    "--dyviz-loc-0:#c0442a;--dyviz-loc-1:#1268a8;--dyviz-loc-2:#b98600;" +
-    "--dyviz-loc-3:#7b4fb5;--dyviz-loc-4:#3f8a3a;--dyviz-loc-5:#a8447e;" +
-    "--dyviz-loc-none:transparent;--dyviz-loc-none-ring:#8d877b;" +
+    "--dyviz-mark:var(--primary--accent,#c0442a);" +
+    "--dyviz-mark-none-ring:#8d877b;" +
     "--dyviz-ramp-1:#efece3;--dyviz-ramp-2:#d9cfbd;--dyviz-ramp-3:#b39b7e;" +
     "--dyviz-ramp-4:#8a5f45;--dyviz-ramp-5:#5d2f1e;" +
     "--dyviz-ramp-ink-1:#1d1c1a;--dyviz-ramp-ink-2:#1d1c1a;" +
     "--dyviz-ramp-ink-3:#1d1c1a;--dyviz-ramp-ink-4:#ffffff;" +
     "--dyviz-ramp-ink-5:#ffffff;" +
-    "--dyviz-focus:#d14424;" +
+    "--dyviz-focus:var(--primary--accent,#d14424);" +
     "}" +
     ":where(html.u-mode-dark) :where([data-dataviz]){" +
     "--dyviz-surface:#1d1c1a;--dyviz-ink:#f2efe6;--dyviz-muted:#a09a8e;" +
     "--dyviz-line:#4a4640;--dyviz-grid:#33302b;" +
-    "--dyviz-loc-0:#d8563c;--dyviz-loc-1:#3e90cc;--dyviz-loc-2:#b08514;" +
-    "--dyviz-loc-3:#9878d4;--dyviz-loc-4:#4da648;--dyviz-loc-5:#c95a96;" +
-    "--dyviz-loc-none-ring:#8d877b;" +
+    "--dyviz-mark:var(--primary--accent,#d8563c);" +
     "--dyviz-ramp-1:#2b2823;--dyviz-ramp-2:#463d33;--dyviz-ramp-3:#6b5745;" +
     "--dyviz-ramp-4:#96725a;--dyviz-ramp-5:#c99a78;" +
     "--dyviz-ramp-ink-1:#f2efe6;--dyviz-ramp-ink-2:#f2efe6;" +
@@ -210,11 +237,21 @@
     ".dyviz-plot{position:relative}" +
     ".dyviz-svg{display:block;width:100%;height:auto;overflow:visible}" +
     ".dyviz-hit{fill:transparent;stroke:none}" +
-    ".dyviz-mark{transition:opacity .12s}" +
     ".dyviz-a{cursor:pointer;outline-offset:2px}" +
     ".dyviz-a:focus-visible{outline:2px solid var(--dyviz-focus)}" +
     ".dyviz-a:hover .dyviz-mark,.dyviz-a:focus-visible .dyviz-mark{" +
     "stroke:var(--dyviz-focus);stroke-width:2px}" +
+    /* The y-axis switch. Two buttons rather than a <select>, because there are
+       exactly two states and both should be readable without opening anything;
+       aria-pressed rather than a radio group, because nothing is submitted. */
+    ".dyviz-toggle{display:flex;align-items:center;flex-wrap:wrap;gap:8px}" +
+    ".dyviz-toggle-btn{padding:4px 12px;border:1px solid var(--dyviz-line);" +
+    "background:transparent;color:var(--dyviz-muted);font:inherit;" +
+    "font-size:13px;line-height:1.5;cursor:pointer}" +
+    ".dyviz-toggle-btn[aria-pressed=\"true\"]{border-color:var(--dyviz-mark);" +
+    "color:var(--dyviz-surface);background:var(--dyviz-mark)}" +
+    ".dyviz-toggle-btn:focus-visible{outline:2px solid var(--dyviz-focus);" +
+    "outline-offset:2px}" +
     ".dyviz-tree{position:relative;width:100%}" +
     ".dyviz-cell{position:absolute;display:flex;flex-direction:column;" +
     "align-items:center;justify-content:center;gap:2px;overflow:hidden;" +
@@ -237,14 +274,12 @@
     ".dyviz-tip[data-on]{opacity:1}" +
     ".dyviz-legend{display:flex;flex-wrap:wrap;align-items:center;" +
     "gap:6px 16px;list-style:none;margin:0;padding:0}" +
-    ".dyviz-legend-item{display:flex;align-items:center;gap:6px}" +
-    ".dyviz-swatch{flex:none;width:10px;height:10px;border-radius:50%}" +
     ".dyviz-ramp{display:flex;align-items:center;gap:2px}" +
     ".dyviz-ramp-step{width:20px;height:10px}" +
     ".dyviz-table{width:100%;border-collapse:collapse;font-size:13px}" +
     ".dyviz-table th,.dyviz-table td{padding:4px 8px;text-align:left;" +
     "border-bottom:1px solid var(--dyviz-grid)}" +
-    "@media (prefers-reduced-motion:reduce){.dyviz-mark,.dyviz-tip{transition:none}}";
+    "@media (prefers-reduced-motion:reduce){.dyviz-tip{transition:none}}";
 
   function injectCss() {
     if (document.getElementById("dyviz-css")) return;
@@ -276,10 +311,6 @@
   function part(scope, name) {
     return scope ? scope.querySelector("[data-" + name + "]") : null;
   }
-  function locVar(slot) {
-    return slot < 0 ? "var(--dyviz-loc-none)" : "var(--dyviz-loc-" + slot + ")";
-  }
-
   /* ---------- render ---------- */
 
   function render(root, payload) {
@@ -320,32 +351,54 @@
 
   /* ---------- chart 1: the bubble chart ---------- */
 
+  /* Which axis is showing. Held on the root, not in a module variable, so two
+     instances on one page do not share a switch. */
+  function axisOf(root, data) {
+    var axes = (data && data.axes) || [];
+    for (var i = 0; i < axes.length; i++) {
+      if (axes[i].key === root.__axis) return axes[i];
+    }
+    return axes[0] || null;
+  }
+
   function drawTemporal(root, host, data) {
     if (!host) return;
     var t = T[lang(root)];
     var plot = part(host, "plot");
-    var bubbles = data.bubbles || [];
-    var cats = data.categories || [];
+    var ax = axisOf(root, data);
     if (!plot) return;
 
-    legendLocations(host, data, t);
-    note(host, t.noteTemporal({ works: data.totals.works, dated: data.totals.dated }));
-    tableTemporal(host, data, t);
+    axisToggle(root, host, data, t);
+    if (!ax) {
+      empty(plot);
+      plot.appendChild(el("div", null, t.empty));
+      return;
+    }
+    note(host, t.noteTemporal({
+      works: data.totals.works, dated: data.totals.dated,
+      axis: ax.label, unfilterable: ax.unfilterable || 0,
+    }));
+    tableTemporal(host, ax, t);
 
     empty(plot);
     plot.className = "dyviz-plot";
-    if (!bubbles.length || !cats.length) {
+    var rows = ax.rows || [];
+    var points = ax.points || [];
+    if (!points.length || !rows.length) {
       plot.appendChild(el("div", null, t.empty));
       return;
     }
 
-    /* Geometry. The left margin holds the rotated axis title only — the
-       category names sit INSIDE the plot at the top of their own band, as in
-       the Figma frame, which buys the data the full width. */
+    /* Geometry. The left margin holds the rotated axis title only — the row
+       names sit INSIDE the plot at the top of their own band, as in the Figma
+       frame, which buys the data the full width. */
     var W = Math.max(plot.clientWidth || 0, 320);
     var M = { top: 10, right: 12, bottom: 34, left: 34 };
-    var bandH = 74;
-    var H = M.top + bandH * cats.length + M.bottom;
+    /* The band has to shrink as rows are added, or switching from 5 categories
+       to 10 locations would double the chart's height and push half of it off
+       the screen. Floored at 36 so the largest bubble plus its label still fit. */
+    var bandH = Math.max(36, Math.min(66, Math.round(440 / rows.length)));
+    var H = M.top + bandH * rows.length + M.bottom;
     var x0 = M.left, x1 = W - M.right;
     var y0 = M.top, y1 = H - M.bottom;
 
@@ -360,26 +413,31 @@
       return x0 + pad + ((year - minY) / span) * (x1 - x0 - pad * 2);
     }
 
-    var rows = {};
-    for (var i = 0; i < cats.length; i++) rows[cats[i].key] = i;
-    function bandTop(key) { return y0 + rows[key] * bandH; }
+    var index = {};
+    for (var i = 0; i < rows.length; i++) index[rows[i].key] = i;
+    function bandTop(key) { return y0 + index[key] * bandH; }
 
     /* Area, not radius, carries the count — a radius-proportional bubble makes
        4 works look 16 times 1. rMin is 4.5 so a single work is still a >= 9px
-       mark, the floor below which a dot stops being clickable. */
-    function R(count) { return 4.5 * Math.sqrt(count); }
+       mark, the floor below which a dot stops being clickable. Capped at just
+       under half the band so a busy year cannot bleed into the row above. */
+    var rMax = bandH / 2 - 3;
+    function R(count) { return Math.min(4.5 * Math.sqrt(count), rMax); }
 
     var s = svg("svg", {
       class: "dyviz-svg",
       viewBox: "0 0 " + W + " " + H,
       role: "img",
-      "aria-label": t.noteTemporal({ works: data.totals.works, dated: data.totals.dated }),
+      "aria-label": t.noteTemporal({
+        works: data.totals.works, dated: data.totals.dated,
+        axis: ax.label, unfilterable: ax.unfilterable || 0,
+      }),
     });
 
     /* Axes: recessive. One 1px baseline, one 1px vertical rule, and a hairline
        between bands — nothing that competes with a 9px dot. */
-    for (var c = 0; c < cats.length; c++) {
-      var by = bandTop(cats[c].key);
+    for (var c = 0; c < rows.length; c++) {
+      var by = bandTop(rows[c].key);
       if (c > 0) {
         s.appendChild(svg("line", {
           x1: x0, x2: x1, y1: by, y2: by,
@@ -387,9 +445,9 @@
         }));
       }
       s.appendChild(svg("text", {
-        x: x0 + 6, y: by + 14, fill: "var(--dyviz-ink)",
+        x: x0 + 6, y: by + 13, fill: "var(--dyviz-ink)",
         "font-size": 11, "font-weight": 600,
-      }, cats[c].label + " · " + cats[c].count));
+      }, rows[c].label + " · " + rows[c].count));
     }
     s.appendChild(svg("line", {
       x1: x0, x2: x1, y1: y1, y2: y1, stroke: "var(--dyviz-line)", "stroke-width": 1,
@@ -403,9 +461,8 @@
     for (var yr = minY; yr <= maxY; yr += 6) ticks.push(yr);
     if (ticks[ticks.length - 1] !== maxY) ticks.push(maxY);
     for (var k = 0; k < ticks.length; k++) {
-      var tx = X(ticks[k]);
       s.appendChild(svg("text", {
-        x: tx, y: y1 + 13, fill: "var(--dyviz-muted)", "font-size": 10,
+        x: X(ticks[k]), y: y1 + 13, fill: "var(--dyviz-muted)", "font-size": 10,
         "text-anchor": k === 0 ? "start" : k === ticks.length - 1 ? "end" : "middle",
       }, String(ticks[k])));
     }
@@ -413,66 +470,97 @@
       x: (x0 + x1) / 2, y: H - 4, fill: "var(--dyviz-muted)",
       "font-size": 10, "text-anchor": "middle",
     }, t.year + paren(t.en, minY + "\u2013" + maxY)));
-    var axisTitle = svg("text", {
+    s.appendChild(svg("text", {
       fill: "var(--dyviz-muted)", "font-size": 10, "text-anchor": "middle",
       transform: "translate(11," + (y0 + y1) / 2 + ") rotate(-90)",
-    }, t.category);
-    s.appendChild(axisTitle);
+    }, ax.label));
 
-    /* Dodge. Several locations can share one year and category, which would
-       stack their bubbles exactly on top of each other. Spread that group
-       vertically around its band centre, ordered by colour slot so the same
-       cluster looks the same on every render — a random jitter would reshuffle
-       on each resize and read as the data changing. */
-    var clusters = {};
-    for (var b = 0; b < bubbles.length; b++) {
-      var d = bubbles[b];
-      if (!(d.categoryKey in rows)) continue;
-      var ck = d.year + "|" + d.categoryKey;
-      (clusters[ck] || (clusters[ck] = [])).push(d);
-    }
-
+    /* One bubble per (year x row) — no dodging, because there is nothing left
+       to collide with. Sitting a little below the band's midpoint keeps the
+       mark clear of the row label above it. */
     var marks = svg("g", null);
     var tip = tooltip(plot);
-    Object.keys(clusters).forEach(function (ck) {
-      var group = clusters[ck].slice().sort(function (a, bb) {
-        return a.locationSlot - bb.locationSlot;
-      });
-      var maxR = 0;
-      group.forEach(function (g) { maxR = Math.max(maxR, R(g.count)); });
-      var step = maxR * 2 + 2;                 /* 2px surface gap between marks */
-      var centre = bandTop(group[0].categoryKey) + bandH / 2 + 4;
-      group.forEach(function (g, i) {
-        var cx = X(g.year);
-        var cy = centre + (i - (group.length - 1) / 2) * step;
-        marks.appendChild(bubble(root, g, cx, cy, R(g.count), t, tip, plot));
-      });
-    });
+    for (var b = 0; b < points.length; b++) {
+      var d = points[b];
+      if (!(d.row in index)) continue;
+      marks.appendChild(bubble(d, X(d.year), bandTop(d.row) + bandH / 2 + 5,
+        R(d.count), ax, t, tip, plot));
+    }
     s.appendChild(marks);
     plot.appendChild(s);
   }
 
-  function bubble(root, d, cx, cy, r, t, tip, plot) {
-    var place = d.location || t.noLocation;
-    var label = place + " · " + d.year + " · " + t.works(d.count);
-    var a = svg("a", { class: "dyviz-a", href: d.href, "aria-label": t.filter + label });
-    a.appendChild(svg("title", null, label));
+  function bubble(d, cx, cy, r, ax, t, tip, plot) {
+    var row = null;
+    for (var i = 0; i < ax.rows.length; i++) {
+      if (ax.rows[i].key === d.row) row = ax.rows[i];
+    }
+    var label = (row ? row.label : d.row) + " · " + d.year + " · " + t.works(d.count);
+    /* A value the catalogue cannot filter for (an empty location) gets no link
+       at all. Linking it to the year alone would quietly return every other
+       place too, and a mark that lies about where it goes is worse than one
+       that does not go anywhere. It is hollow, and says why on hover. */
+    var linked = !!d.href;
+    if (!linked) label += " · " + t.unfilterable;
 
-    var circle = svg("circle", {
+    var node = linked
+      ? svg("a", { class: "dyviz-a", href: d.href, "aria-label": t.filter + label })
+      : svg("g", { role: "img", "aria-label": label });
+    node.appendChild(svg("title", null, label));
+
+    node.appendChild(svg("circle", {
       class: "dyviz-mark", cx: cx, cy: cy, r: r,
-      fill: locVar(d.locationSlot),
-      /* A 2px ring in the surface colour keeps overlapping bubbles legible as
-         separate marks. The unrecorded-location bubble has no fill at all, so
-         its ring is the mark and has to be ink, not surface. */
-      stroke: d.locationSlot < 0 ? "var(--dyviz-loc-none-ring)" : "var(--dyviz-surface)",
-      "stroke-width": d.locationSlot < 0 ? 1.5 : 2,
-    });
-    a.appendChild(circle);
+      fill: linked ? "var(--dyviz-mark)" : "none",
+      /* A ring in the surface colour keeps overlapping bubbles legible as
+         separate marks. The unlinked bubble has no fill, so its ring is the
+         mark and has to be ink, not surface. */
+      stroke: linked ? "var(--dyviz-surface)" : "var(--dyviz-mark-none-ring)",
+      "stroke-width": linked ? 2 : 1.5,
+    }));
     /* An invisible >= 22px target over the mark. A 9px circle is a legitimate
        size for the ENCODING and an illegitimate one for a finger. */
-    a.appendChild(svg("circle", { class: "dyviz-hit", cx: cx, cy: cy, r: Math.max(r, 11) }));
-    hover(a, tip, plot, label, function () { return { x: cx, y: cy - r - 6 }; });
-    return a;
+    node.appendChild(svg("circle", {
+      class: "dyviz-hit", cx: cx, cy: cy, r: Math.max(r, 11),
+    }));
+    hover(node, tip, plot, label, function () { return { x: cx, y: cy - r - 6 }; });
+    return node;
+  }
+
+  /* The y-axis switch, rendered into the card's [data-legend] strip. That slot
+     used to hold a colour legend; with colour gone it holds the one control on
+     the page. Only the bubble chart is redrawn — the treemap does not depend on
+     the axis, and rebuilding it would throw away the reader's scroll position
+     for nothing. */
+  function axisToggle(root, host, data, t) {
+    var box = part(host, "legend");
+    if (!box) return;
+    var axes = (data && data.axes) || [];
+    if (axes.length < 2) { empty(box); return; }
+    empty(box);
+    box.className = "dyviz-legend dyviz-toggle";
+    box.setAttribute("role", "group");
+    box.setAttribute("aria-label", t.yAxis);
+    var current = axisOf(root, data);
+    axes.forEach(function (a) {
+      var b = el("button", {
+        type: "button", class: "dyviz-toggle-btn",
+        "aria-pressed": a === current ? "true" : "false",
+      }, a.label);
+      b.addEventListener("click", function () {
+        if (root.__axis === a.key) return;
+        root.__axis = a.key;
+        drawTemporal(root, host, root.__data);
+        /* Keep focus on the button the reader just pressed — axisToggle has
+           replaced it, so focus would otherwise fall to <body> and a keyboard
+           user would be dumped at the top of the tab order with no signal that
+           anything happened. */
+        var again = box.querySelectorAll(".dyviz-toggle-btn");
+        for (var i = 0; i < again.length; i++) {
+          if (again[i].getAttribute("aria-pressed") === "true") again[i].focus();
+        }
+      });
+      box.appendChild(b);
+    });
   }
 
   /* ---------- chart 2: the treemap ---------- */
@@ -601,33 +689,7 @@
     return out;
   }
 
-  /* ---------- legends, notes, tooltips, tables ---------- */
-
-  function legendLocations(host, data, t) {
-    var box = part(host, "legend");
-    if (!box) return;
-    empty(box);
-    box.className = "dyviz-legend";
-    box.setAttribute("role", "list");
-    (data.locations || []).forEach(function (l) {
-      var li = el("div", { class: "dyviz-legend-item", role: "listitem" });
-      var sw = el("span", { class: "dyviz-swatch", "aria-hidden": "true" });
-      if (l.slot < 0) {
-        sw.style.background = "transparent";
-        sw.style.boxShadow = "inset 0 0 0 1.5px var(--dyviz-loc-none-ring)";
-      } else {
-        sw.style.background = locVar(l.slot);
-      }
-      li.appendChild(sw);
-      /* The count is in the legend on purpose: it is the one place a reader can
-         compare locations without counting dots. */
-      li.appendChild(el("span", null, l.label + paren(t.en, l.count)));
-      /* Which real places the catch-all bucket covers, so "其他地點" is not a
-         dead end. */
-      if (l.places && l.places.length > 1) li.title = l.places.join(" · ");
-      box.appendChild(li);
-    });
-  }
+  /* ---------- legend, notes, tooltips, tables ---------- */
 
   function legendRamp(host, t) {
     var box = part(host, "legend");
@@ -681,26 +743,31 @@
   /* The fallback tables are not a courtesy. They are the route to the same
      numbers without colour, without hover and without a pointer — and the only
      one that survives printing. They are generated, so they cannot drift. */
-  function tableTemporal(host, data, t) {
+  /* The fallback tables are not a courtesy. They are the route to the same
+     numbers without hover and without a pointer — and the only one that survives
+     printing. They are generated, so they cannot drift, and the temporal one
+     follows the axis switch because it is that chart's other view, not a
+     separate dataset. */
+  function tableTemporal(host, ax, t) {
     var box = part(host, "table");
     if (!box) return;
     empty(box);
+    var label = {};
+    (ax.rows || []).forEach(function (r) { label[r.key] = r.label; });
     var tb = el("table", { class: "dyviz-table" });
     var head = el("tr");
-    [t.tableYear, t.tableCategory, t.tableLocation, t.tableCount].forEach(function (h) {
+    [t.tableYear, ax.label, t.tableCount].forEach(function (h) {
       head.appendChild(el("th", { scope: "col" }, h));
     });
     tb.appendChild(el("thead")).appendChild(head);
     var body = el("tbody");
-    var byCat = {};
-    (data.categories || []).forEach(function (c) { byCat[c.key] = c.label; });
-    (data.bubbles || []).forEach(function (b) {
+    (ax.points || []).forEach(function (pt) {
       var tr = el("tr");
-      tr.appendChild(el("td", null, String(b.year)));
-      tr.appendChild(el("td", null, byCat[b.categoryKey] || b.categoryKey));
-      tr.appendChild(el("td", null, b.location || t.noLocation));
+      tr.appendChild(el("td", null, String(pt.year)));
+      tr.appendChild(el("td", null, label[pt.row] || pt.row));
       var td = el("td");
-      td.appendChild(el("a", { href: b.href }, String(b.count)));
+      if (pt.href) td.appendChild(el("a", { href: pt.href }, String(pt.count)));
+      else td.textContent = String(pt.count);
       tr.appendChild(td);
       body.appendChild(tr);
     });

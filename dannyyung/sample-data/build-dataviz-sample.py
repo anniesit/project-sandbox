@@ -39,17 +39,19 @@ LANGS = {
         "src": "catalogue-sample.json",
         "out": "dataviz-sample.json",
         "catalogue": "/catalogue",
+        "axis_category": "類別",
+        "axis_location": "地點",
         "other_category": "其他",
         "no_location": "未註明",
-        "other_location": "其他地點",
     },
     "en": {
         "src": "catalogue-sample-en.json",
         "out": "dataviz-sample-en.json",
         "catalogue": "/en/catalogue",
+        "axis_category": "Category",
+        "axis_location": "Location",
         "other_category": "Other",
         "no_location": "Unspecified",
-        "other_location": "Elsewhere",
     },
 }
 
@@ -66,26 +68,6 @@ LANGS = {
 # ---------------------------------------------------------------------------
 ARCHIVE_SUBJECT = {"榮念曾", "Danny Yung", "Danny Ning-Tsun Yung"}
 
-# ---------------------------------------------------------------------------
-# Location -> colour slot. Keyed on the PLACE, never on its rank, so re-running
-# after a data update cannot repaint a location that did not change. Slots are
-# indices into the palette declared in dataviz.js; slot 5 is the shared
-# "somewhere else" bucket and -1 means "no location recorded" (drawn hollow).
-#
-# The five named slots are the five places with more than two works today. A new
-# place is not silently given a colour — it lands in the "elsewhere" bucket
-# until someone adds it here, which is the point.
-# ---------------------------------------------------------------------------
-LOCATION_SLOT = {
-    "香港": 0, "Hong Kong": 0,
-    "台北": 1, "Taipei": 1,
-    "日本": 2, "Japan": 2,
-    "德國": 3, "Germany": 3,
-    "新加坡": 4, "Singapore": 4,
-}
-OTHER_SLOT = 5
-NONE_SLOT = -1
-
 
 def qs(pairs):
     """Build the catalogue query string. The param names, and the rule that a
@@ -95,88 +77,75 @@ def qs(pairs):
     return "?" + urllib.parse.urlencode(p) if p else ""
 
 
+def axis(items, cfg, dim):
+    """One switchable y axis of the bubble chart.
+
+    A row is one value of `dim`; a point is one (year x row) cell, and its count
+    is how many works are in it. That is coarser than the chart's first draft,
+    which split a cell three ways by location as well and drew a scatter of
+    near-identical dots. One bubble per year per row is what a reader can
+    actually compare along a row, and it is the finest grain that still maps
+    one-to-one onto a catalogue query — which is what the mark's href is.
+    """
+    is_cat = dim == "category"
+    unfilterable = 0
+
+    def value(it):
+        if is_cat:
+            # The catalogue's category facet has a synthetic "other" radio for
+            # records with no category, so an empty key is still filterable.
+            return it.get("categoryKey") or "other", it.get("category") or cfg["other_category"]
+        # There is no "location is empty" option in the catalogue's location
+        # dropdown, so an empty location is NOT filterable — see below.
+        loc = it.get("location") or ""
+        return loc, loc or cfg["no_location"]
+
+    counts = collections.Counter()
+    labels = {}
+    cells = collections.Counter()
+    for it in items:
+        key, label = value(it)
+        counts[key] += 1
+        labels[key] = label
+        if it.get("year"):
+            cells[(it["year"], key)] += 1
+
+    # Busiest row first, so the reader's eye starts where the data is. Ties
+    # broken by label to keep the order stable between rebuilds.
+    order = sorted(counts.items(), key=lambda kv: (-kv[1], labels[kv[0]]))
+    rows = [{"key": k, "label": labels[k], "count": n} for k, n in order]
+    index = {r["key"]: i for i, r in enumerate(rows)}
+
+    points = []
+    for (year, key), n in sorted(cells.items(), key=lambda kv: (index[kv[0][1]], kv[0][0])):
+        param = ("category", key) if is_cat else ("location", key)
+        # A blank location cannot be expressed as a catalogue filter. Rather
+        # than link it to a query that would also return every other place, the
+        # mark carries no href at all and is drawn hollow; the chart's note says
+        # how many works that is. Hiding the row instead would drop 16 of 88
+        # works off the chart with nothing to show for it.
+        href = None
+        if key:
+            href = cfg["catalogue"] + qs([param, ("from", year), ("to", year)])
+        else:
+            unfilterable += n
+        points.append({"year": year, "row": key, "count": n, "href": href})
+
+    return {
+        "key": dim,
+        "label": cfg["axis_category"] if is_cat else cfg["axis_location"],
+        "rows": rows,
+        "points": points,
+        "unfilterable": unfilterable,
+    }
+
+
 def build(lang, cfg):
     with open(os.path.join(HERE, cfg["src"]), encoding="utf-8") as f:
         items = json.load(f)["items"]
 
-    # ---- categories: the y axis of the bubble chart -----------------------
-    # Ordered by how many works they hold, so the busiest band is at the top and
-    # the reader's eye starts where the data is. The empty key becomes the
-    # catalogue's synthetic "other" radio, which is the value that filters it.
-    cat_count = collections.Counter()
-    cat_label = {}
-    for it in items:
-        key = it.get("categoryKey") or "other"
-        cat_count[key] += 1
-        cat_label.setdefault(key, it.get("category") or cfg["other_category"])
-    categories = [
-        {"key": k, "label": cat_label[k], "count": n}
-        for k, n in cat_count.most_common()
-    ]
+    undated = sum(1 for it in items if not it.get("year"))
 
-    # ---- locations: the colour scale --------------------------------------
-    loc_count = collections.Counter(it.get("location") or "" for it in items)
-
-    def slot(loc):
-        if not loc:
-            return NONE_SLOT
-        return LOCATION_SLOT.get(loc, OTHER_SLOT)
-
-    named = {}      # slot -> {label, count}
-    for loc, n in loc_count.items():
-        s = slot(loc)
-        label = (
-            cfg["no_location"] if s == NONE_SLOT
-            else cfg["other_location"] if s == OTHER_SLOT
-            else loc
-        )
-        entry = named.setdefault(s, {"slot": s, "label": label, "count": 0,
-                                     "places": []})
-        entry["count"] += n
-        if loc:
-            entry["places"].append(loc)
-    # Legend order: the five named slots in slot order, then "elsewhere", then
-    # "unspecified" last — the two catch-alls read as the tail of the list.
-    legend = [named[s] for s in sorted(k for k in named if k >= 0)]
-    if NONE_SLOT in named:
-        legend.append(named[NONE_SLOT])
-    for e in legend:
-        e["places"].sort()
-
-    # ---- bubbles: one per (year x category x location) --------------------
-    # NOT one per work. A mark that stands for a single record would have to
-    # link to that record, and the page's job is to hand the reader a filtered
-    # catalogue, not an entry. Grouping by the three encoded dimensions makes
-    # every mark exactly reproducible as a catalogue query — which is what its
-    # href is. Size then carries the group's count.
-    groups = collections.Counter()
-    undated = 0
-    for it in items:
-        year = it.get("year")
-        if not year:
-            undated += 1          # no x position exists for it; see DATAVIZ.md
-            continue
-        groups[(year, it.get("categoryKey") or "other", it.get("location") or "")] += 1
-
-    bubbles = []
-    for (year, cat, loc), n in sorted(groups.items()):
-        # A blank location cannot be expressed as a catalogue filter — there is
-        # no "location is empty" option — so those marks link on year+category
-        # only and say so in their label. Better a link that narrows honestly
-        # than one that silently returns other places too.
-        bubbles.append({
-            "year": year,
-            "categoryKey": cat,
-            "location": loc,
-            "locationSlot": slot(loc),
-            "count": n,
-            "href": cfg["catalogue"] + qs([
-                ("category", cat), ("from", year), ("to", year),
-                ("location", loc),
-            ]),
-        })
-
-    # ---- collaborators: the treemap ---------------------------------------
     credits = collections.Counter()
     for it in items:
         for name in it.get("directors") or []:
@@ -188,8 +157,9 @@ def build(lang, cfg):
             "count": n,
             "href": cfg["catalogue"] + qs([("director", name)]),
         }
-        # Ties broken by name so the layout is stable between rebuilds; without
-        # it Counter order shuffles and the treemap reshuffles for no reason.
+        # Ties broken by name so the treemap is stable between rebuilds;
+        # without it Counter order shuffles and the layout reshuffles for
+        # no reason.
         for name, n in sorted(credits.items(), key=lambda kv: (-kv[1], kv[0]))
     ]
 
@@ -204,9 +174,11 @@ def build(lang, cfg):
             "undated": undated,
             "collaborators": len(collaborators),
         },
-        "categories": categories,
-        "locations": legend,
-        "bubbles": bubbles,
+        # The bubble chart's y axis is switchable. Both axes ship in the same
+        # payload rather than being re-fetched on toggle: they are two views of
+        # 88 records, the whole thing is a few kilobytes, and a fetch per click
+        # would make an instant control feel like a page load.
+        "axes": [axis(items, cfg, "category"), axis(items, cfg, "location")],
         "collaborators": collaborators,
     }
 
@@ -225,17 +197,16 @@ def main():
               % (doc["totals"]["works"], doc["totals"]["dated"],
                  doc["totals"]["undated"],
                  doc["years"]["min"], doc["years"]["max"]))
-        print("   %d bubbles over %d categories, largest %d works"
-              % (len(doc["bubbles"]), len(doc["categories"]),
-                 max(b["count"] for b in doc["bubbles"])))
+        for ax in doc["axes"]:
+            print("   axis %-9s %2d rows, %2d bubbles, largest %d works%s"
+                  % (ax["key"], len(ax["rows"]), len(ax["points"]),
+                     max(p["count"] for p in ax["points"]),
+                     ", %d works in unfilterable marks" % ax["unfilterable"]
+                     if ax["unfilterable"] else ""))
         print("   %d collaborators, largest %d credits (%s excluded)"
               % (len(doc["collaborators"]),
                  doc["collaborators"][0]["count"],
                  "/".join(sorted(ARCHIVE_SUBJECT))))
-        unknown = sorted({b["location"] for b in doc["bubbles"]
-                          if b["locationSlot"] == OTHER_SLOT})
-        if unknown:
-            print("   in the 'elsewhere' bucket: %s" % ", ".join(unknown))
 
 
 if __name__ == "__main__":

@@ -11,596 +11,723 @@
   "undated": 0,
   "collaborators": 45
  },
- "categories": [
-  {
-   "key": "theatre-production",
-   "label": "Theatre Production",
-   "count": 69
-  },
-  {
-   "key": "event",
-   "label": "Event",
-   "count": 8
-  },
-  {
-   "key": "other",
-   "label": "Other",
-   "count": 6
-  },
-  {
-   "key": "visual-arts",
-   "label": "Visual Arts",
-   "count": 4
-  },
-  {
-   "key": "performing-art",
-   "label": "Performing Art",
-   "count": 1
-  }
- ],
- "locations": [
-  {
-   "slot": 0,
-   "label": "Hong Kong",
-   "count": 51,
-   "places": [
-    "Hong Kong"
-   ]
-  },
-  {
-   "slot": 1,
-   "label": "Taipei",
-   "count": 5,
-   "places": [
-    "Taipei"
-   ]
-  },
-  {
-   "slot": 2,
-   "label": "Japan",
-   "count": 4,
-   "places": [
-    "Japan"
-   ]
-  },
-  {
-   "slot": 3,
-   "label": "Germany",
-   "count": 4,
-   "places": [
-    "Germany"
-   ]
-  },
-  {
-   "slot": 4,
-   "label": "Singapore",
-   "count": 3,
-   "places": [
-    "Singapore"
-   ]
-  },
-  {
-   "slot": 5,
-   "label": "Elsewhere",
-   "count": 5,
-   "places": [
-    "Belgium",
-    "New York",
-    "Oslo",
-    "Shenzhen"
-   ]
-  },
-  {
-   "slot": -1,
-   "label": "Unspecified",
-   "count": 16,
-   "places": []
-  }
- ],
- "bubbles": [
-  {
-   "year": 1974,
-   "categoryKey": "theatre-production",
-   "location": "New York",
-   "locationSlot": 5,
-   "count": 1,
-   "href": "/en/catalogue?category=theatre-production&from=1974&to=1974&location=New+York"
-  },
-  {
-   "year": 1977,
-   "categoryKey": "theatre-production",
-   "location": "",
-   "locationSlot": -1,
-   "count": 1,
-   "href": "/en/catalogue?category=theatre-production&from=1977&to=1977"
-  },
-  {
-   "year": 1978,
-   "categoryKey": "theatre-production",
-   "location": "",
-   "locationSlot": -1,
-   "count": 1,
-   "href": "/en/catalogue?category=theatre-production&from=1978&to=1978"
-  },
-  {
-   "year": 1979,
-   "categoryKey": "theatre-production",
-   "location": "",
-   "locationSlot": -1,
-   "count": 2,
-   "href": "/en/catalogue?category=theatre-production&from=1979&to=1979"
-  },
-  {
-   "year": 1979,
-   "categoryKey": "theatre-production",
-   "location": "Hong Kong",
-   "locationSlot": 0,
-   "count": 1,
-   "href": "/en/catalogue?category=theatre-production&from=1979&to=1979&location=Hong+Kong"
-  },
-  {
-   "year": 1980,
-   "categoryKey": "theatre-production",
-   "location": "Hong Kong",
-   "locationSlot": 0,
-   "count": 3,
-   "href": "/en/catalogue?category=theatre-production&from=1980&to=1980&location=Hong+Kong"
-  },
-  {
-   "year": 1981,
-   "categoryKey": "theatre-production",
-   "location": "Hong Kong",
-   "locationSlot": 0,
-   "count": 2,
-   "href": "/en/catalogue?category=theatre-production&from=1981&to=1981&location=Hong+Kong"
-  },
-  {
-   "year": 1982,
-   "categoryKey": "theatre-production",
-   "location": "Hong Kong",
-   "locationSlot": 0,
-   "count": 4,
-   "href": "/en/catalogue?category=theatre-production&from=1982&to=1982&location=Hong+Kong"
-  },
-  {
-   "year": 1982,
-   "categoryKey": "theatre-production",
-   "location": "Taipei",
-   "locationSlot": 1,
-   "count": 1,
-   "href": "/en/catalogue?category=theatre-production&from=1982&to=1982&location=Taipei"
-  },
-  {
-   "year": 1985,
-   "categoryKey": "theatre-production",
-   "location": "Hong Kong",
-   "locationSlot": 0,
-   "count": 1,
-   "href": "/en/catalogue?category=theatre-production&from=1985&to=1985&location=Hong+Kong"
-  },
-  {
-   "year": 1986,
-   "categoryKey": "visual-arts",
-   "location": "",
-   "locationSlot": -1,
-   "count": 1,
-   "href": "/en/catalogue?category=visual-arts&from=1986&to=1986"
-  },
-  {
-   "year": 1987,
-   "categoryKey": "theatre-production",
-   "location": "",
-   "locationSlot": -1,
-   "count": 1,
-   "href": "/en/catalogue?category=theatre-production&from=1987&to=1987"
-  },
-  {
-   "year": 1987,
-   "categoryKey": "theatre-production",
-   "location": "Hong Kong",
-   "locationSlot": 0,
-   "count": 1,
-   "href": "/en/catalogue?category=theatre-production&from=1987&to=1987&location=Hong+Kong"
-  },
-  {
-   "year": 1988,
-   "categoryKey": "theatre-production",
-   "location": "Taipei",
-   "locationSlot": 1,
-   "count": 1,
-   "href": "/en/catalogue?category=theatre-production&from=1988&to=1988&location=Taipei"
-  },
-  {
-   "year": 1989,
-   "categoryKey": "theatre-production",
-   "location": "Japan",
-   "locationSlot": 2,
-   "count": 1,
-   "href": "/en/catalogue?category=theatre-production&from=1989&to=1989&location=Japan"
-  },
-  {
-   "year": 1990,
-   "categoryKey": "visual-arts",
-   "location": "",
-   "locationSlot": -1,
-   "count": 1,
-   "href": "/en/catalogue?category=visual-arts&from=1990&to=1990"
-  },
-  {
-   "year": 1991,
-   "categoryKey": "theatre-production",
-   "location": "Hong Kong",
-   "locationSlot": 0,
-   "count": 3,
-   "href": "/en/catalogue?category=theatre-production&from=1991&to=1991&location=Hong+Kong"
-  },
-  {
-   "year": 1992,
-   "categoryKey": "theatre-production",
-   "location": "Hong Kong",
-   "locationSlot": 0,
-   "count": 2,
-   "href": "/en/catalogue?category=theatre-production&from=1992&to=1992&location=Hong+Kong"
-  },
-  {
-   "year": 1992,
-   "categoryKey": "theatre-production",
-   "location": "Japan",
-   "locationSlot": 2,
-   "count": 1,
-   "href": "/en/catalogue?category=theatre-production&from=1992&to=1992&location=Japan"
-  },
-  {
-   "year": 1993,
-   "categoryKey": "theatre-production",
-   "location": "Hong Kong",
-   "locationSlot": 0,
-   "count": 2,
-   "href": "/en/catalogue?category=theatre-production&from=1993&to=1993&location=Hong+Kong"
-  },
-  {
-   "year": 1993,
-   "categoryKey": "visual-arts",
-   "location": "",
-   "locationSlot": -1,
-   "count": 1,
-   "href": "/en/catalogue?category=visual-arts&from=1993&to=1993"
-  },
-  {
-   "year": 1994,
-   "categoryKey": "performing-art",
-   "location": "Hong Kong",
-   "locationSlot": 0,
-   "count": 1,
-   "href": "/en/catalogue?category=performing-art&from=1994&to=1994&location=Hong+Kong"
-  },
-  {
-   "year": 1994,
-   "categoryKey": "theatre-production",
-   "location": "Belgium",
-   "locationSlot": 5,
-   "count": 1,
-   "href": "/en/catalogue?category=theatre-production&from=1994&to=1994&location=Belgium"
-  },
-  {
-   "year": 1994,
-   "categoryKey": "theatre-production",
-   "location": "Hong Kong",
-   "locationSlot": 0,
-   "count": 2,
-   "href": "/en/catalogue?category=theatre-production&from=1994&to=1994&location=Hong+Kong"
-  },
-  {
-   "year": 1995,
-   "categoryKey": "theatre-production",
-   "location": "Hong Kong",
-   "locationSlot": 0,
-   "count": 2,
-   "href": "/en/catalogue?category=theatre-production&from=1995&to=1995&location=Hong+Kong"
-  },
-  {
-   "year": 1996,
-   "categoryKey": "other",
-   "location": "",
-   "locationSlot": -1,
-   "count": 1,
-   "href": "/en/catalogue?category=other&from=1996&to=1996"
-  },
-  {
-   "year": 1996,
-   "categoryKey": "theatre-production",
-   "location": "Hong Kong",
-   "locationSlot": 0,
-   "count": 3,
-   "href": "/en/catalogue?category=theatre-production&from=1996&to=1996&location=Hong+Kong"
-  },
-  {
-   "year": 1996,
-   "categoryKey": "theatre-production",
-   "location": "Japan",
-   "locationSlot": 2,
-   "count": 1,
-   "href": "/en/catalogue?category=theatre-production&from=1996&to=1996&location=Japan"
-  },
-  {
-   "year": 1996,
-   "categoryKey": "visual-arts",
-   "location": "",
-   "locationSlot": -1,
-   "count": 1,
-   "href": "/en/catalogue?category=visual-arts&from=1996&to=1996"
-  },
-  {
-   "year": 1997,
-   "categoryKey": "theatre-production",
-   "location": "Germany",
-   "locationSlot": 3,
-   "count": 1,
-   "href": "/en/catalogue?category=theatre-production&from=1997&to=1997&location=Germany"
-  },
-  {
-   "year": 1997,
-   "categoryKey": "theatre-production",
-   "location": "Hong Kong",
-   "locationSlot": 0,
-   "count": 3,
-   "href": "/en/catalogue?category=theatre-production&from=1997&to=1997&location=Hong+Kong"
-  },
-  {
-   "year": 1997,
-   "categoryKey": "theatre-production",
-   "location": "Taipei",
-   "locationSlot": 1,
-   "count": 1,
-   "href": "/en/catalogue?category=theatre-production&from=1997&to=1997&location=Taipei"
-  },
-  {
-   "year": 1998,
-   "categoryKey": "other",
-   "location": "",
-   "locationSlot": -1,
-   "count": 1,
-   "href": "/en/catalogue?category=other&from=1998&to=1998"
-  },
-  {
-   "year": 1998,
-   "categoryKey": "theatre-production",
-   "location": "Hong Kong",
-   "locationSlot": 0,
-   "count": 1,
-   "href": "/en/catalogue?category=theatre-production&from=1998&to=1998&location=Hong+Kong"
-  },
-  {
-   "year": 1999,
-   "categoryKey": "theatre-production",
-   "location": "Hong Kong",
-   "locationSlot": 0,
-   "count": 2,
-   "href": "/en/catalogue?category=theatre-production&from=1999&to=1999&location=Hong+Kong"
-  },
-  {
-   "year": 2000,
-   "categoryKey": "event",
-   "location": "Germany",
-   "locationSlot": 3,
-   "count": 1,
-   "href": "/en/catalogue?category=event&from=2000&to=2000&location=Germany"
-  },
-  {
-   "year": 2000,
-   "categoryKey": "event",
-   "location": "Hong Kong",
-   "locationSlot": 0,
-   "count": 3,
-   "href": "/en/catalogue?category=event&from=2000&to=2000&location=Hong+Kong"
-  },
-  {
-   "year": 2000,
-   "categoryKey": "theatre-production",
-   "location": "Germany",
-   "locationSlot": 3,
-   "count": 2,
-   "href": "/en/catalogue?category=theatre-production&from=2000&to=2000&location=Germany"
-  },
-  {
-   "year": 2000,
-   "categoryKey": "theatre-production",
-   "location": "Hong Kong",
-   "locationSlot": 0,
-   "count": 3,
-   "href": "/en/catalogue?category=theatre-production&from=2000&to=2000&location=Hong+Kong"
-  },
-  {
-   "year": 2001,
-   "categoryKey": "event",
-   "location": "Shenzhen",
-   "locationSlot": 5,
-   "count": 1,
-   "href": "/en/catalogue?category=event&from=2001&to=2001&location=Shenzhen"
-  },
-  {
-   "year": 2001,
-   "categoryKey": "theatre-production",
-   "location": "Hong Kong",
-   "locationSlot": 0,
-   "count": 2,
-   "href": "/en/catalogue?category=theatre-production&from=2001&to=2001&location=Hong+Kong"
-  },
-  {
-   "year": 2002,
-   "categoryKey": "theatre-production",
-   "location": "Hong Kong",
-   "locationSlot": 0,
-   "count": 2,
-   "href": "/en/catalogue?category=theatre-production&from=2002&to=2002&location=Hong+Kong"
-  },
-  {
-   "year": 2002,
-   "categoryKey": "theatre-production",
-   "location": "Singapore",
-   "locationSlot": 4,
-   "count": 1,
-   "href": "/en/catalogue?category=theatre-production&from=2002&to=2002&location=Singapore"
-  },
-  {
-   "year": 2003,
-   "categoryKey": "event",
-   "location": "Taipei",
-   "locationSlot": 1,
-   "count": 1,
-   "href": "/en/catalogue?category=event&from=2003&to=2003&location=Taipei"
-  },
-  {
-   "year": 2003,
-   "categoryKey": "theatre-production",
-   "location": "Hong Kong",
-   "locationSlot": 0,
-   "count": 1,
-   "href": "/en/catalogue?category=theatre-production&from=2003&to=2003&location=Hong+Kong"
-  },
-  {
-   "year": 2003,
-   "categoryKey": "theatre-production",
-   "location": "Japan",
-   "locationSlot": 2,
-   "count": 1,
-   "href": "/en/catalogue?category=theatre-production&from=2003&to=2003&location=Japan"
-  },
-  {
-   "year": 2004,
-   "categoryKey": "theatre-production",
-   "location": "Hong Kong",
-   "locationSlot": 0,
-   "count": 1,
-   "href": "/en/catalogue?category=theatre-production&from=2004&to=2004&location=Hong+Kong"
-  },
-  {
-   "year": 2004,
-   "categoryKey": "theatre-production",
-   "location": "Oslo",
-   "locationSlot": 5,
-   "count": 1,
-   "href": "/en/catalogue?category=theatre-production&from=2004&to=2004&location=Oslo"
-  },
-  {
-   "year": 2004,
-   "categoryKey": "theatre-production",
-   "location": "Singapore",
-   "locationSlot": 4,
-   "count": 1,
-   "href": "/en/catalogue?category=theatre-production&from=2004&to=2004&location=Singapore"
-  },
-  {
-   "year": 2004,
-   "categoryKey": "theatre-production",
-   "location": "Taipei",
-   "locationSlot": 1,
-   "count": 1,
-   "href": "/en/catalogue?category=theatre-production&from=2004&to=2004&location=Taipei"
-  },
-  {
-   "year": 2005,
-   "categoryKey": "event",
-   "location": "Shenzhen",
-   "locationSlot": 5,
-   "count": 1,
-   "href": "/en/catalogue?category=event&from=2005&to=2005&location=Shenzhen"
-  },
-  {
-   "year": 2005,
-   "categoryKey": "theatre-production",
-   "location": "Hong Kong",
-   "locationSlot": 0,
-   "count": 1,
-   "href": "/en/catalogue?category=theatre-production&from=2005&to=2005&location=Hong+Kong"
-  },
-  {
-   "year": 2006,
-   "categoryKey": "event",
-   "location": "Hong Kong",
-   "locationSlot": 0,
-   "count": 1,
-   "href": "/en/catalogue?category=event&from=2006&to=2006&location=Hong+Kong"
-  },
-  {
-   "year": 2006,
-   "categoryKey": "theatre-production",
-   "location": "Hong Kong",
-   "locationSlot": 0,
-   "count": 1,
-   "href": "/en/catalogue?category=theatre-production&from=2006&to=2006&location=Hong+Kong"
-  },
-  {
-   "year": 2006,
-   "categoryKey": "theatre-production",
-   "location": "Singapore",
-   "locationSlot": 4,
-   "count": 1,
-   "href": "/en/catalogue?category=theatre-production&from=2006&to=2006&location=Singapore"
-  },
-  {
-   "year": 2008,
-   "categoryKey": "other",
-   "location": "",
-   "locationSlot": -1,
-   "count": 1,
-   "href": "/en/catalogue?category=other&from=2008&to=2008"
-  },
-  {
-   "year": 2008,
-   "categoryKey": "theatre-production",
-   "location": "Hong Kong",
-   "locationSlot": 0,
-   "count": 1,
-   "href": "/en/catalogue?category=theatre-production&from=2008&to=2008&location=Hong+Kong"
-  },
-  {
-   "year": 2009,
-   "categoryKey": "theatre-production",
-   "location": "Hong Kong",
-   "locationSlot": 0,
-   "count": 1,
-   "href": "/en/catalogue?category=theatre-production&from=2009&to=2009&location=Hong+Kong"
-  },
-  {
-   "year": 2011,
-   "categoryKey": "other",
-   "location": "",
-   "locationSlot": -1,
-   "count": 1,
-   "href": "/en/catalogue?category=other&from=2011&to=2011"
-  },
-  {
-   "year": 2011,
-   "categoryKey": "theatre-production",
-   "location": "Hong Kong",
-   "locationSlot": 0,
-   "count": 1,
-   "href": "/en/catalogue?category=theatre-production&from=2011&to=2011&location=Hong+Kong"
-  },
-  {
-   "year": 2012,
-   "categoryKey": "other",
-   "location": "",
-   "locationSlot": -1,
-   "count": 1,
-   "href": "/en/catalogue?category=other&from=2012&to=2012"
-  },
-  {
-   "year": 2020,
-   "categoryKey": "other",
-   "location": "",
-   "locationSlot": -1,
-   "count": 1,
-   "href": "/en/catalogue?category=other&from=2020&to=2020"
-  },
-  {
-   "year": 2020,
-   "categoryKey": "theatre-production",
-   "location": "",
-   "locationSlot": -1,
-   "count": 1,
-   "href": "/en/catalogue?category=theatre-production&from=2020&to=2020"
+ "axes": [
+  {
+   "key": "category",
+   "label": "Category",
+   "rows": [
+    {
+     "key": "theatre-production",
+     "label": "Theatre Production",
+     "count": 69
+    },
+    {
+     "key": "event",
+     "label": "Event",
+     "count": 8
+    },
+    {
+     "key": "other",
+     "label": "Other",
+     "count": 6
+    },
+    {
+     "key": "visual-arts",
+     "label": "Visual Arts",
+     "count": 4
+    },
+    {
+     "key": "performing-art",
+     "label": "Performing Art",
+     "count": 1
+    }
+   ],
+   "points": [
+    {
+     "year": 1974,
+     "row": "theatre-production",
+     "count": 1,
+     "href": "/en/catalogue?category=theatre-production&from=1974&to=1974"
+    },
+    {
+     "year": 1977,
+     "row": "theatre-production",
+     "count": 1,
+     "href": "/en/catalogue?category=theatre-production&from=1977&to=1977"
+    },
+    {
+     "year": 1978,
+     "row": "theatre-production",
+     "count": 1,
+     "href": "/en/catalogue?category=theatre-production&from=1978&to=1978"
+    },
+    {
+     "year": 1979,
+     "row": "theatre-production",
+     "count": 3,
+     "href": "/en/catalogue?category=theatre-production&from=1979&to=1979"
+    },
+    {
+     "year": 1980,
+     "row": "theatre-production",
+     "count": 3,
+     "href": "/en/catalogue?category=theatre-production&from=1980&to=1980"
+    },
+    {
+     "year": 1981,
+     "row": "theatre-production",
+     "count": 2,
+     "href": "/en/catalogue?category=theatre-production&from=1981&to=1981"
+    },
+    {
+     "year": 1982,
+     "row": "theatre-production",
+     "count": 5,
+     "href": "/en/catalogue?category=theatre-production&from=1982&to=1982"
+    },
+    {
+     "year": 1985,
+     "row": "theatre-production",
+     "count": 1,
+     "href": "/en/catalogue?category=theatre-production&from=1985&to=1985"
+    },
+    {
+     "year": 1987,
+     "row": "theatre-production",
+     "count": 2,
+     "href": "/en/catalogue?category=theatre-production&from=1987&to=1987"
+    },
+    {
+     "year": 1988,
+     "row": "theatre-production",
+     "count": 1,
+     "href": "/en/catalogue?category=theatre-production&from=1988&to=1988"
+    },
+    {
+     "year": 1989,
+     "row": "theatre-production",
+     "count": 1,
+     "href": "/en/catalogue?category=theatre-production&from=1989&to=1989"
+    },
+    {
+     "year": 1991,
+     "row": "theatre-production",
+     "count": 3,
+     "href": "/en/catalogue?category=theatre-production&from=1991&to=1991"
+    },
+    {
+     "year": 1992,
+     "row": "theatre-production",
+     "count": 3,
+     "href": "/en/catalogue?category=theatre-production&from=1992&to=1992"
+    },
+    {
+     "year": 1993,
+     "row": "theatre-production",
+     "count": 2,
+     "href": "/en/catalogue?category=theatre-production&from=1993&to=1993"
+    },
+    {
+     "year": 1994,
+     "row": "theatre-production",
+     "count": 3,
+     "href": "/en/catalogue?category=theatre-production&from=1994&to=1994"
+    },
+    {
+     "year": 1995,
+     "row": "theatre-production",
+     "count": 2,
+     "href": "/en/catalogue?category=theatre-production&from=1995&to=1995"
+    },
+    {
+     "year": 1996,
+     "row": "theatre-production",
+     "count": 4,
+     "href": "/en/catalogue?category=theatre-production&from=1996&to=1996"
+    },
+    {
+     "year": 1997,
+     "row": "theatre-production",
+     "count": 5,
+     "href": "/en/catalogue?category=theatre-production&from=1997&to=1997"
+    },
+    {
+     "year": 1998,
+     "row": "theatre-production",
+     "count": 1,
+     "href": "/en/catalogue?category=theatre-production&from=1998&to=1998"
+    },
+    {
+     "year": 1999,
+     "row": "theatre-production",
+     "count": 2,
+     "href": "/en/catalogue?category=theatre-production&from=1999&to=1999"
+    },
+    {
+     "year": 2000,
+     "row": "theatre-production",
+     "count": 5,
+     "href": "/en/catalogue?category=theatre-production&from=2000&to=2000"
+    },
+    {
+     "year": 2001,
+     "row": "theatre-production",
+     "count": 2,
+     "href": "/en/catalogue?category=theatre-production&from=2001&to=2001"
+    },
+    {
+     "year": 2002,
+     "row": "theatre-production",
+     "count": 3,
+     "href": "/en/catalogue?category=theatre-production&from=2002&to=2002"
+    },
+    {
+     "year": 2003,
+     "row": "theatre-production",
+     "count": 2,
+     "href": "/en/catalogue?category=theatre-production&from=2003&to=2003"
+    },
+    {
+     "year": 2004,
+     "row": "theatre-production",
+     "count": 4,
+     "href": "/en/catalogue?category=theatre-production&from=2004&to=2004"
+    },
+    {
+     "year": 2005,
+     "row": "theatre-production",
+     "count": 1,
+     "href": "/en/catalogue?category=theatre-production&from=2005&to=2005"
+    },
+    {
+     "year": 2006,
+     "row": "theatre-production",
+     "count": 2,
+     "href": "/en/catalogue?category=theatre-production&from=2006&to=2006"
+    },
+    {
+     "year": 2008,
+     "row": "theatre-production",
+     "count": 1,
+     "href": "/en/catalogue?category=theatre-production&from=2008&to=2008"
+    },
+    {
+     "year": 2009,
+     "row": "theatre-production",
+     "count": 1,
+     "href": "/en/catalogue?category=theatre-production&from=2009&to=2009"
+    },
+    {
+     "year": 2011,
+     "row": "theatre-production",
+     "count": 1,
+     "href": "/en/catalogue?category=theatre-production&from=2011&to=2011"
+    },
+    {
+     "year": 2020,
+     "row": "theatre-production",
+     "count": 1,
+     "href": "/en/catalogue?category=theatre-production&from=2020&to=2020"
+    },
+    {
+     "year": 2000,
+     "row": "event",
+     "count": 4,
+     "href": "/en/catalogue?category=event&from=2000&to=2000"
+    },
+    {
+     "year": 2001,
+     "row": "event",
+     "count": 1,
+     "href": "/en/catalogue?category=event&from=2001&to=2001"
+    },
+    {
+     "year": 2003,
+     "row": "event",
+     "count": 1,
+     "href": "/en/catalogue?category=event&from=2003&to=2003"
+    },
+    {
+     "year": 2005,
+     "row": "event",
+     "count": 1,
+     "href": "/en/catalogue?category=event&from=2005&to=2005"
+    },
+    {
+     "year": 2006,
+     "row": "event",
+     "count": 1,
+     "href": "/en/catalogue?category=event&from=2006&to=2006"
+    },
+    {
+     "year": 1996,
+     "row": "other",
+     "count": 1,
+     "href": "/en/catalogue?category=other&from=1996&to=1996"
+    },
+    {
+     "year": 1998,
+     "row": "other",
+     "count": 1,
+     "href": "/en/catalogue?category=other&from=1998&to=1998"
+    },
+    {
+     "year": 2008,
+     "row": "other",
+     "count": 1,
+     "href": "/en/catalogue?category=other&from=2008&to=2008"
+    },
+    {
+     "year": 2011,
+     "row": "other",
+     "count": 1,
+     "href": "/en/catalogue?category=other&from=2011&to=2011"
+    },
+    {
+     "year": 2012,
+     "row": "other",
+     "count": 1,
+     "href": "/en/catalogue?category=other&from=2012&to=2012"
+    },
+    {
+     "year": 2020,
+     "row": "other",
+     "count": 1,
+     "href": "/en/catalogue?category=other&from=2020&to=2020"
+    },
+    {
+     "year": 1986,
+     "row": "visual-arts",
+     "count": 1,
+     "href": "/en/catalogue?category=visual-arts&from=1986&to=1986"
+    },
+    {
+     "year": 1990,
+     "row": "visual-arts",
+     "count": 1,
+     "href": "/en/catalogue?category=visual-arts&from=1990&to=1990"
+    },
+    {
+     "year": 1993,
+     "row": "visual-arts",
+     "count": 1,
+     "href": "/en/catalogue?category=visual-arts&from=1993&to=1993"
+    },
+    {
+     "year": 1996,
+     "row": "visual-arts",
+     "count": 1,
+     "href": "/en/catalogue?category=visual-arts&from=1996&to=1996"
+    },
+    {
+     "year": 1994,
+     "row": "performing-art",
+     "count": 1,
+     "href": "/en/catalogue?category=performing-art&from=1994&to=1994"
+    }
+   ],
+   "unfilterable": 0
+  },
+  {
+   "key": "location",
+   "label": "Location",
+   "rows": [
+    {
+     "key": "Hong Kong",
+     "label": "Hong Kong",
+     "count": 51
+    },
+    {
+     "key": "",
+     "label": "Unspecified",
+     "count": 16
+    },
+    {
+     "key": "Taipei",
+     "label": "Taipei",
+     "count": 5
+    },
+    {
+     "key": "Germany",
+     "label": "Germany",
+     "count": 4
+    },
+    {
+     "key": "Japan",
+     "label": "Japan",
+     "count": 4
+    },
+    {
+     "key": "Singapore",
+     "label": "Singapore",
+     "count": 3
+    },
+    {
+     "key": "Shenzhen",
+     "label": "Shenzhen",
+     "count": 2
+    },
+    {
+     "key": "Belgium",
+     "label": "Belgium",
+     "count": 1
+    },
+    {
+     "key": "New York",
+     "label": "New York",
+     "count": 1
+    },
+    {
+     "key": "Oslo",
+     "label": "Oslo",
+     "count": 1
+    }
+   ],
+   "points": [
+    {
+     "year": 1979,
+     "row": "Hong Kong",
+     "count": 1,
+     "href": "/en/catalogue?location=Hong+Kong&from=1979&to=1979"
+    },
+    {
+     "year": 1980,
+     "row": "Hong Kong",
+     "count": 3,
+     "href": "/en/catalogue?location=Hong+Kong&from=1980&to=1980"
+    },
+    {
+     "year": 1981,
+     "row": "Hong Kong",
+     "count": 2,
+     "href": "/en/catalogue?location=Hong+Kong&from=1981&to=1981"
+    },
+    {
+     "year": 1982,
+     "row": "Hong Kong",
+     "count": 4,
+     "href": "/en/catalogue?location=Hong+Kong&from=1982&to=1982"
+    },
+    {
+     "year": 1985,
+     "row": "Hong Kong",
+     "count": 1,
+     "href": "/en/catalogue?location=Hong+Kong&from=1985&to=1985"
+    },
+    {
+     "year": 1987,
+     "row": "Hong Kong",
+     "count": 1,
+     "href": "/en/catalogue?location=Hong+Kong&from=1987&to=1987"
+    },
+    {
+     "year": 1991,
+     "row": "Hong Kong",
+     "count": 3,
+     "href": "/en/catalogue?location=Hong+Kong&from=1991&to=1991"
+    },
+    {
+     "year": 1992,
+     "row": "Hong Kong",
+     "count": 2,
+     "href": "/en/catalogue?location=Hong+Kong&from=1992&to=1992"
+    },
+    {
+     "year": 1993,
+     "row": "Hong Kong",
+     "count": 2,
+     "href": "/en/catalogue?location=Hong+Kong&from=1993&to=1993"
+    },
+    {
+     "year": 1994,
+     "row": "Hong Kong",
+     "count": 3,
+     "href": "/en/catalogue?location=Hong+Kong&from=1994&to=1994"
+    },
+    {
+     "year": 1995,
+     "row": "Hong Kong",
+     "count": 2,
+     "href": "/en/catalogue?location=Hong+Kong&from=1995&to=1995"
+    },
+    {
+     "year": 1996,
+     "row": "Hong Kong",
+     "count": 3,
+     "href": "/en/catalogue?location=Hong+Kong&from=1996&to=1996"
+    },
+    {
+     "year": 1997,
+     "row": "Hong Kong",
+     "count": 3,
+     "href": "/en/catalogue?location=Hong+Kong&from=1997&to=1997"
+    },
+    {
+     "year": 1998,
+     "row": "Hong Kong",
+     "count": 1,
+     "href": "/en/catalogue?location=Hong+Kong&from=1998&to=1998"
+    },
+    {
+     "year": 1999,
+     "row": "Hong Kong",
+     "count": 2,
+     "href": "/en/catalogue?location=Hong+Kong&from=1999&to=1999"
+    },
+    {
+     "year": 2000,
+     "row": "Hong Kong",
+     "count": 6,
+     "href": "/en/catalogue?location=Hong+Kong&from=2000&to=2000"
+    },
+    {
+     "year": 2001,
+     "row": "Hong Kong",
+     "count": 2,
+     "href": "/en/catalogue?location=Hong+Kong&from=2001&to=2001"
+    },
+    {
+     "year": 2002,
+     "row": "Hong Kong",
+     "count": 2,
+     "href": "/en/catalogue?location=Hong+Kong&from=2002&to=2002"
+    },
+    {
+     "year": 2003,
+     "row": "Hong Kong",
+     "count": 1,
+     "href": "/en/catalogue?location=Hong+Kong&from=2003&to=2003"
+    },
+    {
+     "year": 2004,
+     "row": "Hong Kong",
+     "count": 1,
+     "href": "/en/catalogue?location=Hong+Kong&from=2004&to=2004"
+    },
+    {
+     "year": 2005,
+     "row": "Hong Kong",
+     "count": 1,
+     "href": "/en/catalogue?location=Hong+Kong&from=2005&to=2005"
+    },
+    {
+     "year": 2006,
+     "row": "Hong Kong",
+     "count": 2,
+     "href": "/en/catalogue?location=Hong+Kong&from=2006&to=2006"
+    },
+    {
+     "year": 2008,
+     "row": "Hong Kong",
+     "count": 1,
+     "href": "/en/catalogue?location=Hong+Kong&from=2008&to=2008"
+    },
+    {
+     "year": 2009,
+     "row": "Hong Kong",
+     "count": 1,
+     "href": "/en/catalogue?location=Hong+Kong&from=2009&to=2009"
+    },
+    {
+     "year": 2011,
+     "row": "Hong Kong",
+     "count": 1,
+     "href": "/en/catalogue?location=Hong+Kong&from=2011&to=2011"
+    },
+    {
+     "year": 1977,
+     "row": "",
+     "count": 1,
+     "href": null
+    },
+    {
+     "year": 1978,
+     "row": "",
+     "count": 1,
+     "href": null
+    },
+    {
+     "year": 1979,
+     "row": "",
+     "count": 2,
+     "href": null
+    },
+    {
+     "year": 1986,
+     "row": "",
+     "count": 1,
+     "href": null
+    },
+    {
+     "year": 1987,
+     "row": "",
+     "count": 1,
+     "href": null
+    },
+    {
+     "year": 1990,
+     "row": "",
+     "count": 1,
+     "href": null
+    },
+    {
+     "year": 1993,
+     "row": "",
+     "count": 1,
+     "href": null
+    },
+    {
+     "year": 1996,
+     "row": "",
+     "count": 2,
+     "href": null
+    },
+    {
+     "year": 1998,
+     "row": "",
+     "count": 1,
+     "href": null
+    },
+    {
+     "year": 2008,
+     "row": "",
+     "count": 1,
+     "href": null
+    },
+    {
+     "year": 2011,
+     "row": "",
+     "count": 1,
+     "href": null
+    },
+    {
+     "year": 2012,
+     "row": "",
+     "count": 1,
+     "href": null
+    },
+    {
+     "year": 2020,
+     "row": "",
+     "count": 2,
+     "href": null
+    },
+    {
+     "year": 1982,
+     "row": "Taipei",
+     "count": 1,
+     "href": "/en/catalogue?location=Taipei&from=1982&to=1982"
+    },
+    {
+     "year": 1988,
+     "row": "Taipei",
+     "count": 1,
+     "href": "/en/catalogue?location=Taipei&from=1988&to=1988"
+    },
+    {
+     "year": 1997,
+     "row": "Taipei",
+     "count": 1,
+     "href": "/en/catalogue?location=Taipei&from=1997&to=1997"
+    },
+    {
+     "year": 2003,
+     "row": "Taipei",
+     "count": 1,
+     "href": "/en/catalogue?location=Taipei&from=2003&to=2003"
+    },
+    {
+     "year": 2004,
+     "row": "Taipei",
+     "count": 1,
+     "href": "/en/catalogue?location=Taipei&from=2004&to=2004"
+    },
+    {
+     "year": 1997,
+     "row": "Germany",
+     "count": 1,
+     "href": "/en/catalogue?location=Germany&from=1997&to=1997"
+    },
+    {
+     "year": 2000,
+     "row": "Germany",
+     "count": 3,
+     "href": "/en/catalogue?location=Germany&from=2000&to=2000"
+    },
+    {
+     "year": 1989,
+     "row": "Japan",
+     "count": 1,
+     "href": "/en/catalogue?location=Japan&from=1989&to=1989"
+    },
+    {
+     "year": 1992,
+     "row": "Japan",
+     "count": 1,
+     "href": "/en/catalogue?location=Japan&from=1992&to=1992"
+    },
+    {
+     "year": 1996,
+     "row": "Japan",
+     "count": 1,
+     "href": "/en/catalogue?location=Japan&from=1996&to=1996"
+    },
+    {
+     "year": 2003,
+     "row": "Japan",
+     "count": 1,
+     "href": "/en/catalogue?location=Japan&from=2003&to=2003"
+    },
+    {
+     "year": 2002,
+     "row": "Singapore",
+     "count": 1,
+     "href": "/en/catalogue?location=Singapore&from=2002&to=2002"
+    },
+    {
+     "year": 2004,
+     "row": "Singapore",
+     "count": 1,
+     "href": "/en/catalogue?location=Singapore&from=2004&to=2004"
+    },
+    {
+     "year": 2006,
+     "row": "Singapore",
+     "count": 1,
+     "href": "/en/catalogue?location=Singapore&from=2006&to=2006"
+    },
+    {
+     "year": 2001,
+     "row": "Shenzhen",
+     "count": 1,
+     "href": "/en/catalogue?location=Shenzhen&from=2001&to=2001"
+    },
+    {
+     "year": 2005,
+     "row": "Shenzhen",
+     "count": 1,
+     "href": "/en/catalogue?location=Shenzhen&from=2005&to=2005"
+    },
+    {
+     "year": 1994,
+     "row": "Belgium",
+     "count": 1,
+     "href": "/en/catalogue?location=Belgium&from=1994&to=1994"
+    },
+    {
+     "year": 1974,
+     "row": "New York",
+     "count": 1,
+     "href": "/en/catalogue?location=New+York&from=1974&to=1974"
+    },
+    {
+     "year": 2004,
+     "row": "Oslo",
+     "count": 1,
+     "href": "/en/catalogue?location=Oslo&from=2004&to=2004"
+    }
+   ],
+   "unfilterable": 16
   }
  ],
  "collaborators": [

@@ -11,596 +11,723 @@
   "undated": 0,
   "collaborators": 43
  },
- "categories": [
-  {
-   "key": "theatre-production",
-   "label": "劇場",
-   "count": 69
-  },
-  {
-   "key": "event",
-   "label": "活動",
-   "count": 8
-  },
-  {
-   "key": "other",
-   "label": "其他",
-   "count": 6
-  },
-  {
-   "key": "visual-arts",
-   "label": "視覺藝術",
-   "count": 4
-  },
-  {
-   "key": "performing-art",
-   "label": "表演藝術",
-   "count": 1
-  }
- ],
- "locations": [
-  {
-   "slot": 0,
-   "label": "香港",
-   "count": 51,
-   "places": [
-    "香港"
-   ]
-  },
-  {
-   "slot": 1,
-   "label": "台北",
-   "count": 5,
-   "places": [
-    "台北"
-   ]
-  },
-  {
-   "slot": 2,
-   "label": "日本",
-   "count": 4,
-   "places": [
-    "日本"
-   ]
-  },
-  {
-   "slot": 3,
-   "label": "德國",
-   "count": 4,
-   "places": [
-    "德國"
-   ]
-  },
-  {
-   "slot": 4,
-   "label": "新加坡",
-   "count": 3,
-   "places": [
-    "新加坡"
-   ]
-  },
-  {
-   "slot": 5,
-   "label": "其他地點",
-   "count": 5,
-   "places": [
-    "奧斯陸",
-    "比利時",
-    "深圳",
-    "紐約"
-   ]
-  },
-  {
-   "slot": -1,
-   "label": "未註明",
-   "count": 16,
-   "places": []
-  }
- ],
- "bubbles": [
-  {
-   "year": 1974,
-   "categoryKey": "theatre-production",
-   "location": "紐約",
-   "locationSlot": 5,
-   "count": 1,
-   "href": "/catalogue?category=theatre-production&from=1974&to=1974&location=%E7%B4%90%E7%B4%84"
-  },
-  {
-   "year": 1977,
-   "categoryKey": "theatre-production",
-   "location": "",
-   "locationSlot": -1,
-   "count": 1,
-   "href": "/catalogue?category=theatre-production&from=1977&to=1977"
-  },
-  {
-   "year": 1978,
-   "categoryKey": "theatre-production",
-   "location": "",
-   "locationSlot": -1,
-   "count": 1,
-   "href": "/catalogue?category=theatre-production&from=1978&to=1978"
-  },
-  {
-   "year": 1979,
-   "categoryKey": "theatre-production",
-   "location": "",
-   "locationSlot": -1,
-   "count": 2,
-   "href": "/catalogue?category=theatre-production&from=1979&to=1979"
-  },
-  {
-   "year": 1979,
-   "categoryKey": "theatre-production",
-   "location": "香港",
-   "locationSlot": 0,
-   "count": 1,
-   "href": "/catalogue?category=theatre-production&from=1979&to=1979&location=%E9%A6%99%E6%B8%AF"
-  },
-  {
-   "year": 1980,
-   "categoryKey": "theatre-production",
-   "location": "香港",
-   "locationSlot": 0,
-   "count": 3,
-   "href": "/catalogue?category=theatre-production&from=1980&to=1980&location=%E9%A6%99%E6%B8%AF"
-  },
-  {
-   "year": 1981,
-   "categoryKey": "theatre-production",
-   "location": "香港",
-   "locationSlot": 0,
-   "count": 2,
-   "href": "/catalogue?category=theatre-production&from=1981&to=1981&location=%E9%A6%99%E6%B8%AF"
-  },
-  {
-   "year": 1982,
-   "categoryKey": "theatre-production",
-   "location": "台北",
-   "locationSlot": 1,
-   "count": 1,
-   "href": "/catalogue?category=theatre-production&from=1982&to=1982&location=%E5%8F%B0%E5%8C%97"
-  },
-  {
-   "year": 1982,
-   "categoryKey": "theatre-production",
-   "location": "香港",
-   "locationSlot": 0,
-   "count": 4,
-   "href": "/catalogue?category=theatre-production&from=1982&to=1982&location=%E9%A6%99%E6%B8%AF"
-  },
-  {
-   "year": 1985,
-   "categoryKey": "theatre-production",
-   "location": "香港",
-   "locationSlot": 0,
-   "count": 1,
-   "href": "/catalogue?category=theatre-production&from=1985&to=1985&location=%E9%A6%99%E6%B8%AF"
-  },
-  {
-   "year": 1986,
-   "categoryKey": "visual-arts",
-   "location": "",
-   "locationSlot": -1,
-   "count": 1,
-   "href": "/catalogue?category=visual-arts&from=1986&to=1986"
-  },
-  {
-   "year": 1987,
-   "categoryKey": "theatre-production",
-   "location": "",
-   "locationSlot": -1,
-   "count": 1,
-   "href": "/catalogue?category=theatre-production&from=1987&to=1987"
-  },
-  {
-   "year": 1987,
-   "categoryKey": "theatre-production",
-   "location": "香港",
-   "locationSlot": 0,
-   "count": 1,
-   "href": "/catalogue?category=theatre-production&from=1987&to=1987&location=%E9%A6%99%E6%B8%AF"
-  },
-  {
-   "year": 1988,
-   "categoryKey": "theatre-production",
-   "location": "台北",
-   "locationSlot": 1,
-   "count": 1,
-   "href": "/catalogue?category=theatre-production&from=1988&to=1988&location=%E5%8F%B0%E5%8C%97"
-  },
-  {
-   "year": 1989,
-   "categoryKey": "theatre-production",
-   "location": "日本",
-   "locationSlot": 2,
-   "count": 1,
-   "href": "/catalogue?category=theatre-production&from=1989&to=1989&location=%E6%97%A5%E6%9C%AC"
-  },
-  {
-   "year": 1990,
-   "categoryKey": "visual-arts",
-   "location": "",
-   "locationSlot": -1,
-   "count": 1,
-   "href": "/catalogue?category=visual-arts&from=1990&to=1990"
-  },
-  {
-   "year": 1991,
-   "categoryKey": "theatre-production",
-   "location": "香港",
-   "locationSlot": 0,
-   "count": 3,
-   "href": "/catalogue?category=theatre-production&from=1991&to=1991&location=%E9%A6%99%E6%B8%AF"
-  },
-  {
-   "year": 1992,
-   "categoryKey": "theatre-production",
-   "location": "日本",
-   "locationSlot": 2,
-   "count": 1,
-   "href": "/catalogue?category=theatre-production&from=1992&to=1992&location=%E6%97%A5%E6%9C%AC"
-  },
-  {
-   "year": 1992,
-   "categoryKey": "theatre-production",
-   "location": "香港",
-   "locationSlot": 0,
-   "count": 2,
-   "href": "/catalogue?category=theatre-production&from=1992&to=1992&location=%E9%A6%99%E6%B8%AF"
-  },
-  {
-   "year": 1993,
-   "categoryKey": "theatre-production",
-   "location": "香港",
-   "locationSlot": 0,
-   "count": 2,
-   "href": "/catalogue?category=theatre-production&from=1993&to=1993&location=%E9%A6%99%E6%B8%AF"
-  },
-  {
-   "year": 1993,
-   "categoryKey": "visual-arts",
-   "location": "",
-   "locationSlot": -1,
-   "count": 1,
-   "href": "/catalogue?category=visual-arts&from=1993&to=1993"
-  },
-  {
-   "year": 1994,
-   "categoryKey": "performing-art",
-   "location": "香港",
-   "locationSlot": 0,
-   "count": 1,
-   "href": "/catalogue?category=performing-art&from=1994&to=1994&location=%E9%A6%99%E6%B8%AF"
-  },
-  {
-   "year": 1994,
-   "categoryKey": "theatre-production",
-   "location": "比利時",
-   "locationSlot": 5,
-   "count": 1,
-   "href": "/catalogue?category=theatre-production&from=1994&to=1994&location=%E6%AF%94%E5%88%A9%E6%99%82"
-  },
-  {
-   "year": 1994,
-   "categoryKey": "theatre-production",
-   "location": "香港",
-   "locationSlot": 0,
-   "count": 2,
-   "href": "/catalogue?category=theatre-production&from=1994&to=1994&location=%E9%A6%99%E6%B8%AF"
-  },
-  {
-   "year": 1995,
-   "categoryKey": "theatre-production",
-   "location": "香港",
-   "locationSlot": 0,
-   "count": 2,
-   "href": "/catalogue?category=theatre-production&from=1995&to=1995&location=%E9%A6%99%E6%B8%AF"
-  },
-  {
-   "year": 1996,
-   "categoryKey": "other",
-   "location": "",
-   "locationSlot": -1,
-   "count": 1,
-   "href": "/catalogue?category=other&from=1996&to=1996"
-  },
-  {
-   "year": 1996,
-   "categoryKey": "theatre-production",
-   "location": "日本",
-   "locationSlot": 2,
-   "count": 1,
-   "href": "/catalogue?category=theatre-production&from=1996&to=1996&location=%E6%97%A5%E6%9C%AC"
-  },
-  {
-   "year": 1996,
-   "categoryKey": "theatre-production",
-   "location": "香港",
-   "locationSlot": 0,
-   "count": 3,
-   "href": "/catalogue?category=theatre-production&from=1996&to=1996&location=%E9%A6%99%E6%B8%AF"
-  },
-  {
-   "year": 1996,
-   "categoryKey": "visual-arts",
-   "location": "",
-   "locationSlot": -1,
-   "count": 1,
-   "href": "/catalogue?category=visual-arts&from=1996&to=1996"
-  },
-  {
-   "year": 1997,
-   "categoryKey": "theatre-production",
-   "location": "台北",
-   "locationSlot": 1,
-   "count": 1,
-   "href": "/catalogue?category=theatre-production&from=1997&to=1997&location=%E5%8F%B0%E5%8C%97"
-  },
-  {
-   "year": 1997,
-   "categoryKey": "theatre-production",
-   "location": "德國",
-   "locationSlot": 3,
-   "count": 1,
-   "href": "/catalogue?category=theatre-production&from=1997&to=1997&location=%E5%BE%B7%E5%9C%8B"
-  },
-  {
-   "year": 1997,
-   "categoryKey": "theatre-production",
-   "location": "香港",
-   "locationSlot": 0,
-   "count": 3,
-   "href": "/catalogue?category=theatre-production&from=1997&to=1997&location=%E9%A6%99%E6%B8%AF"
-  },
-  {
-   "year": 1998,
-   "categoryKey": "other",
-   "location": "",
-   "locationSlot": -1,
-   "count": 1,
-   "href": "/catalogue?category=other&from=1998&to=1998"
-  },
-  {
-   "year": 1998,
-   "categoryKey": "theatre-production",
-   "location": "香港",
-   "locationSlot": 0,
-   "count": 1,
-   "href": "/catalogue?category=theatre-production&from=1998&to=1998&location=%E9%A6%99%E6%B8%AF"
-  },
-  {
-   "year": 1999,
-   "categoryKey": "theatre-production",
-   "location": "香港",
-   "locationSlot": 0,
-   "count": 2,
-   "href": "/catalogue?category=theatre-production&from=1999&to=1999&location=%E9%A6%99%E6%B8%AF"
-  },
-  {
-   "year": 2000,
-   "categoryKey": "event",
-   "location": "德國",
-   "locationSlot": 3,
-   "count": 1,
-   "href": "/catalogue?category=event&from=2000&to=2000&location=%E5%BE%B7%E5%9C%8B"
-  },
-  {
-   "year": 2000,
-   "categoryKey": "event",
-   "location": "香港",
-   "locationSlot": 0,
-   "count": 3,
-   "href": "/catalogue?category=event&from=2000&to=2000&location=%E9%A6%99%E6%B8%AF"
-  },
-  {
-   "year": 2000,
-   "categoryKey": "theatre-production",
-   "location": "德國",
-   "locationSlot": 3,
-   "count": 2,
-   "href": "/catalogue?category=theatre-production&from=2000&to=2000&location=%E5%BE%B7%E5%9C%8B"
-  },
-  {
-   "year": 2000,
-   "categoryKey": "theatre-production",
-   "location": "香港",
-   "locationSlot": 0,
-   "count": 3,
-   "href": "/catalogue?category=theatre-production&from=2000&to=2000&location=%E9%A6%99%E6%B8%AF"
-  },
-  {
-   "year": 2001,
-   "categoryKey": "event",
-   "location": "深圳",
-   "locationSlot": 5,
-   "count": 1,
-   "href": "/catalogue?category=event&from=2001&to=2001&location=%E6%B7%B1%E5%9C%B3"
-  },
-  {
-   "year": 2001,
-   "categoryKey": "theatre-production",
-   "location": "香港",
-   "locationSlot": 0,
-   "count": 2,
-   "href": "/catalogue?category=theatre-production&from=2001&to=2001&location=%E9%A6%99%E6%B8%AF"
-  },
-  {
-   "year": 2002,
-   "categoryKey": "theatre-production",
-   "location": "新加坡",
-   "locationSlot": 4,
-   "count": 1,
-   "href": "/catalogue?category=theatre-production&from=2002&to=2002&location=%E6%96%B0%E5%8A%A0%E5%9D%A1"
-  },
-  {
-   "year": 2002,
-   "categoryKey": "theatre-production",
-   "location": "香港",
-   "locationSlot": 0,
-   "count": 2,
-   "href": "/catalogue?category=theatre-production&from=2002&to=2002&location=%E9%A6%99%E6%B8%AF"
-  },
-  {
-   "year": 2003,
-   "categoryKey": "event",
-   "location": "台北",
-   "locationSlot": 1,
-   "count": 1,
-   "href": "/catalogue?category=event&from=2003&to=2003&location=%E5%8F%B0%E5%8C%97"
-  },
-  {
-   "year": 2003,
-   "categoryKey": "theatre-production",
-   "location": "日本",
-   "locationSlot": 2,
-   "count": 1,
-   "href": "/catalogue?category=theatre-production&from=2003&to=2003&location=%E6%97%A5%E6%9C%AC"
-  },
-  {
-   "year": 2003,
-   "categoryKey": "theatre-production",
-   "location": "香港",
-   "locationSlot": 0,
-   "count": 1,
-   "href": "/catalogue?category=theatre-production&from=2003&to=2003&location=%E9%A6%99%E6%B8%AF"
-  },
-  {
-   "year": 2004,
-   "categoryKey": "theatre-production",
-   "location": "台北",
-   "locationSlot": 1,
-   "count": 1,
-   "href": "/catalogue?category=theatre-production&from=2004&to=2004&location=%E5%8F%B0%E5%8C%97"
-  },
-  {
-   "year": 2004,
-   "categoryKey": "theatre-production",
-   "location": "奧斯陸",
-   "locationSlot": 5,
-   "count": 1,
-   "href": "/catalogue?category=theatre-production&from=2004&to=2004&location=%E5%A5%A7%E6%96%AF%E9%99%B8"
-  },
-  {
-   "year": 2004,
-   "categoryKey": "theatre-production",
-   "location": "新加坡",
-   "locationSlot": 4,
-   "count": 1,
-   "href": "/catalogue?category=theatre-production&from=2004&to=2004&location=%E6%96%B0%E5%8A%A0%E5%9D%A1"
-  },
-  {
-   "year": 2004,
-   "categoryKey": "theatre-production",
-   "location": "香港",
-   "locationSlot": 0,
-   "count": 1,
-   "href": "/catalogue?category=theatre-production&from=2004&to=2004&location=%E9%A6%99%E6%B8%AF"
-  },
-  {
-   "year": 2005,
-   "categoryKey": "event",
-   "location": "深圳",
-   "locationSlot": 5,
-   "count": 1,
-   "href": "/catalogue?category=event&from=2005&to=2005&location=%E6%B7%B1%E5%9C%B3"
-  },
-  {
-   "year": 2005,
-   "categoryKey": "theatre-production",
-   "location": "香港",
-   "locationSlot": 0,
-   "count": 1,
-   "href": "/catalogue?category=theatre-production&from=2005&to=2005&location=%E9%A6%99%E6%B8%AF"
-  },
-  {
-   "year": 2006,
-   "categoryKey": "event",
-   "location": "香港",
-   "locationSlot": 0,
-   "count": 1,
-   "href": "/catalogue?category=event&from=2006&to=2006&location=%E9%A6%99%E6%B8%AF"
-  },
-  {
-   "year": 2006,
-   "categoryKey": "theatre-production",
-   "location": "新加坡",
-   "locationSlot": 4,
-   "count": 1,
-   "href": "/catalogue?category=theatre-production&from=2006&to=2006&location=%E6%96%B0%E5%8A%A0%E5%9D%A1"
-  },
-  {
-   "year": 2006,
-   "categoryKey": "theatre-production",
-   "location": "香港",
-   "locationSlot": 0,
-   "count": 1,
-   "href": "/catalogue?category=theatre-production&from=2006&to=2006&location=%E9%A6%99%E6%B8%AF"
-  },
-  {
-   "year": 2008,
-   "categoryKey": "other",
-   "location": "",
-   "locationSlot": -1,
-   "count": 1,
-   "href": "/catalogue?category=other&from=2008&to=2008"
-  },
-  {
-   "year": 2008,
-   "categoryKey": "theatre-production",
-   "location": "香港",
-   "locationSlot": 0,
-   "count": 1,
-   "href": "/catalogue?category=theatre-production&from=2008&to=2008&location=%E9%A6%99%E6%B8%AF"
-  },
-  {
-   "year": 2009,
-   "categoryKey": "theatre-production",
-   "location": "香港",
-   "locationSlot": 0,
-   "count": 1,
-   "href": "/catalogue?category=theatre-production&from=2009&to=2009&location=%E9%A6%99%E6%B8%AF"
-  },
-  {
-   "year": 2011,
-   "categoryKey": "other",
-   "location": "",
-   "locationSlot": -1,
-   "count": 1,
-   "href": "/catalogue?category=other&from=2011&to=2011"
-  },
-  {
-   "year": 2011,
-   "categoryKey": "theatre-production",
-   "location": "香港",
-   "locationSlot": 0,
-   "count": 1,
-   "href": "/catalogue?category=theatre-production&from=2011&to=2011&location=%E9%A6%99%E6%B8%AF"
-  },
-  {
-   "year": 2012,
-   "categoryKey": "other",
-   "location": "",
-   "locationSlot": -1,
-   "count": 1,
-   "href": "/catalogue?category=other&from=2012&to=2012"
-  },
-  {
-   "year": 2020,
-   "categoryKey": "other",
-   "location": "",
-   "locationSlot": -1,
-   "count": 1,
-   "href": "/catalogue?category=other&from=2020&to=2020"
-  },
-  {
-   "year": 2020,
-   "categoryKey": "theatre-production",
-   "location": "",
-   "locationSlot": -1,
-   "count": 1,
-   "href": "/catalogue?category=theatre-production&from=2020&to=2020"
+ "axes": [
+  {
+   "key": "category",
+   "label": "類別",
+   "rows": [
+    {
+     "key": "theatre-production",
+     "label": "劇場",
+     "count": 69
+    },
+    {
+     "key": "event",
+     "label": "活動",
+     "count": 8
+    },
+    {
+     "key": "other",
+     "label": "其他",
+     "count": 6
+    },
+    {
+     "key": "visual-arts",
+     "label": "視覺藝術",
+     "count": 4
+    },
+    {
+     "key": "performing-art",
+     "label": "表演藝術",
+     "count": 1
+    }
+   ],
+   "points": [
+    {
+     "year": 1974,
+     "row": "theatre-production",
+     "count": 1,
+     "href": "/catalogue?category=theatre-production&from=1974&to=1974"
+    },
+    {
+     "year": 1977,
+     "row": "theatre-production",
+     "count": 1,
+     "href": "/catalogue?category=theatre-production&from=1977&to=1977"
+    },
+    {
+     "year": 1978,
+     "row": "theatre-production",
+     "count": 1,
+     "href": "/catalogue?category=theatre-production&from=1978&to=1978"
+    },
+    {
+     "year": 1979,
+     "row": "theatre-production",
+     "count": 3,
+     "href": "/catalogue?category=theatre-production&from=1979&to=1979"
+    },
+    {
+     "year": 1980,
+     "row": "theatre-production",
+     "count": 3,
+     "href": "/catalogue?category=theatre-production&from=1980&to=1980"
+    },
+    {
+     "year": 1981,
+     "row": "theatre-production",
+     "count": 2,
+     "href": "/catalogue?category=theatre-production&from=1981&to=1981"
+    },
+    {
+     "year": 1982,
+     "row": "theatre-production",
+     "count": 5,
+     "href": "/catalogue?category=theatre-production&from=1982&to=1982"
+    },
+    {
+     "year": 1985,
+     "row": "theatre-production",
+     "count": 1,
+     "href": "/catalogue?category=theatre-production&from=1985&to=1985"
+    },
+    {
+     "year": 1987,
+     "row": "theatre-production",
+     "count": 2,
+     "href": "/catalogue?category=theatre-production&from=1987&to=1987"
+    },
+    {
+     "year": 1988,
+     "row": "theatre-production",
+     "count": 1,
+     "href": "/catalogue?category=theatre-production&from=1988&to=1988"
+    },
+    {
+     "year": 1989,
+     "row": "theatre-production",
+     "count": 1,
+     "href": "/catalogue?category=theatre-production&from=1989&to=1989"
+    },
+    {
+     "year": 1991,
+     "row": "theatre-production",
+     "count": 3,
+     "href": "/catalogue?category=theatre-production&from=1991&to=1991"
+    },
+    {
+     "year": 1992,
+     "row": "theatre-production",
+     "count": 3,
+     "href": "/catalogue?category=theatre-production&from=1992&to=1992"
+    },
+    {
+     "year": 1993,
+     "row": "theatre-production",
+     "count": 2,
+     "href": "/catalogue?category=theatre-production&from=1993&to=1993"
+    },
+    {
+     "year": 1994,
+     "row": "theatre-production",
+     "count": 3,
+     "href": "/catalogue?category=theatre-production&from=1994&to=1994"
+    },
+    {
+     "year": 1995,
+     "row": "theatre-production",
+     "count": 2,
+     "href": "/catalogue?category=theatre-production&from=1995&to=1995"
+    },
+    {
+     "year": 1996,
+     "row": "theatre-production",
+     "count": 4,
+     "href": "/catalogue?category=theatre-production&from=1996&to=1996"
+    },
+    {
+     "year": 1997,
+     "row": "theatre-production",
+     "count": 5,
+     "href": "/catalogue?category=theatre-production&from=1997&to=1997"
+    },
+    {
+     "year": 1998,
+     "row": "theatre-production",
+     "count": 1,
+     "href": "/catalogue?category=theatre-production&from=1998&to=1998"
+    },
+    {
+     "year": 1999,
+     "row": "theatre-production",
+     "count": 2,
+     "href": "/catalogue?category=theatre-production&from=1999&to=1999"
+    },
+    {
+     "year": 2000,
+     "row": "theatre-production",
+     "count": 5,
+     "href": "/catalogue?category=theatre-production&from=2000&to=2000"
+    },
+    {
+     "year": 2001,
+     "row": "theatre-production",
+     "count": 2,
+     "href": "/catalogue?category=theatre-production&from=2001&to=2001"
+    },
+    {
+     "year": 2002,
+     "row": "theatre-production",
+     "count": 3,
+     "href": "/catalogue?category=theatre-production&from=2002&to=2002"
+    },
+    {
+     "year": 2003,
+     "row": "theatre-production",
+     "count": 2,
+     "href": "/catalogue?category=theatre-production&from=2003&to=2003"
+    },
+    {
+     "year": 2004,
+     "row": "theatre-production",
+     "count": 4,
+     "href": "/catalogue?category=theatre-production&from=2004&to=2004"
+    },
+    {
+     "year": 2005,
+     "row": "theatre-production",
+     "count": 1,
+     "href": "/catalogue?category=theatre-production&from=2005&to=2005"
+    },
+    {
+     "year": 2006,
+     "row": "theatre-production",
+     "count": 2,
+     "href": "/catalogue?category=theatre-production&from=2006&to=2006"
+    },
+    {
+     "year": 2008,
+     "row": "theatre-production",
+     "count": 1,
+     "href": "/catalogue?category=theatre-production&from=2008&to=2008"
+    },
+    {
+     "year": 2009,
+     "row": "theatre-production",
+     "count": 1,
+     "href": "/catalogue?category=theatre-production&from=2009&to=2009"
+    },
+    {
+     "year": 2011,
+     "row": "theatre-production",
+     "count": 1,
+     "href": "/catalogue?category=theatre-production&from=2011&to=2011"
+    },
+    {
+     "year": 2020,
+     "row": "theatre-production",
+     "count": 1,
+     "href": "/catalogue?category=theatre-production&from=2020&to=2020"
+    },
+    {
+     "year": 2000,
+     "row": "event",
+     "count": 4,
+     "href": "/catalogue?category=event&from=2000&to=2000"
+    },
+    {
+     "year": 2001,
+     "row": "event",
+     "count": 1,
+     "href": "/catalogue?category=event&from=2001&to=2001"
+    },
+    {
+     "year": 2003,
+     "row": "event",
+     "count": 1,
+     "href": "/catalogue?category=event&from=2003&to=2003"
+    },
+    {
+     "year": 2005,
+     "row": "event",
+     "count": 1,
+     "href": "/catalogue?category=event&from=2005&to=2005"
+    },
+    {
+     "year": 2006,
+     "row": "event",
+     "count": 1,
+     "href": "/catalogue?category=event&from=2006&to=2006"
+    },
+    {
+     "year": 1996,
+     "row": "other",
+     "count": 1,
+     "href": "/catalogue?category=other&from=1996&to=1996"
+    },
+    {
+     "year": 1998,
+     "row": "other",
+     "count": 1,
+     "href": "/catalogue?category=other&from=1998&to=1998"
+    },
+    {
+     "year": 2008,
+     "row": "other",
+     "count": 1,
+     "href": "/catalogue?category=other&from=2008&to=2008"
+    },
+    {
+     "year": 2011,
+     "row": "other",
+     "count": 1,
+     "href": "/catalogue?category=other&from=2011&to=2011"
+    },
+    {
+     "year": 2012,
+     "row": "other",
+     "count": 1,
+     "href": "/catalogue?category=other&from=2012&to=2012"
+    },
+    {
+     "year": 2020,
+     "row": "other",
+     "count": 1,
+     "href": "/catalogue?category=other&from=2020&to=2020"
+    },
+    {
+     "year": 1986,
+     "row": "visual-arts",
+     "count": 1,
+     "href": "/catalogue?category=visual-arts&from=1986&to=1986"
+    },
+    {
+     "year": 1990,
+     "row": "visual-arts",
+     "count": 1,
+     "href": "/catalogue?category=visual-arts&from=1990&to=1990"
+    },
+    {
+     "year": 1993,
+     "row": "visual-arts",
+     "count": 1,
+     "href": "/catalogue?category=visual-arts&from=1993&to=1993"
+    },
+    {
+     "year": 1996,
+     "row": "visual-arts",
+     "count": 1,
+     "href": "/catalogue?category=visual-arts&from=1996&to=1996"
+    },
+    {
+     "year": 1994,
+     "row": "performing-art",
+     "count": 1,
+     "href": "/catalogue?category=performing-art&from=1994&to=1994"
+    }
+   ],
+   "unfilterable": 0
+  },
+  {
+   "key": "location",
+   "label": "地點",
+   "rows": [
+    {
+     "key": "香港",
+     "label": "香港",
+     "count": 51
+    },
+    {
+     "key": "",
+     "label": "未註明",
+     "count": 16
+    },
+    {
+     "key": "台北",
+     "label": "台北",
+     "count": 5
+    },
+    {
+     "key": "德國",
+     "label": "德國",
+     "count": 4
+    },
+    {
+     "key": "日本",
+     "label": "日本",
+     "count": 4
+    },
+    {
+     "key": "新加坡",
+     "label": "新加坡",
+     "count": 3
+    },
+    {
+     "key": "深圳",
+     "label": "深圳",
+     "count": 2
+    },
+    {
+     "key": "奧斯陸",
+     "label": "奧斯陸",
+     "count": 1
+    },
+    {
+     "key": "比利時",
+     "label": "比利時",
+     "count": 1
+    },
+    {
+     "key": "紐約",
+     "label": "紐約",
+     "count": 1
+    }
+   ],
+   "points": [
+    {
+     "year": 1979,
+     "row": "香港",
+     "count": 1,
+     "href": "/catalogue?location=%E9%A6%99%E6%B8%AF&from=1979&to=1979"
+    },
+    {
+     "year": 1980,
+     "row": "香港",
+     "count": 3,
+     "href": "/catalogue?location=%E9%A6%99%E6%B8%AF&from=1980&to=1980"
+    },
+    {
+     "year": 1981,
+     "row": "香港",
+     "count": 2,
+     "href": "/catalogue?location=%E9%A6%99%E6%B8%AF&from=1981&to=1981"
+    },
+    {
+     "year": 1982,
+     "row": "香港",
+     "count": 4,
+     "href": "/catalogue?location=%E9%A6%99%E6%B8%AF&from=1982&to=1982"
+    },
+    {
+     "year": 1985,
+     "row": "香港",
+     "count": 1,
+     "href": "/catalogue?location=%E9%A6%99%E6%B8%AF&from=1985&to=1985"
+    },
+    {
+     "year": 1987,
+     "row": "香港",
+     "count": 1,
+     "href": "/catalogue?location=%E9%A6%99%E6%B8%AF&from=1987&to=1987"
+    },
+    {
+     "year": 1991,
+     "row": "香港",
+     "count": 3,
+     "href": "/catalogue?location=%E9%A6%99%E6%B8%AF&from=1991&to=1991"
+    },
+    {
+     "year": 1992,
+     "row": "香港",
+     "count": 2,
+     "href": "/catalogue?location=%E9%A6%99%E6%B8%AF&from=1992&to=1992"
+    },
+    {
+     "year": 1993,
+     "row": "香港",
+     "count": 2,
+     "href": "/catalogue?location=%E9%A6%99%E6%B8%AF&from=1993&to=1993"
+    },
+    {
+     "year": 1994,
+     "row": "香港",
+     "count": 3,
+     "href": "/catalogue?location=%E9%A6%99%E6%B8%AF&from=1994&to=1994"
+    },
+    {
+     "year": 1995,
+     "row": "香港",
+     "count": 2,
+     "href": "/catalogue?location=%E9%A6%99%E6%B8%AF&from=1995&to=1995"
+    },
+    {
+     "year": 1996,
+     "row": "香港",
+     "count": 3,
+     "href": "/catalogue?location=%E9%A6%99%E6%B8%AF&from=1996&to=1996"
+    },
+    {
+     "year": 1997,
+     "row": "香港",
+     "count": 3,
+     "href": "/catalogue?location=%E9%A6%99%E6%B8%AF&from=1997&to=1997"
+    },
+    {
+     "year": 1998,
+     "row": "香港",
+     "count": 1,
+     "href": "/catalogue?location=%E9%A6%99%E6%B8%AF&from=1998&to=1998"
+    },
+    {
+     "year": 1999,
+     "row": "香港",
+     "count": 2,
+     "href": "/catalogue?location=%E9%A6%99%E6%B8%AF&from=1999&to=1999"
+    },
+    {
+     "year": 2000,
+     "row": "香港",
+     "count": 6,
+     "href": "/catalogue?location=%E9%A6%99%E6%B8%AF&from=2000&to=2000"
+    },
+    {
+     "year": 2001,
+     "row": "香港",
+     "count": 2,
+     "href": "/catalogue?location=%E9%A6%99%E6%B8%AF&from=2001&to=2001"
+    },
+    {
+     "year": 2002,
+     "row": "香港",
+     "count": 2,
+     "href": "/catalogue?location=%E9%A6%99%E6%B8%AF&from=2002&to=2002"
+    },
+    {
+     "year": 2003,
+     "row": "香港",
+     "count": 1,
+     "href": "/catalogue?location=%E9%A6%99%E6%B8%AF&from=2003&to=2003"
+    },
+    {
+     "year": 2004,
+     "row": "香港",
+     "count": 1,
+     "href": "/catalogue?location=%E9%A6%99%E6%B8%AF&from=2004&to=2004"
+    },
+    {
+     "year": 2005,
+     "row": "香港",
+     "count": 1,
+     "href": "/catalogue?location=%E9%A6%99%E6%B8%AF&from=2005&to=2005"
+    },
+    {
+     "year": 2006,
+     "row": "香港",
+     "count": 2,
+     "href": "/catalogue?location=%E9%A6%99%E6%B8%AF&from=2006&to=2006"
+    },
+    {
+     "year": 2008,
+     "row": "香港",
+     "count": 1,
+     "href": "/catalogue?location=%E9%A6%99%E6%B8%AF&from=2008&to=2008"
+    },
+    {
+     "year": 2009,
+     "row": "香港",
+     "count": 1,
+     "href": "/catalogue?location=%E9%A6%99%E6%B8%AF&from=2009&to=2009"
+    },
+    {
+     "year": 2011,
+     "row": "香港",
+     "count": 1,
+     "href": "/catalogue?location=%E9%A6%99%E6%B8%AF&from=2011&to=2011"
+    },
+    {
+     "year": 1977,
+     "row": "",
+     "count": 1,
+     "href": null
+    },
+    {
+     "year": 1978,
+     "row": "",
+     "count": 1,
+     "href": null
+    },
+    {
+     "year": 1979,
+     "row": "",
+     "count": 2,
+     "href": null
+    },
+    {
+     "year": 1986,
+     "row": "",
+     "count": 1,
+     "href": null
+    },
+    {
+     "year": 1987,
+     "row": "",
+     "count": 1,
+     "href": null
+    },
+    {
+     "year": 1990,
+     "row": "",
+     "count": 1,
+     "href": null
+    },
+    {
+     "year": 1993,
+     "row": "",
+     "count": 1,
+     "href": null
+    },
+    {
+     "year": 1996,
+     "row": "",
+     "count": 2,
+     "href": null
+    },
+    {
+     "year": 1998,
+     "row": "",
+     "count": 1,
+     "href": null
+    },
+    {
+     "year": 2008,
+     "row": "",
+     "count": 1,
+     "href": null
+    },
+    {
+     "year": 2011,
+     "row": "",
+     "count": 1,
+     "href": null
+    },
+    {
+     "year": 2012,
+     "row": "",
+     "count": 1,
+     "href": null
+    },
+    {
+     "year": 2020,
+     "row": "",
+     "count": 2,
+     "href": null
+    },
+    {
+     "year": 1982,
+     "row": "台北",
+     "count": 1,
+     "href": "/catalogue?location=%E5%8F%B0%E5%8C%97&from=1982&to=1982"
+    },
+    {
+     "year": 1988,
+     "row": "台北",
+     "count": 1,
+     "href": "/catalogue?location=%E5%8F%B0%E5%8C%97&from=1988&to=1988"
+    },
+    {
+     "year": 1997,
+     "row": "台北",
+     "count": 1,
+     "href": "/catalogue?location=%E5%8F%B0%E5%8C%97&from=1997&to=1997"
+    },
+    {
+     "year": 2003,
+     "row": "台北",
+     "count": 1,
+     "href": "/catalogue?location=%E5%8F%B0%E5%8C%97&from=2003&to=2003"
+    },
+    {
+     "year": 2004,
+     "row": "台北",
+     "count": 1,
+     "href": "/catalogue?location=%E5%8F%B0%E5%8C%97&from=2004&to=2004"
+    },
+    {
+     "year": 1997,
+     "row": "德國",
+     "count": 1,
+     "href": "/catalogue?location=%E5%BE%B7%E5%9C%8B&from=1997&to=1997"
+    },
+    {
+     "year": 2000,
+     "row": "德國",
+     "count": 3,
+     "href": "/catalogue?location=%E5%BE%B7%E5%9C%8B&from=2000&to=2000"
+    },
+    {
+     "year": 1989,
+     "row": "日本",
+     "count": 1,
+     "href": "/catalogue?location=%E6%97%A5%E6%9C%AC&from=1989&to=1989"
+    },
+    {
+     "year": 1992,
+     "row": "日本",
+     "count": 1,
+     "href": "/catalogue?location=%E6%97%A5%E6%9C%AC&from=1992&to=1992"
+    },
+    {
+     "year": 1996,
+     "row": "日本",
+     "count": 1,
+     "href": "/catalogue?location=%E6%97%A5%E6%9C%AC&from=1996&to=1996"
+    },
+    {
+     "year": 2003,
+     "row": "日本",
+     "count": 1,
+     "href": "/catalogue?location=%E6%97%A5%E6%9C%AC&from=2003&to=2003"
+    },
+    {
+     "year": 2002,
+     "row": "新加坡",
+     "count": 1,
+     "href": "/catalogue?location=%E6%96%B0%E5%8A%A0%E5%9D%A1&from=2002&to=2002"
+    },
+    {
+     "year": 2004,
+     "row": "新加坡",
+     "count": 1,
+     "href": "/catalogue?location=%E6%96%B0%E5%8A%A0%E5%9D%A1&from=2004&to=2004"
+    },
+    {
+     "year": 2006,
+     "row": "新加坡",
+     "count": 1,
+     "href": "/catalogue?location=%E6%96%B0%E5%8A%A0%E5%9D%A1&from=2006&to=2006"
+    },
+    {
+     "year": 2001,
+     "row": "深圳",
+     "count": 1,
+     "href": "/catalogue?location=%E6%B7%B1%E5%9C%B3&from=2001&to=2001"
+    },
+    {
+     "year": 2005,
+     "row": "深圳",
+     "count": 1,
+     "href": "/catalogue?location=%E6%B7%B1%E5%9C%B3&from=2005&to=2005"
+    },
+    {
+     "year": 2004,
+     "row": "奧斯陸",
+     "count": 1,
+     "href": "/catalogue?location=%E5%A5%A7%E6%96%AF%E9%99%B8&from=2004&to=2004"
+    },
+    {
+     "year": 1994,
+     "row": "比利時",
+     "count": 1,
+     "href": "/catalogue?location=%E6%AF%94%E5%88%A9%E6%99%82&from=1994&to=1994"
+    },
+    {
+     "year": 1974,
+     "row": "紐約",
+     "count": 1,
+     "href": "/catalogue?location=%E7%B4%90%E7%B4%84&from=1974&to=1974"
+    }
+   ],
+   "unfilterable": 16
   }
  ],
  "collaborators": [
