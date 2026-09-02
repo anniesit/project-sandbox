@@ -511,3 +511,51 @@ Restored on both language pages.
 Worth knowing for anyone restyling one of these: the `data-field` span is the
 sink `entry.js` writes into and the `data-field-group` is what disappears when
 the value is empty. Restyle the wrapper, keep the span.
+
+## Bilingual chrome
+
+`Nav` / `Footer` are Webflow components, so their text is shared by every page
+that uses them. The English pages therefore use **duplicated definitions**:
+`Nav EN` (`615f384a-…`) and `Footer EN` (`afb09d71-…`), in the `Global` group.
+
+This is the `nav.html` / `navZH.html` split the `bilingual-build` skill
+describes, expressed in Webflow. **They are separate definitions, not variants
+— change one and you must change the other.** Both carry that warning in their
+component description.
+
+### The language switcher
+
+A `.nav-link` with `data-lang-switch` — the design system's own contract, where
+the attribute holds the language to switch **to**:
+
+| In | Attribute | Label |
+|---|---|---|
+| `Nav` (Chinese) | `data-lang-switch="en"` | English |
+| `Nav EN` | `data-lang-switch="zh-Hant"` | 中文 |
+
+Each also carries `lang` and `hreflang` on the link itself, so the label is
+announced in its own language rather than the page's.
+
+**The design system's switcher cannot run in Webflow**, and this is worth
+knowing before someone deletes the stand-in:
+
+- `updateLanguageSwitcher()` in `addons/component-loader.js` is called *after*
+  `if (!loadedHeader) return;` — so it only runs when the nav was injected as a
+  runtime partial. In Webflow the Nav is a native component, so it never runs.
+- `component-loader.js` is an addon and is **not in the bundle** this site
+  loads, so the function is not even present.
+
+So the Custom Code component's JS embed carries a ~12-line stand-in with the
+same logic. It is **idempotent** — it strips the locale folder before deciding —
+so clicking through repeatedly can never build `/en/en/`, and when the export
+links `component-loader.js` the two agree rather than fighting.
+
+Without it the switch would still work, but only as a static href to the other
+language's *catalogue* — from an entry page you would lose your place. With it,
+`/entry?id=X` ↔ `/en/entry?id=X`.
+
+**The real fix is upstream**: move `updateLanguageSwitcher()` above that early
+return, so it no longer depends on partial loading. That is a design system
+change affecting every project, and has not been made.
+
+`DS_CONFIG.bilingual` is now `true` and `localeFolder` stays `'en'`.
