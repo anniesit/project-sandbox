@@ -559,3 +559,71 @@ return, so it no longer depends on partial loading. That is a design system
 change affecting every project, and has not been made.
 
 `DS_CONFIG.bilingual` is now `true` and `localeFolder` stays `'en'`.
+
+### The switcher keeps the reader's place
+
+The design system rewrites the **path** only, so switching from a filtered
+catalogue or an entry page would drop the query string — dumping the reader on
+page 1 of everything, or on the wrong record. The stand-in carries the query
+across, but **only the parameters whose values are stable keys**:
+
+| Parameter | Kind | Survives? |
+|---|---|---|
+| `category=visual-arts` | key — identical in both languages | yes |
+| `id=DYP-000012` | key — identical | yes |
+| `from` / `to` / `sort` / `page` | language-neutral | yes |
+| `location=台北` | **display text** — the English data says `Taipei` | no |
+| `director=榮念曾` | **display text** — English says `Danny Yung` | no |
+| `q=…` | the reader's own words | no |
+
+Carrying a text value across would match nothing and land the reader on an empty
+result set, which reads as broken rather than as reset. Verified against the two
+sample files: `categoryKey` and `id` are identical across languages, while
+`location` and `director` share not one value.
+
+**The proper fix is in the DATA**: give location and director stable keys the
+way `categoryKey` already does, and they would survive too. Until then, adding
+them to `KEEP` would be a bug, not an improvement.
+
+Measured after the change:
+
+```
+/catalogue?category=visual-arts&sort=title&page=2&location=台北
+  → /en/catalogue?category=visual-arts&sort=title&page=2
+/entry?id=DYP-000012      → /en/entry?id=DYP-000012
+/en/entry?id=DYP-000012   → /entry?id=DYP-000012
+/en/catalogue             → /en/catalogue        (idempotent, never /en/en/)
+```
+
+### Why it is a link and not a button
+
+It navigates to another document, so `<a href>` is the correct element and a
+`<button>` would be a downgrade:
+
+- middle-click, ⌘-click and "copy link address" stop working;
+- search engines cannot follow it, which defeats the `hreflang` pairing the
+  bilingual setup exists for;
+- it stops working at all without JavaScript, where the anchor already has a
+  real fallback href in the markup;
+- assistive tech announces "button", implying an in-page action rather than a
+  move to another page.
+
+The design system's own function agrees — it does `switchButton.setAttribute("href", …)`,
+which a `<button>` would ignore. Use a button for something that acts on this
+page; use a link for something that takes you to another one.
+
+### `<html lang>` is wrong site-wide, and it broke the Chinese page
+
+Webflow sets `<html lang>` from the site's language setting, which on this site
+is **English** — so every page shipped `<html lang="en">`, Chinese ones included.
+That is the failure the `bilingual-build` skill warns about, inverted: here it is
+the *root* pages that are mislabelled, not the locale folder.
+
+It was not only an accessibility problem. `catalogue.js` and `entry.js` read the
+nearest `[lang]` ancestor, so on the published Chinese catalogue the count line
+rendered **"88 works — showing 1–12"** in English.
+
+Fixed by setting `lang` explicitly on `.page-wrapper` on all four pages —
+`zh-Hant` at the root, `en` in `/en/`. Explicit on both sides is the robust
+answer: it survives someone changing the Webflow site language later, and it is
+what `:lang()`-scoped CJK typography needs.
