@@ -560,40 +560,55 @@ change affecting every project, and has not been made.
 
 `DS_CONFIG.bilingual` is now `true` and `localeFolder` stays `'en'`.
 
-### The switcher keeps the reader's place
+### What the switcher carries: the record id, and nothing else
 
-The design system rewrites the **path** only, so switching from a filtered
-catalogue or an entry page would drop the query string — dumping the reader on
-page 1 of everything, or on the wrong record. The stand-in carries the query
-across, but **only the parameters whose values are stable keys**:
+```
+/entry?id=DYP-000012                     <->  /en/entry?id=DYP-000012
+/catalogue?category=visual-arts&page=2    ->  /en/catalogue
+```
 
-| Parameter | Kind | Survives? |
+`id` carries because it is a real identifier — byte-identical in both sample
+files — so switching language on a work keeps you on that work, which is the
+whole point of switching there.
+
+**The catalogue's filters deliberately do not carry.** `location` and `director`
+are filtered by *display text* (台北 vs Taipei), so they would match nothing in
+the other language. An earlier version carried the neutral parameters and
+silently dropped those two; that was worse — a half-restored view is more
+confusing than a clean one. The catalogue switch now lands on the plain
+catalogue in the other language.
+
+Whether the facets should gain stable keys, so filters *could* survive, is a
+**data decision for the client, not a frontend one** — see the creator-identity
+section in CATALOGUE.md, where standardising on English turned out to encode two
+real data errors.
+
+### 返回 after a language switch
+
+The stored catalogue context belongs to whichever language the reader was
+browsing. Arriving on an English entry page by switching from a Chinese one
+means they have **never been on the English catalogue**, so that context does
+not apply: 返回 would jump them back into Chinese, and the stored neighbour
+titles are Chinese too.
+
+So a locale mismatch drops the stored context entirely. The test is whether the
+stored URL sits under this page's own catalogue path — `/en/catalogue…` does not
+start with `/catalogue`, and `/catalogue…` does not start with `/en/catalogue`,
+so it works in both directions without the component knowing which language it
+is in.
+
+The result, measured in the harness:
+
+| | Same language | After a language switch |
 |---|---|---|
-| `category=visual-arts` | key — identical in both languages | yes |
-| `id=DYP-000012` | key — identical | yes |
-| `from` / `to` / `sort` / `page` | language-neutral | yes |
-| `location=台北` | **display text** — the English data says `Taipei` | no |
-| `director=榮念曾` | **display text** — English says `Danny Yung` | no |
-| `q=…` | the reader's own words | no |
+| Back | shows the filtered catalogue | **hidden** |
+| Previous / next | walk the filtered set | walk this language's default list, English titles |
+| Breadcrumb category | `?category=…` | `?category=…` — unchanged |
 
-Carrying a text value across would match nothing and land the reader on an empty
-result set, which reads as broken rather than as reset. Verified against the two
-sample files: `categoryKey` and `id` are identical across languages, while
-`location` and `director` share not one value.
-
-**The proper fix is in the DATA**: give location and director stable keys the
-way `categoryKey` already does, and they would survive too. Until then, adding
-them to `KEEP` would be a bug, not an improvement.
-
-Measured after the change:
-
-```
-/catalogue?category=visual-arts&sort=title&page=2&location=台北
-  → /en/catalogue?category=visual-arts&sort=title&page=2
-/entry?id=DYP-000012      → /en/entry?id=DYP-000012
-/en/entry?id=DYP-000012   → /entry?id=DYP-000012
-/en/catalogue             → /en/catalogue        (idempotent, never /en/en/)
-```
+Hiding Back is the same rule as a cold arrival: a back link to somewhere the
+reader has never been is a lie. Nothing becomes unreachable — the breadcrumb
+still offers Archive and the category, and the category crumb still lands on a
+filtered catalogue in the right language.
 
 ### Why it is a link and not a button
 

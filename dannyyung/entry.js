@@ -566,10 +566,31 @@
        list rather than a filtered one. That is the honest fallback: hiding
        them would be worse, and guessing a filter would be a lie. */
     function mockContext(root, record, items) {
+      var cataloguePath = pagePath(root, "data-catalogue-path", "/catalogue");
+      var entryPath = pagePath(root, "data-entry-path", "/entry");
+
       var stored = null;
       try {
         stored = JSON.parse(sessionStorage.getItem("dy:catalogue-context") || "null");
       } catch (e) {
+        stored = null;
+      }
+
+      /* The stored context belongs to whichever LANGUAGE the reader was
+         browsing. Arriving here through the language switch means they have
+         never been on this language's catalogue, so it does not apply:
+         "back" would jump them into the other language, and the stored
+         neighbour titles are in the other language too.
+
+         The test is whether the stored URL sits under this page's own
+         catalogue path — "/en/catalogue…" does not start with "/catalogue",
+         and "/catalogue…" does not start with "/en/catalogue", so the check
+         works in both directions without knowing which language it is in.
+
+         Dropping it entirely is the honest outcome: 返回 hides (there is
+         nowhere they have been), and the arrows fall back to this language's
+         default list rather than showing Chinese titles on an English page. */
+      if (stored && stored.url && stored.url.indexOf(cataloguePath) !== 0) {
         stored = null;
       }
 
@@ -595,9 +616,6 @@
            the catalogue path — see renderNav. */
         backHref = "";
       }
-
-      var cataloguePath = pagePath(root, "data-catalogue-path", "/catalogue");
-      var entryPath = pagePath(root, "data-entry-path", "/entry");
 
       var at = ids.indexOf(record.id);
       function neighbour(step) {
