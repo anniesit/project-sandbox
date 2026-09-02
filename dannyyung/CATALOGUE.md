@@ -816,3 +816,20 @@ scale, theme colours and breakpoints are unchecked on the real page. Nothing has
 been published. The
 Designer will show the page with one template row; the script only runs on a
 published or previewed page.
+
+
+## English page
+
+`/en/catalogue` is a folder duplicate sharing the same `catalogue.js`. Only the
+static text, `lang`, and `data-src` (`catalogue-sample-en.json`) differ.
+
+`catalogue.js` generates exactly two strings rather than reading them from the
+markup — the result count and the "Untitled" fallback — because both interpolate
+values. Both switch on the nearest `[lang]` ancestor, the same switch `entry.js`
+uses for dates. Everything else on the page is authored text that the English
+page simply carries in English.
+
+Both sample files come from one build (`python3 sample-data/build-catalogue-sample.py`
+writes both). The English one prefers `_en` columns and falls back to `zh-Hant`;
+the Chinese one is the inverse. The fallback fires **2 times** in English (two
+works have no English title) against 5 in Chinese.

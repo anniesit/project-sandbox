@@ -66,6 +66,18 @@ VIEWER = {
 STORAGE_BASE = "https://storage.lib.hkbu.edu.hk/projects/dyp/"
 STORAGE_FOLDER = {"image": "imgs/", "pdf": "docs/", "video": "videos/"}
 
+# Per language: which column each side prefers, and where the file lands.
+# NOTE the media sheet spells Traditional Chinese "zht" (media_title_zht,
+# content_category_zht) while the works sheet spells it "zh-Hant". Both are
+# passed explicitly rather than derived, because guessing that suffix wrong
+# fails silently — pick() just returns the fallback and nobody notices.
+LANGS = {
+    "zh-Hant": {"work": ("zh-Hant", "en"), "media": ("zht", "en"),
+                "out": "entry-sample.json"},
+    "en": {"work": ("en", "zh-Hant"), "media": ("en", "zht"),
+           "out": "entry-sample-en.json"},
+}
+
 
 def slug(s):
     """content_category_en -> a stable key the English page can reuse."""
@@ -86,11 +98,11 @@ def date_string(y, m, d):
     return "%s-%02d-%02d" % (y, int(float(m)), int(float(d)))
 
 
-def material(m, seen_ids):
+def material(m, seen_ids, mw, mo):
     fn = text(m.get("media_filename"))
     ext = os.path.splitext(fn)[1].lower()
     viewer = VIEWER.get(ext, "")
-    group = pick(m, "content_category", want="zht", other="en")
+    group = pick(m, "content_category", want=mw, other=mo)
     mid = text(m.get("id"))
     seen_ids[mid] += 1
     return {
@@ -101,8 +113,8 @@ def material(m, seen_ids):
         "group": group,
         # Displayed as "Content Type". Does NOT choose the viewer — see VIEWER.
         "contentType": text(m.get("media_content_type_en")),
-        "title": pick(m, "media_title", want="zht", other="en"),
-        "author": pick(m, "media_author", want="zht", other="en"),
+        "title": pick(m, "media_title", want=mw, other=mo),
+        "author": pick(m, "media_author", want=mw, other=mo),
         "publisher": text(m.get("Publisher/Publishing Venue")),
         "publishedDate": date_string(m.get("media_published_yyyy"),
                                      m.get("media_published_mm"),
@@ -122,20 +134,16 @@ def material(m, seen_ids):
     }
 
 
-def main():
-    header, works = sheet_rows(WORKS_XLSX, "DataTemplate")
-    _, media = sheet_rows(MEDIA_XLSX)
-    cat.check_columns(header)
-
-    by_work = collections.defaultdict(list)
-    for m in media:
-        by_work[text(m.get("group_id"))].append(m)
+def build(lang, works, by_work):
+    cfg = LANGS[lang]
+    ww, wo = cfg["work"]
+    mw, mo = cfg["media"]
 
     seen_ids = collections.Counter()
     items = []
     for w in works:
         wid = text(w.get("id"))
-        mats = [material(m, seen_ids) for m in by_work.get(wid, [])]
+        mats = [material(m, seen_ids, mw, mo) for m in by_work.get(wid, [])]
         mats.sort(key=lambda x: x["order"])
 
         # Group in first-appearance order, which is the client's own ordering.
@@ -147,28 +155,30 @@ def main():
                 groups.append(index[k])
             index[k]["items"].append(m)
 
-        c = pick(w, "category")
+        c = pick(w, "category", ww, wo)
         items.append({
             "id": wid,
-            "title": pick(w, "title"),
+            "title": pick(w, "title", ww, wo),
             "titleEn": text(w.get("title_en")),
             "category": c,
             "categoryKey": cat.CATEGORY_KEY.get(c, ""),
             "year": year(w.get("date_yyyy")),
             "date": date_string(w.get("date_yyyy"), w.get("date_mm"), w.get("date_dd")),
-            "location": pick(w, "location"),
-            "venue": pick(w, "venue"),
-            "directors": pick_multi(w, "director"),
+            "location": pick(w, "location", ww, wo),
+            "venue": pick(w, "venue", ww, wo),
+            "directors": pick_multi(w, "director", ww, wo),
             "notes": notes_text(w.get("notes"), wid),
             "materialGroups": groups,
             "mediaCount": len(mats),
         })
 
-    out_path = os.path.join(HERE, "entry-sample.json")
+    out_path = os.path.join(HERE, cfg["out"])
     with open(out_path, "w", encoding="utf-8") as f:
-        json.dump({"items": items}, f, ensure_ascii=False, indent=1)
+        json.dump({"lang": lang, "items": items}, f, ensure_ascii=False, indent=1)
 
     # ---- report -------------------------------------------------------------
+    print()
+    print("== %s ==" % lang)
     all_mats = [m for i in items for g in i["materialGroups"] for m in g["items"]]
     print("works           :", len(items))
     print("materials       :", len(all_mats))
@@ -184,8 +194,36 @@ def main():
           (min(len(i["materialGroups"]) for i in items),
            max(len(i["materialGroups"]) for i in items)))
     print("group labels    :", sorted({g["label"] for i in items for g in i["materialGroups"]}))
+
+    # Groups are keyed on the ENGLISH content category, so two Chinese
+    # categories that share one English translation would silently merge into a
+    # single group on BOTH pages. 宣傳資料 and 活動宣傳 both translate to
+    # "Promotion materials"; they never appear in the same work today, so
+    # nothing merges — but this prints the moment that stops being true.
+    merged = [(i["id"], g["key"], len({m["group"] for m in g["items"]}), 
+               sorted({m["group"] for m in g["items"]}))
+              for i in items for g in i["materialGroups"]
+              if len({m["group"] for m in g["items"]}) > 1]
+    print("  ! groups merging two labels:", merged or "none")
+
+    # A non-breaking space inside a label reads as a normal space but does not
+    # match one, so a hand-typed filter or CSS selector would silently miss it.
+    nbsp = sorted({g["label"] for i in items for g in i["materialGroups"]
+                   if "\u00a0" in g["label"]})
+    print("  ! labels containing a non-breaking space:", nbsp or "none")
     print("size            : %.0f KB" % (os.path.getsize(out_path) / 1024))
     print("wrote           :", out_path)
+
+
+def main():
+    header, works = sheet_rows(WORKS_XLSX, "DataTemplate")
+    _, media = sheet_rows(MEDIA_XLSX)
+    cat.check_columns(header)
+    by_work = collections.defaultdict(list)
+    for m in media:
+        by_work[text(m.get("group_id"))].append(m)
+    for lang in LANGS:
+        build(lang, works, by_work)
 
 
 if __name__ == "__main__":

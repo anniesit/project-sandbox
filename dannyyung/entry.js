@@ -76,6 +76,11 @@
  *   [data-entry]                      the root; everything is queried inside it
  *   [data-entry-id]                   optional; the record id, so the mock
  *                                     driver can pick without a query string
+ *   [data-catalogue-path]             optional; where the category crumb and
+ *   [data-entry-path]                 the neighbour fallbacks point. The
+ *                                     English page in /en/ sets both; the
+ *                                     Chinese page at the root uses the
+ *                                     defaults. MOCK DRIVER only.
  *   [data-field=…]                    text sinks, always a SPAN or DIV,
  *                                     never a <p> — see CATALOGUE.md
  *   [data-field-group=…]              the fragment removed when that field is
@@ -114,10 +119,18 @@
      driver at the bottom of this file entirely and calls render() directly). */
   var DATA_URL = new URL("./sample-data/entry-sample.json", SELF).href;
 
-  /* >>> MOCK PATHS <<< only the mock driver's fallbacks use these — when there
-     is no stored catalogue context to take the real URLs from. */
-  var CATALOGUE_PATH = "/catalogue";
-  var ENTRY_PATH = "/entry";
+  /* >>> MOCK PATHS <<< only the mock driver uses these — for the category crumb,
+     and as fallbacks when there is no stored catalogue context to take the real
+     URLs from.
+
+     Declared on the page rather than hardcoded, because the same file serves
+     both languages: the Chinese page sits at the site root and the English one
+     in /en/, so /catalogue is right for one and wrong for the other. The
+     English page carries data-catalogue-path="/en/catalogue". A backend that
+     owns routing passes real URLs in `context` and none of this runs. */
+  function pagePath(root, attr, dflt) {
+    return (root && root.getAttribute(attr)) || dflt;
+  }
 
   /* ---------- small helpers ---------- */
 
@@ -203,7 +216,7 @@
     root.__record = record;
     var L = lang(root);
 
-    setField(root, "title", record.title || record.titleEn || "無標題");
+    setField(root, "title", record.title || record.titleEn || (L === "en" ? "Untitled" : "無標題"));
     setField(root, "titleEn", record.titleEn);
     setField(root, "category", record.category);
     setField(root, "date", formatDate(record.date, L));
@@ -537,7 +550,7 @@
               if (items[i].id === id) { rec = items[i]; break; }
             }
             rec = rec || items[0];
-            render(root, rec, mockContext(rec, items));
+            render(root, rec, mockContext(root, rec, items));
           });
         })
         .catch(function (err) {
@@ -552,7 +565,7 @@
        search engine. The arrows then still work; they just walk the default
        list rather than a filtered one. That is the honest fallback: hiding
        them would be worse, and guessing a filter would be a lie. */
-    function mockContext(record, items) {
+    function mockContext(root, record, items) {
       var stored = null;
       try {
         stored = JSON.parse(sessionStorage.getItem("dy:catalogue-context") || "null");
@@ -579,9 +592,12 @@
           hrefs[i.id] = i.href || "";
         });
         /* No stored context: no back link. Deliberately empty rather than
-           CATALOGUE_PATH — see renderNav. */
+           the catalogue path — see renderNav. */
         backHref = "";
       }
+
+      var cataloguePath = pagePath(root, "data-catalogue-path", "/catalogue");
+      var entryPath = pagePath(root, "data-entry-path", "/entry");
 
       var at = ids.indexOf(record.id);
       function neighbour(step) {
@@ -590,13 +606,13 @@
         return {
           id: id,
           title: titles[id] || "",
-          href: hrefs[id] || (ENTRY_PATH + "?id=" + encodeURIComponent(id)),
+          href: hrefs[id] || (entryPath + "?id=" + encodeURIComponent(id)),
         };
       }
       return {
         backHref: backHref,
         categoryHref: record.categoryKey
-          ? CATALOGUE_PATH + "?category=" + encodeURIComponent(record.categoryKey)
+          ? cataloguePath + "?category=" + encodeURIComponent(record.categoryKey)
           : "",
         prev: neighbour(-1),
         next: neighbour(1),

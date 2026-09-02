@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Theatrical Works of Danny Ning-Tsun Yung · Work</title>
+    <style>
+      /* Demo-page chrome ONLY. The real styling lives in the Webflow design
+         system. This page exists so entry.js can be exercised without Webflow
+         — it is a behaviour harness, not a design reference. */
+      *, *::before, *::after { box-sizing:border-box; }
+      body { margin:0; padding:2rem clamp(1rem,4vw,3rem); background:#fff; color:#1d1c1a;
+             font-family:"Chiron Sung HK","Noto Serif HK",serif; }
+      .wrap { max-width:1280px; margin:0 auto; }
+      .note { max-width:1280px; margin:0 auto 2rem; padding:.75rem 1rem;
+              border-left:3px solid #d14424; background:#faf7f4; font-size:.85rem;
+              line-height:1.6; }
+
+      .breadcrumb { display:flex; flex-wrap:wrap; align-items:center; gap:.5rem;
+                    font-size:.85rem; margin-bottom:1.5rem; }
+      .breadcrumb a { color:inherit; }
+      .breadcrumb-sep { opacity:.5; }
+
+      .entry-back { margin-bottom:1rem; }
+      .entry-nav { display:flex; align-items:baseline; gap:1rem;
+                   padding:1rem 0; border-top:1px solid #cccabf; }
+      .entry-nav-link { color:inherit; text-decoration:none; }
+      .entry-nav-link:hover { text-decoration:underline; }
+      /* margin-left:auto rather than space-between, so Next stays hard right
+         even when Previous is hidden at the first record. */
+      .entry-nav-link.cc-next { margin-left:auto; text-align:right; }
+      .entry-nav-title { opacity:.6; padding-left:.5rem; }
+      .entry-head { display:grid; grid-template-columns:1fr 448px; gap:40px;
+                    align-items:start; margin-bottom:3rem; }
+      .entry-tag { display:inline-flex; align-items:center; padding:.15rem .75rem;
+                   border:1px solid #cccabf; font-size:.8rem; letter-spacing:.1em; }
+      .entry-title { margin:.75rem 0 0; font-size:clamp(2rem,4vw,3.5rem);
+                     font-weight:500; line-height:1.35; }
+      .entry-hero { display:flex; align-items:center; justify-content:center;
+                    aspect-ratio:448/440; border:1px dashed #cccabf; opacity:.6;
+                    font-size:.85rem; }
+
+      /* Key/value rows. A definition list is the honest element: every row is
+         a term and its value. Flex, not grid — each row must be one
+         [data-field-group] that can be removed whole, and the accordion below
+         has to line up with the same two columns. Mirrors the Webflow classes. */
+      .kv { display:flex; flex-direction:column; margin:1.5rem 0 0; }
+      .kv-row { display:flex; flex-wrap:wrap; align-items:flex-start;
+                border-top:1px solid #cccabf; }
+      .kv-key { width:9.5rem; flex:none; padding:1rem .5rem 1rem 1rem; opacity:.7; }
+      .kv-val { flex:1 1 16rem; min-width:0; padding:1rem 0; margin:0; }
+
+      .materials-head { font-size:1.5rem; font-weight:500; margin:0 0 1.5rem; }
+      .materials { display:grid; grid-template-columns:321px 1fr; gap:24px;
+                   align-items:start; }
+      .material-groups { display:flex; flex-direction:column; gap:1.5rem; }
+      /* cc-group keeps the DS accordion looking like the group header it
+         replaced: no card border, a bottom rule, the count next to the title
+         and the icon pushed right. Two unrelated GLOBAL classes cannot share an
+         element in Webflow, so .material-group / .material-group-label are gone
+         and the accordion classes carry it. */
+      .accordion-component.cc-group { border:0; border-radius:0; width:100%; }
+      .accordion-trigger.cc-group { justify-content:flex-start; align-items:baseline;
+                                    gap:.5rem; padding:.5rem 0; font-weight:500;
+                                    border-bottom:1px solid #cccabf; list-style:none; }
+      .accordion-trigger.cc-group::-webkit-details-marker { display:none; }
+      .accordion-title.cc-group { width:auto; flex:0 1 auto; padding:0; opacity:1; }
+      .accordion-icon.cc-group { width:.85rem; height:.85rem; margin-left:auto; }
+      .accordion-content.cc-group { padding:0; }
+      .material-group-count { font-size:.8rem; opacity:.6; }
+      .thumb-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:1rem;
+                    padding:1rem .5rem; margin:0; list-style:none; }
+      .thumb-item { display:block; }
+      .thumb { display:flex; width:100%; align-items:center; justify-content:center;
+               aspect-ratio:130/80; padding:.25rem; border:1px solid #cccabf;
+               background:none; font:inherit; font-size:.7rem; text-align:center;
+               color:inherit; cursor:pointer; overflow:hidden; }
+      .thumb img { width:100%; height:100%; object-fit:cover; }
+      .thumb[aria-current="true"] { border-color:#d14424; outline:2px solid #d14424;
+                                    outline-offset:-2px; }
+
+      .viewer-stage { display:flex; align-items:center; justify-content:center;
+                      aspect-ratio:935/500; border:1px solid #cccabf; overflow:hidden; }
+      .viewer-stage img, .viewer-stage iframe, .viewer-stage video {
+        width:100%; height:100%; border:0; object-fit:contain; background:#000; }
+      .viewer-empty { flex-direction:column; gap:.5rem; border-style:dashed;
+                      opacity:.7; font-size:.85rem; text-align:center; }
+      .material-meta { margin-top:1.5rem; }
+
+      /* Design system accordion classes + the project's cc-kv combos.
+         Approximated here; the real values are Webflow variables. */
+      .accordion-component { position:relative; display:flex; flex-direction:column;
+                             border:1px solid #cccabf; text-align:left; }
+      .accordion-component.cc-kv { width:100%; border-right:0; border-bottom:0;
+                                   border-left:0; border-radius:0; }
+      .accordion-trigger { display:flex; width:100%; justify-content:space-between;
+                           align-items:center; background:none; cursor:pointer;
+                           list-style:none; }
+      .accordion-trigger::-webkit-details-marker { display:none; }
+      .accordion-trigger.cc-kv { padding:0 1rem 0 0; align-items:flex-start; }
+      .accordion-title { margin-bottom:0; padding-right:.5em; pointer-events:none;
+                         text-align:left; }
+      .accordion-title.cc-kv { width:9.5rem; flex:none; padding:1rem .5rem 1rem 1rem;
+                               opacity:.7; }
+      .accordion-icon { width:2em; height:2em; flex:none;
+                        transition:transform .3s cubic-bezier(.165,.84,.44,1); }
+      .accordion-icon.cc-kv { width:1rem; height:1rem; margin-top:1rem; }
+      details[open] .accordion-icon { transform:rotate(45deg); }
+      .accordion-content { overflow:hidden; width:100%; }
+      .accordion-content.cc-kv { padding-left:9.5rem; padding-right:0; }
+      .accordion-content_spacer.cc-kv { padding-bottom:1rem; white-space:pre-line; }
+      /* The `hidden` attribute is only display:none in the UA stylesheet, so a
+         class that sets a display beats it and every viewer state renders at
+         once. This rule is why exactly one shows. Mirrored in the Webflow
+         project override block. */
+      [hidden] { display:none !important; }
+      .viewer-stage.cc-hidden { display:none; }
+    </style>
+  </head>
+  <body>
+    <div class="note"><strong>Behaviour harness — English.</strong> Same <code>data-*</code> markup as the Webflow <code>/en/entry</code> page. The component is shared with the Chinese page; only the static text, the <code>lang</code> attribute and <code>data-src</code> differ — <code>entry.js</code> reads <code>lang</code> to format dates. Try <a href="?id=DYP-000012">?id=DYP-000012</a> (The Road), <a href="?id=DYP-000079">?id=DYP-000079</a> (has video), or <a href="?id=DYP-000074">?id=DYP-000074</a> (141 materials).</div>
+
+    <div class="wrap">
+      <div data-entry data-src="../sample-data/entry-sample-en.json"
+           data-catalogue-path="/en/catalogue" data-entry-path="/en/entry">
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+          <a href="/en/catalogue">Archive</a>
+          <span class="breadcrumb-sep" aria-hidden="true">/</span>
+          <a href="/catalogue" data-crumb-category data-field-group="category"><span data-field="category">Theatre Production</span></a>
+          <span class="breadcrumb-sep" aria-hidden="true" data-field-group="category">/</span>
+          <span aria-current="page" data-field="title">Title</span>
+        </nav>
+
+        <div class="entry-back" data-back-region>
+          <a class="entry-nav-link" href="/catalogue" data-back>
+            <span aria-hidden="true">←</span> Back
+          </a>
+        </div>
+
+        <div class="entry-head">
+          <div class="entry-info">
+            <span class="entry-tag" data-field-group="category"><span data-field="category">Theatre Production</span></span>
+            <h1 class="entry-title"><span data-field="title">Title</span></h1>
+
+            <dl class="kv">
+              <div class="kv-row" data-field-group="date">
+                <dt class="kv-key">Date</dt>
+                <dd class="kv-val"><span data-field="date">November 11, 1981</span></dd>
+              </div>
+              <div class="kv-row" data-field-group="venue">
+                <dt class="kv-key">Venue</dt>
+                <dd class="kv-val"><span data-field="venue">Exhibition Hall, Hong Kong City Hall</span></dd>
+              </div>
+              <div class="kv-row" data-field-group="location">
+                <dt class="kv-key">Location</dt>
+                <dd class="kv-val"><span data-field="location">Hong Kong</span></dd>
+              </div>
+              <div class="kv-row" data-field-group="director">
+                <dt class="kv-key">Director</dt>
+                <dd class="kv-val"><span data-field="director">Danny Yung</span></dd>
+              </div>
+            </dl>
+
+            <!-- The design system's accordion (components/accordion) is a native
+                 <details>/<summary>; its JS only adds the open/close height
+                 animation and needs [data-accordion="content"]. Without the
+                 bundle — as here — the disclosure still works natively. The
+                 cc-kv combos make it sit flush with the kv rows above instead
+                 of reading as a bordered card. -->
+            <details class="accordion-component cc-kv" data-field-group="notes">
+              <summary class="accordion-trigger cc-kv">
+                <span class="accordion-title cc-kv">Notes</span>
+                <svg class="accordion-icon cc-kv" xmlns="http://www.w3.org/2000/svg" width="100%" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true"><path d="M228,128a12,12,0,0,1-12,12H140v76a12,12,0,0,1-24,0V140H40a12,12,0,0,1,0-24h76V40a12,12,0,0,1,24,0v76h76A12,12,0,0,1,228,128Z"/></svg>
+              </summary>
+              <div class="accordion-content cc-kv" data-accordion="content">
+                <div class="accordion-content_spacer cc-kv"><span data-field="notes">Notes</span></div>
+              </div>
+            </details>
+          </div>
+
+          <div class="entry-hero" data-hero>Hero Image</div>
+        </div>
+
+        <nav class="entry-nav" aria-label="Previous and next work">
+          <a class="entry-nav-link" href="#" data-prev hidden>
+            <span aria-hidden="true">←</span> Previous<span class="entry-nav-title" data-field="prevTitle"></span>
+          </a>
+          <a class="entry-nav-link cc-next" href="#" data-next hidden>
+            Next<span class="entry-nav-title" data-field="nextTitle"></span> <span aria-hidden="true">→</span>
+          </a>
+        </nav>
+
+        <section class="materials-section" aria-labelledby="materials-head">
+          <h2 class="materials-head" id="materials-head">Archival Materials</h2>
+
+          <div class="materials">
+            <div class="material-groups" data-groups>
+              <!-- Each content category is a design system accordion, open by
+                   default: the mockup exists so the client can SEE their data,
+                   so nothing starts hidden. Collapsing matters for the record
+                   with 141 materials in one group. -->
+              <details class="accordion-component cc-group" data-group-template
+                       data-accordion-start-open="true" open>
+                <summary class="accordion-trigger cc-group">
+                  <span class="accordion-title cc-group" data-field="groupLabel">Performance photo</span>
+                  <span class="material-group-count" data-field="groupCount">8</span>
+                  <svg class="accordion-icon cc-group" xmlns="http://www.w3.org/2000/svg" width="100%" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true"><path d="M228,128a12,12,0,0,1-12,12H140v76a12,12,0,0,1-24,0V140H40a12,12,0,0,1,0-24h76V40a12,12,0,0,1,24,0v76h76A12,12,0,0,1,228,128Z"/></svg>
+                </summary>
+                <div class="accordion-content cc-group" data-accordion="content">
+                <ul class="thumb-grid" role="list" data-group-items>
+                  <li class="thumb-item" data-thumb-template>
+                    <button class="thumb" type="button">
+                      <img data-thumb-image alt="" hidden />
+                      <span data-field="thumbLabel">Filename</span>
+                    </button>
+                  </li>
+                </ul>
+                </div>
+              </details>
+            </div>
+
+            <div class="material-viewer">
+              <!-- The authored default is the "not uploaded" state, because that is
+                   what every material actually resolves to today (src is empty on
+                   all 1,164). It is also the only stage with text to design
+                   against. .cc-hidden is a real class, not just the hidden
+                   attribute, so the Webflow canvas — which does not apply code
+                   embeds — shows one stage instead of four. -->
+              <div class="viewer-stage cc-hidden" data-viewer="image" hidden><img alt="" /></div>
+              <div class="viewer-stage cc-hidden" data-viewer="pdf" hidden>
+                <iframe title="PDF" ></iframe>
+              </div>
+              <div class="viewer-stage cc-hidden" data-viewer="video" hidden>
+                <video controls preload="none"></video>
+              </div>
+              <div class="viewer-stage viewer-empty" data-viewer="empty">
+                <span>File not yet uploaded</span>
+                <span><span data-field="viewerKind">image</span> · <span data-field="viewerFilename">Filename</span></span>
+              </div>
+
+              <div class="material-meta" data-material>
+                <div data-material-template>
+                  <span class="entry-tag" data-field-group="materialGroup"><span data-field="materialGroup">Performance photo</span></span>
+                  <dl class="kv">
+                    <div class="kv-row" data-field-group="materialTitle">
+                      <dt class="kv-key">Title</dt>
+                      <dd class="kv-val"><span data-field="materialTitle">—</span></dd>
+                    </div>
+                    <div class="kv-row" data-field-group="materialAuthor">
+                      <dt class="kv-key">Author</dt>
+                      <dd class="kv-val"><span data-field="materialAuthor">—</span></dd>
+                    </div>
+                    <div class="kv-row" data-field-group="materialPublisher">
+                      <dt class="kv-key">Publisher</dt>
+                      <dd class="kv-val"><span data-field="materialPublisher">—</span></dd>
+                    </div>
+                    <div class="kv-row" data-field-group="materialPublished">
+                      <dt class="kv-key">Published Date</dt>
+                      <dd class="kv-val"><span data-field="materialPublished">—</span></dd>
+                    </div>
+                    <div class="kv-row" data-field-group="materialIssue">
+                      <dt class="kv-key">Issue</dt>
+                      <dd class="kv-val"><span data-field="materialIssue">—</span></dd>
+                    </div>
+                    <div class="kv-row" data-field-group="materialPage">
+                      <dt class="kv-key">Page Number</dt>
+                      <dd class="kv-val"><span data-field="materialPage">—</span></dd>
+                    </div>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <script>
+      /* Demo-page only: the sample data carries the REAL site paths
+         (/entry?id=… , /catalogue), which this static server has no routes for.
+         Rewrite them to the harness files on click. entry.js knows nothing
+         about this — it only sets the hrefs it is handed, so the contract stays
+         honest. Same trick as catalogue.html. */
+      document.addEventListener("click", function (e) {
+        var a = e.target.closest && e.target.closest("a[href]");
+        if (!a) return;
+        var href = a.getAttribute("href") || "";
+        var local =
+          href.indexOf("/en/entry?") === 0 ? "." + href.replace("/en/entry?", "/entry.html?") :
+          href === "/en/entry" ? "./entry.html" :
+          href.indexOf("/en/catalogue?") === 0 ? "." + href.replace("/en/catalogue?", "/catalogue.html?") :
+          href === "/en/catalogue" ? "./catalogue.html" : null;
+        if (local) {
+          e.preventDefault();
+          window.location.href = local;
+        }
+      });
+    </script>
+    <script src="../entry.js" defer></script>
+  </body>
+</html>

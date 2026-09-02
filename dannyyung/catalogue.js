@@ -137,15 +137,11 @@
 
     removeClones(body);
     for (var j = 0; j < items.length; j++) {
-      body.appendChild(buildRow(tpl, items[j]));
+      body.appendChild(buildRow(root, tpl, items[j]));
     }
 
     var countEl = root.querySelector("[data-count]");
-    if (countEl) {
-      countEl.textContent = total
-        ? "共 " + total + " 項，顯示第 " + ((page - 1) * PER_PAGE + 1) + "–" + ((page - 1) * PER_PAGE + items.length) + " 項"
-        : "共 0 項";
-    }
+    if (countEl) countEl.textContent = countLine(root, total, page, items.length);
     var emptyEl = root.querySelector("[data-empty]");
     if (emptyEl) emptyEl.hidden = items.length > 0;
 
@@ -201,6 +197,37 @@
   }
 
 
+  /* The only two strings this component generates rather than reads from the
+     markup — everything else on the page is authored text that the English
+     page simply carries in English. These cannot be, because they interpolate
+     numbers, so they are built here per language.
+
+     `lang` is read from the nearest [lang] ancestor, so the same file serves
+     /catalogue and /en/catalogue with no configuration: the folder-duplicated
+     page carries lang="en" and this follows it. Same switch entry.js uses to
+     format dates. Adding a third language means adding a branch here, not a
+     second copy of the component. */
+  function lang(root) {
+    var el = (root.closest && root.closest("[lang]")) || document.documentElement;
+    return (el.getAttribute("lang") || "zh-Hant").toLowerCase().indexOf("en") === 0
+      ? "en"
+      : "zh";
+  }
+
+  function countLine(root, total, page, shown) {
+    var en = lang(root) === "en";
+    if (!total) return en ? "No works" : "共 0 項";
+    var from = (page - 1) * PER_PAGE + 1;
+    var to = (page - 1) * PER_PAGE + shown;
+    return en
+      ? total + " works — showing " + from + "–" + to
+      : "共 " + total + " 項，顯示第 " + from + "–" + to + " 項";
+  }
+
+  function noTitle(root) {
+    return lang(root) === "en" ? "Untitled" : "無標題";
+  }
+
   /* The result-item template is authored in Webflow and stays VISIBLE on the
      canvas so it can be styled. It is lifted out of the DOM on first render. */
   function template(root) {
@@ -214,11 +241,11 @@
     return clone;
   }
 
-  function buildRow(tpl, item) {
+  function buildRow(root, tpl, item) {
     var li = tpl.cloneNode(true);
     li.setAttribute("data-clone", "");
     li.setAttribute("data-id", item.id || "");
-    setField(li, "title", item.title || item.titleEn || "無標題");
+    setField(li, "title", item.title || item.titleEn || noTitle(root));
     setField(li, "category", item.category);
     setField(li, "year", item.year);
     setField(li, "location", item.location);

@@ -39,9 +39,18 @@ DATA = os.path.join(ROOT, "data")
 WORKS_XLSX = os.path.join(DATA, "DIR_current_data.xlsx")
 MEDIA_XLSX = os.path.join(DATA, "input_by_dept_media_meta_data.xlsx")
 
-# Where a result row links. Chinese sits at the site root, English will go in
-# /en/, so the Chinese entry page is /entry.
-ENTRY_PATH = "/entry"
+# Where a result row links. Chinese sits at the site ROOT and English in /en/ —
+# the inverse of the design system default, because this project is zh-Hant
+# first. Same folder-duplication structure the bilingual-build skill describes.
+ENTRY_PATH = {"zh-Hant": "/entry", "en": "/en/entry"}
+
+# Which source column each language prefers, and what it falls back to. The
+# media sheet spells Traditional Chinese "zht" while the works sheet spells it
+# "zh-Hant"; the callers pass the right one.
+LANGS = {
+    "zh-Hant": {"want": "zh-Hant", "other": "en", "out": "catalogue-sample.json"},
+    "en": {"want": "en", "other": "zh-Hant", "out": "catalogue-sample-en.json"},
+}
 
 CATEGORY_KEY = {
     "劇場": "theatre-production",
@@ -259,78 +268,67 @@ def check_columns(header):
     return missing
 
 
-def main():
-    header, works = sheet_rows(WORKS_XLSX, "DataTemplate")
-    _, media = sheet_rows(MEDIA_XLSX)
-    missing = check_columns(header)
-
-    counts = collections.Counter(text(m.get("group_id")) for m in media)
+def build(lang, header, works, counts):
+    cfg = LANGS[lang]
+    want, other = cfg["want"], cfg["other"]
+    FELL_BACK.clear()
 
     items = []
     for w in works:
         wid = text(w.get("id"))
-        cat = pick(w, "category")
+        cat = pick(w, "category", want, other)
         items.append({
             "id": wid,
-            "title": pick(w, "title"),
+            "title": pick(w, "title", want, other),
             "titleEn": text(w.get("title_en")),
             "category": cat,
             "categoryKey": CATEGORY_KEY.get(cat, ""),
             "year": year(w.get("date_yyyy")),
-            "location": pick(w, "location"),
-            "venue": pick(w, "venue"),
-            "directors": pick_multi(w, "director"),
+            "location": pick(w, "location", want, other),
+            "venue": pick(w, "venue", want, other),
+            "directors": pick_multi(w, "director", want, other),
             "notes": notes_text(w.get("notes"), wid),
             "mediaCount": counts.get(wid, 0),
-            # The entry page is ONE wireframe page that reads ?id= — there is no
-            # CMS behind these 88 works, so there are no 88 URLs to link to.
-            # The backend replaces this with whatever its real route is; the
-            # markup does not care, because catalogue.js only ever copies this
-            # string onto the row link's href.
-            "href": ENTRY_PATH + "?id=" + wid,
+            # The entry page is ONE wireframe page per language that reads
+            # ?id= — there is no CMS behind these 88 works, so there are no 88
+            # URLs to link to. The backend replaces this with whatever its real
+            # route is; the markup does not care, because catalogue.js only ever
+            # copies this string onto the row link's href.
+            "href": ENTRY_PATH[lang] + "?id=" + wid,
         })
 
-    payload = {"items": items}
-    out_path = os.path.join(HERE, "catalogue-sample.json")
+    payload = {"lang": lang, "items": items}
+    out_path = os.path.join(HERE, cfg["out"])
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, indent=1)
 
     # ---- data quality report ------------------------------------------------
-    print("source          :", os.path.basename(WORKS_XLSX))
-    print("columns         :", len([c for c in header if c]),
-          "(public %d / search-only %d / media-level %d / internal %d)"
-          % (len(PUBLIC_WORK), len(SEARCH_ONLY), len(MEDIA_LEVEL), len(INTERNAL)))
-    if missing:
-        print("  ! classified but absent from the sheet:", missing)
+    print()
+    print("== %s ==" % lang)
     print("works           :", len(items))
-    print("media items     :", len(media))
     print("no category     :", sum(1 for i in items if not i["category"]))
-    print("no zh title     :", sum(1 for i in items if not i["title"]))
-    print("no en title     :", sum(1 for i in items if not i["titleEn"]))
+    print("no title        :", sum(1 for i in items if not i["title"]))
     print("no director     :", sum(1 for i in items if not i["directors"]))
     print("no location     :", sum(1 for i in items if not i["location"]))
     print("no venue        :", sum(1 for i in items if not i["venue"]))
     yrs = [i["year"] for i in items if i["year"]]
     print("year range      :", min(yrs), "-", max(yrs))
-    print("media per work  : min %d  max %d" % (min(counts.values()), max(counts.values())))
-    print("orphan media    :",
-          sum(v for k, v in counts.items() if k not in {i["id"] for i in items}))
-
-    print("language fallback used:",
-          dict(FELL_BACK) if FELL_BACK else "none",
-          "(zh-Hant missing, English shown instead)")
-
-    # `notes` is free text shown verbatim on the entry page. Line-break and
-    # dash handling live in notes_text(); the counts are here so the shape of
-    # the field stays visible. See CATALOGUE.md.
+    print("language fallback used:", dict(FELL_BACK) if FELL_BACK else "none",
+          "(%s missing, %s shown instead)" % (want, other))
     notes = [i["notes"] for i in items]
     print("notes filled    :", sum(1 for n in notes if n),
-          "— multi-line:", sum(1 for n in notes if "\n" in n),
-          "— longest:", max((n.count("\n") + 1) for n in notes if n), "lines")
-    print("date dash fixed :", DASH_FIXES or "none")
-    print("date_mm filled  :", sum(1 for w in works if text(w.get("date_mm"))))
-    print("date_dd filled  :", sum(1 for w in works if text(w.get("date_dd"))))
+          "— multi-line:", sum(1 for n in notes if "\n" in n))
     print("wrote           :", out_path)
+    return items, out_path
+
+
+def main():
+    header, works = sheet_rows(WORKS_XLSX, "DataTemplate")
+    _, media = sheet_rows(MEDIA_XLSX)
+    missing = check_columns(header)
+    counts = collections.Counter(text(m.get("group_id")) for m in media)
+    for lang in LANGS:
+        build(lang, header, works, counts)
 
 
 if __name__ == "__main__":

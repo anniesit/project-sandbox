@@ -458,3 +458,56 @@ theme colours and breakpoints are unchecked on the real page.
   `<video controls>` both take over and the image `src` is cleared.
 - The metadata panel rebuilds per material with empty rows dropped.
 - Clicking a catalogue result opens the matching entry page.
+
+## English page
+
+`/en/entry` is a folder duplicate, per the `bilingual-build` skill: Webflow
+Localization does not survive a code export, so the second language is ordinary
+pages in a folder. **The component is shared** — `entry.js` is one file serving
+both. Only four things differ:
+
+| | Chinese (`/entry`) | English (`/en/entry`) |
+|---|---|---|
+| static text | authored Chinese | authored English (wording from Figma) |
+| `lang` | `zh-Hant` on `.page-wrapper` | `en` |
+| `data-src` | `entry-sample.json` | `entry-sample-en.json` |
+| `data-catalogue-path` / `data-entry-path` | defaults (`/catalogue`, `/entry`) | `/en/catalogue`, `/en/entry` |
+
+`lang` is the single switch. `entry.js` reads the nearest `[lang]` ancestor to
+format dates (`1981年11月11日` vs `November 11, 1981`) and to pick its one
+generated string (`Untitled`). Adding a third language means a branch there, not
+a second copy of the component.
+
+**The two path attributes exist because the same file serves both folders.**
+`/catalogue` is right for the Chinese page and wrong for the English one, so the
+mock driver reads them from the page rather than hardcoding. A backend that owns
+routing passes real URLs in `context` and neither is used.
+
+### Two things the Designer cannot do
+
+- **There is no folder-creation API.** `create_page` accepts `parentFolderId`
+  but nothing creates the folder. Worse, a slug containing a slash is *accepted*
+  and then silently flattened — `slug: "en/catalogue"` came back with
+  `publishedPath: "/catalogue"`, which would have collided with the live Chinese
+  page. Both English pages are therefore `en-catalogue` / `en-entry` and **draft**
+  until the `en` folder exists in the Designer and they can be moved into it.
+- **`set_text` fails on a `Block`** ("This element doesn't support text") even
+  when the div holds a text node. It works on `Span`, `Heading`, `Link` and
+  `DOM`-tagged elements. The six block-level labels needed the WHTML route:
+  append a `<span>`, then remove the original String.
+
+Also: **`href` on a `Link` is a setting, not an attribute.** `set_attributes`
+with `name: "href"` returns "internal error"; use `set_link`.
+
+## The category chip had lost its data hook
+
+Found while translating: the entry head's chip had been restructured by hand
+into a bare `div.result-tag.cc-entry` holding the literal text 劇場 — the
+`span[data-field="category"]` and the `data-field-group="category"` wrapper were
+both gone. **Every work's entry page would have shown 劇場**, including the six
+with no category at all, on a page whose whole purpose is checking the data.
+Restored on both language pages.
+
+Worth knowing for anyone restyling one of these: the `data-field` span is the
+sink `entry.js` writes into and the `data-field-group` is what disappears when
+the value is empty. Restyle the wrapper, keep the span.
