@@ -247,7 +247,14 @@
     ".dyviz-toggle{display:flex;align-items:center;flex-wrap:wrap;gap:8px}" +
     ".dyviz-toggle-btn{padding:4px 12px;border:1px solid var(--dyviz-line);" +
     "background:transparent;color:var(--dyviz-muted);font:inherit;" +
-    "font-size:13px;line-height:1.5;cursor:pointer}" +
+    "font-size:var(--dyviz-control-size,13px);line-height:1.5;cursor:pointer}" +
+    /* Chart type sizes. The presentation attributes were removed from the
+       <text> nodes so these rules win; every size is a custom property you can
+       re-declare on any Webflow class wrapping the chart. */
+    ".dyviz-rowname{fill:var(--dyviz-ink);font-weight:600;" +
+    "font-size:var(--dyviz-rowname-size,11px)}" +
+    ".dyviz-tick{fill:var(--dyviz-muted);font-size:var(--dyviz-tick-size,10px)}" +
+    ".dyviz-axis{fill:var(--dyviz-muted);font-size:var(--dyviz-axis-size,10px)}" +
     ".dyviz-toggle-btn[aria-pressed=\"true\"]{border-color:var(--dyviz-mark);" +
     "color:var(--dyviz-surface);background:var(--dyviz-mark)}" +
     ".dyviz-toggle-btn:focus-visible{outline:2px solid var(--dyviz-focus);" +
@@ -311,6 +318,14 @@
   function part(scope, name) {
     return scope ? scope.querySelector("[data-" + name + "]") : null;
   }
+  /* Read a tunable number off a CSS custom property, so band heights stay a
+     DESIGN decision editable in Webflow rather than a constant buried here.
+     Falls back to the built-in default when the property is unset or junk. */
+  function cssNum(el, name, fallback) {
+    if (!el || !window.getComputedStyle) return fallback;
+    var v = parseFloat(getComputedStyle(el).getPropertyValue(name));
+    return isNaN(v) ? fallback : v;
+  }
   /* ---------- render ---------- */
 
   function render(root, payload) {
@@ -337,12 +352,16 @@
     if (root.__resize) return;
     root.__resize = true;
     var t = null;
-    var last = 0;
+    var last = "";
     window.addEventListener("resize", function () {
       clearTimeout(t);
       t = setTimeout(function () {
-        var w = root.clientWidth;
-        if (w === last) return;   /* a phone's URL bar collapsing is not a resize */
+        /* Track height as well as width: a plot sized in svh/vh changes with a
+           vertical-only resize, which a width-only guard would sleep through.
+           Still ignores same-size events, so a phone's URL bar collapsing is
+           not treated as a resize. */
+        var w = root.clientWidth + "x" + root.clientHeight;
+        if (w === last) return;
         last = w;
         render(root, null);
       }, 150);
@@ -397,8 +416,42 @@
     /* The band has to shrink as rows are added, or switching from 5 categories
        to 10 locations would double the chart's height and push half of it off
        the screen. Floored at 36 so the largest bubble plus its label still fit. */
-    var bandH = Math.max(36, Math.min(66, Math.round(440 / rows.length)));
-    var H = M.top + bandH * rows.length + M.bottom;
+    /* Band height is a design decision, so it is tunable from CSS. Set these on
+       the card (or on [data-dataviz]) in Webflow to make the chart taller:
+         --dyviz-band-budget  total height the rows share   (default 440)
+         --dyviz-band-max     tallest one band may become   (default 66)
+         --dyviz-band-min     shortest one band may become  (default 36)
+       With few rows the MAX is what binds; with many rows, the BUDGET is. */
+    /* TWO SIZING MODES.
+
+       1. Give [data-plot] a height in CSS — `height: 60svh; min-height: 32rem`,
+          an aspect-ratio, anything — and the chart FILLS it, dividing that
+          height between the rows. plot has just been emptied, so a non-zero
+          clientHeight here can only have come from CSS, never from a previous
+          render. This is the mode to use when the chart has to sit in a slot of
+          a given size, as on the homepage.
+
+       2. Leave the height auto and the chart sizes ITSELF from the row count,
+          bounded by the three custom properties below. This is the default and
+          keeps a 5-row chart from being as tall as a 10-row one.
+
+       Bubble radius is derived from bandH (rMax below), so either way the marks
+       grow and shrink with the band rather than rattling around in it. */
+    var given = plot.clientHeight;
+    var bandH, H;
+    if (given > M.top + M.bottom + 8) {
+      H = given;
+      bandH = Math.max(1, (H - M.top - M.bottom) / rows.length);
+    } else {
+      bandH = Math.max(
+        cssNum(plot, "--dyviz-band-min", 36),
+        Math.min(
+          cssNum(plot, "--dyviz-band-max", 66),
+          Math.round(cssNum(plot, "--dyviz-band-budget", 440) / rows.length)
+        )
+      );
+      H = M.top + bandH * rows.length + M.bottom;
+    }
     var x0 = M.left, x1 = W - M.right;
     var y0 = M.top, y1 = H - M.bottom;
 
@@ -445,8 +498,7 @@
         }));
       }
       s.appendChild(svg("text", {
-        x: x0 + 6, y: by + 13, fill: "var(--dyviz-ink)",
-        "font-size": 11, "font-weight": 600,
+        x: x0 + 6, y: by + 13, "class": "dyviz-rowname",
       }, rows[c].label + " · " + rows[c].count));
     }
     s.appendChild(svg("line", {
@@ -462,16 +514,16 @@
     if (ticks[ticks.length - 1] !== maxY) ticks.push(maxY);
     for (var k = 0; k < ticks.length; k++) {
       s.appendChild(svg("text", {
-        x: X(ticks[k]), y: y1 + 13, fill: "var(--dyviz-muted)", "font-size": 10,
+        x: X(ticks[k]), y: y1 + 13, "class": "dyviz-tick",
         "text-anchor": k === 0 ? "start" : k === ticks.length - 1 ? "end" : "middle",
       }, String(ticks[k])));
     }
     s.appendChild(svg("text", {
-      x: (x0 + x1) / 2, y: H - 4, fill: "var(--dyviz-muted)",
-      "font-size": 10, "text-anchor": "middle",
+      x: (x0 + x1) / 2, y: H - 4, "class": "dyviz-axis",
+      "text-anchor": "middle",
     }, t.year + paren(t.en, minY + "\u2013" + maxY)));
     s.appendChild(svg("text", {
-      fill: "var(--dyviz-muted)", "font-size": 10, "text-anchor": "middle",
+      "class": "dyviz-axis", "text-anchor": "middle",
       transform: "translate(11," + (y0 + y1) / 2 + ") rotate(-90)",
     }, ax.label));
 
