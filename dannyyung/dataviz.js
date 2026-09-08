@@ -65,7 +65,13 @@
  *                                        On the bubble chart it follows the
  *                                        axis switch
  *
- * COLOUR LIVES IN CSS, GEOMETRY LIVES HERE. Positions and sizes are inline
+ * COLOUR AND TYPE LIVE IN dataviz.css, GEOMETRY LIVES HERE.
+ * That file is REQUIRED and must be linked before this script. It is organised
+ * like filmtv/cooccur.css: PART 1 is every colour, type size/weight and bubble
+ * parameter; PART 2 is structure. This file injects only a minimal floor so a
+ * missing stylesheet degrades to a plain chart rather than a broken one.
+ * Three numbers are read back out of CSS because the geometry needs them:
+ * --dyviz-band-* (row heights) and --dyviz-bubble-base / -growth. Positions and sizes are inline
  * attributes because they are computed per viewport and cannot be classes. Every
  * colour, by contrast, is a CSS custom property. The defaults are injected once
  * under :where([data-dataviz]) — zero specificity — so ANY rule authored in the
@@ -209,84 +215,27 @@
      charts render light, which is the right way to fail against an unstyled
      white page. Nothing needs re-rendering when the toggle flips: these are
      custom properties, so the swap is pure CSS. */
+  /* A MINIMAL STRUCTURAL FLOOR — not the chart's styling.
+     Everything visual (colour, type, bubble size and border, spacing) lives in
+     dataviz.css, which must be linked alongside this file. What is left here is
+     only the handful of rules without which the layout COLLAPSES rather than
+     merely looking plain: absolutely-positioned treemap cells would stack, the
+     tooltip would push the page around, and the marks would be invisible.
+     So a missing dataviz.css gives a readable, unstyled chart, not a broken
+     page. See dataviz.css PART 1 for every token. */
   var CSS =
-    ":where([data-dataviz]){" +
-    "--dyviz-surface:#ffffff;--dyviz-ink:#1d1c1a;--dyviz-muted:#6f6a60;" +
-    "--dyviz-line:#cccabf;--dyviz-grid:#e6e3da;" +
-    "--dyviz-mark:var(--primary--accent,#c0442a);" +
-    "--dyviz-mark-none-ring:#8d877b;" +
-    "--dyviz-ramp-1:#efece3;--dyviz-ramp-2:#d9cfbd;--dyviz-ramp-3:#b39b7e;" +
-    "--dyviz-ramp-4:#8a5f45;--dyviz-ramp-5:#5d2f1e;" +
-    "--dyviz-ramp-ink-1:#1d1c1a;--dyviz-ramp-ink-2:#1d1c1a;" +
-    "--dyviz-ramp-ink-3:#1d1c1a;--dyviz-ramp-ink-4:#ffffff;" +
-    "--dyviz-ramp-ink-5:#ffffff;" +
-    "--dyviz-focus:var(--primary--accent,#d14424);" +
-    "}" +
-    ":where(html.u-mode-dark) :where([data-dataviz]){" +
-    "--dyviz-surface:#1d1c1a;--dyviz-ink:#f2efe6;--dyviz-muted:#a09a8e;" +
-    "--dyviz-line:#4a4640;--dyviz-grid:#33302b;" +
-    "--dyviz-mark:var(--primary--accent,#d8563c);" +
-    "--dyviz-ramp-1:#2b2823;--dyviz-ramp-2:#463d33;--dyviz-ramp-3:#6b5745;" +
-    "--dyviz-ramp-4:#96725a;--dyviz-ramp-5:#c99a78;" +
-    "--dyviz-ramp-ink-1:#f2efe6;--dyviz-ramp-ink-2:#f2efe6;" +
-    "--dyviz-ramp-ink-3:#f2efe6;--dyviz-ramp-ink-4:#1d1c1a;" +
-    "--dyviz-ramp-ink-5:#1d1c1a;" +
-    "}" +
-    /* Structural rules only — anything that is a design decision (type, spacing,
-       borders on the card) belongs to the Webflow classes, not to this file. */
     ".dyviz-plot{position:relative}" +
     ".dyviz-svg{display:block;width:100%;height:auto;overflow:visible}" +
     ".dyviz-hit{fill:transparent;stroke:none}" +
-    ".dyviz-a{cursor:pointer;outline-offset:2px}" +
-    ".dyviz-a:focus-visible{outline:2px solid var(--dyviz-focus)}" +
-    ".dyviz-a:hover .dyviz-mark,.dyviz-a:focus-visible .dyviz-mark{" +
-    "stroke:var(--dyviz-focus);stroke-width:2px}" +
-    /* The y-axis switch. Two buttons rather than a <select>, because there are
-       exactly two states and both should be readable without opening anything;
-       aria-pressed rather than a radio group, because nothing is submitted. */
-    ".dyviz-toggle{display:flex;align-items:center;flex-wrap:wrap;gap:8px}" +
-    ".dyviz-toggle-btn{padding:4px 12px;border:1px solid var(--dyviz-line);" +
-    "background:transparent;color:var(--dyviz-muted);font:inherit;" +
-    "font-size:var(--dyviz-control-size,13px);line-height:1.5;cursor:pointer}" +
-    /* Chart type sizes. The presentation attributes were removed from the
-       <text> nodes so these rules win; every size is a custom property you can
-       re-declare on any Webflow class wrapping the chart. */
-    ".dyviz-rowname{fill:var(--dyviz-ink);font-weight:600;" +
-    "font-size:var(--dyviz-rowname-size,11px)}" +
-    ".dyviz-tick{fill:var(--dyviz-muted);font-size:var(--dyviz-tick-size,10px)}" +
-    ".dyviz-axis{fill:var(--dyviz-muted);font-size:var(--dyviz-axis-size,10px)}" +
-    ".dyviz-toggle-btn[aria-pressed=\"true\"]{border-color:var(--dyviz-mark);" +
-    "color:var(--dyviz-surface);background:var(--dyviz-mark)}" +
-    ".dyviz-toggle-btn:focus-visible{outline:2px solid var(--dyviz-focus);" +
-    "outline-offset:2px}" +
+    ".dyviz-a{cursor:pointer}" +
+    ".dyviz-mark{fill:var(--dyviz-mark,#c0442a)}" +
+    ".dyviz-mark-none{fill:none;stroke:var(--dyviz-mark-none-ring,#8d877b)}" +
     ".dyviz-tree{position:relative;width:100%}" +
-    ".dyviz-cell{position:absolute;display:flex;flex-direction:column;" +
-    "align-items:center;justify-content:center;gap:2px;overflow:hidden;" +
-    "padding:4px;text-align:center;text-decoration:none;box-sizing:border-box;" +
-    "outline-offset:-2px}" +
-    ".dyviz-cell:focus-visible{outline:2px solid var(--dyviz-focus)}" +
-    ".dyviz-cell:hover{filter:brightness(1.06)}" +
-    /* A long name in a small box has to lose its tail, not push the count out
-       of the box or crop through the middle of a glyph. Two lines, clipped
-       cleanly; the full name is in the tooltip, the accessible name and the
-       table. Falls back to plain overflow:hidden where line-clamp is absent. */
-    ".dyviz-cell-name{font-size:11px;line-height:1.25;font-weight:600;" +
-    "display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;" +
-    "overflow:hidden;max-width:100%;overflow-wrap:anywhere}" +
-    ".dyviz-cell-count{flex:none;font-size:10px;line-height:1;opacity:.75}" +
+    ".dyviz-cell{position:absolute;overflow:hidden;box-sizing:border-box}" +
     ".dyviz-tip{position:absolute;z-index:9;pointer-events:none;opacity:0;" +
-    "transform:translate(-50%,-100%);white-space:nowrap;padding:6px 8px;" +
-    "font-size:12px;line-height:1.35;background:var(--dyviz-ink);" +
-    "color:var(--dyviz-surface);transition:opacity .1s}" +
+    "transform:translate(-50%,-100%);white-space:nowrap}" +
     ".dyviz-tip[data-on]{opacity:1}" +
-    ".dyviz-legend{display:flex;flex-wrap:wrap;align-items:center;" +
-    "gap:6px 16px;list-style:none;margin:0;padding:0}" +
-    ".dyviz-ramp{display:flex;align-items:center;gap:2px}" +
-    ".dyviz-ramp-step{width:20px;height:10px}" +
-    ".dyviz-table{width:100%;border-collapse:collapse;font-size:13px}" +
-    ".dyviz-table th,.dyviz-table td{padding:4px 8px;text-align:left;" +
-    "border-bottom:1px solid var(--dyviz-grid)}" +
-    "@media (prefers-reduced-motion:reduce){.dyviz-tip{transition:none}}";
+    ".dyviz-table{width:100%;border-collapse:collapse}";
 
   function injectCss() {
     if (document.getElementById("dyviz-css")) return;
@@ -475,7 +424,12 @@
        mark, the floor below which a dot stops being clickable. Capped at just
        under half the band so a busy year cannot bleed into the row above. */
     var rMax = bandH / 2 - 3;
-    function R(count) { return Math.min(4.5 * Math.sqrt(count), rMax); }
+    /* r = base * count^growth, capped at half the band. growth 0.5 is AREA-true
+       and the honest encoding — four works draw four times the ink. Both are
+       CSS so the curve is a design decision: dataviz.css PART 1. */
+    var rBase = cssNum(plot, "--dyviz-bubble-base", 4.5);
+    var rGrow = cssNum(plot, "--dyviz-bubble-growth", 0.5);
+    function R(count) { return Math.min(rBase * Math.pow(count, rGrow), rMax); }
 
     var s = svg("svg", {
       class: "dyviz-svg",
@@ -494,7 +448,7 @@
       if (c > 0) {
         s.appendChild(svg("line", {
           x1: x0, x2: x1, y1: by, y2: by,
-          stroke: "var(--dyviz-grid)", "stroke-width": 1,
+          class: "dyviz-baseline", "stroke-width": 1,
         }));
       }
       s.appendChild(svg("text", {
@@ -502,10 +456,10 @@
       }, rows[c].label + " · " + rows[c].count));
     }
     s.appendChild(svg("line", {
-      x1: x0, x2: x1, y1: y1, y2: y1, stroke: "var(--dyviz-line)", "stroke-width": 1,
+      x1: x0, x2: x1, y1: y1, y2: y1, class: "dyviz-rule", "stroke-width": 1,
     }));
     s.appendChild(svg("line", {
-      x1: x0, x2: x0, y1: y0, y2: y1, stroke: "var(--dyviz-line)", "stroke-width": 1,
+      x1: x0, x2: x0, y1: y0, y2: y1, class: "dyviz-rule", "stroke-width": 1,
     }));
 
     /* Year ticks every 6 years, plus the last year if the step misses it. */
@@ -560,14 +514,12 @@
       : svg("g", { role: "img", "aria-label": label });
     node.appendChild(svg("title", null, label));
 
+    /* Fill, ring colour and ring width are all CSS (dataviz.css PART 1c). The
+       only thing decided here is WHICH of the two looks applies: a work with no
+       location has nothing to link to, so it is drawn hollow. */
     node.appendChild(svg("circle", {
-      class: "dyviz-mark", cx: cx, cy: cy, r: r,
-      fill: linked ? "var(--dyviz-mark)" : "none",
-      /* A ring in the surface colour keeps overlapping bubbles legible as
-         separate marks. The unlinked bubble has no fill, so its ring is the
-         mark and has to be ink, not surface. */
-      stroke: linked ? "var(--dyviz-surface)" : "var(--dyviz-mark-none-ring)",
-      "stroke-width": linked ? 2 : 1.5,
+      class: linked ? "dyviz-mark" : "dyviz-mark dyviz-mark-none",
+      cx: cx, cy: cy, r: r,
     }));
     /* An invisible >= 22px target over the mark. A 9px circle is a legitimate
        size for the ENCODING and an illegitimate one for a finger. */

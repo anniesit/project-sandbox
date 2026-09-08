@@ -1,0 +1,268 @@
+/* ============================================================
+ * dataviz.css — look and layout for the Danny Yung archive charts.
+ * Pairs with dataviz.js. Same convention as filmtv/cooccur.css:
+ * ALL colour and type live in PART 1; PART 2 is structure only.
+ *
+ * REQUIRED. dataviz.js injects a minimal structural floor so a missing
+ * stylesheet degrades to a plain-but-readable chart rather than a broken
+ * one, but every design decision is here.
+ *
+ * Load it before the script:
+ *   <link rel="stylesheet" href=".../dannyyung/dataviz.css">
+ *   <script src=".../dannyyung/dataviz.js" defer></script>
+ *
+ * Tokens are declared on [data-dataviz] at ZERO specificity via :where(),
+ * so re-declaring any of them on a Webflow class that wraps the chart wins
+ * without a specificity fight. That is the intended way to differ per page:
+ *   .viz-card.cc-home { --dyviz-rowname-size: 14px; }
+ * ============================================================ */
+
+/* ============================================================
+ * PART 1 — COLOUR AND TYPE  (edit everything visual here)
+ * ============================================================ */
+
+/* --- 1a. tokens, light --- */
+:where([data-dataviz]) {
+  /* -- surfaces and text -- */
+  --dyviz-surface: #ffffff;         /* tooltip bg; also the ring that separates
+                                       overlapping bubbles                     */
+  --dyviz-ink: #1d1c1a;             /* row names, tooltip text                 */
+  --dyviz-muted: #6f6a60;           /* year ticks, axis titles, button label   */
+
+  /* -- graph lines -- */
+  --dyviz-line: #cccabf;            /* the two axis rules, button border       */
+  --dyviz-grid: #e6e3da;            /* row baselines, table rules              */
+
+  /* -- the bubble -- */
+  --dyviz-mark: var(--primary--accent, #c0442a);  /* fill                      */
+  --dyviz-mark-fill-opacity: 1;     /* drop to ~.55 for a translucent look     */
+  --dyviz-mark-stroke: var(--dyviz-surface);      /* ring around each bubble   */
+  --dyviz-mark-stroke-width: 2px;
+  --dyviz-mark-none-ring: #8d877b;  /* the hollow, unlinked bubble             */
+  --dyviz-mark-none-width: 1.5px;
+
+  /* -- bubble size --
+     r = base * count^growth, capped at half the band.
+     growth 0.5 is AREA-true and the perceptually honest encoding: four works
+     draw four times the ink. Above 0.5 exaggerates big counts, below flattens
+     them. base is the radius of a single work — below ~4px a dot stops being
+     clickable, which is why the hit target is separate.                       */
+  --dyviz-bubble-base: 4.5;
+  --dyviz-bubble-growth: 0.5;
+
+  /* -- treemap ramp (collaborators chart; unused on the homepage) -- */
+  --dyviz-ramp-1: #efece3;
+  --dyviz-ramp-2: #d9cfbd;
+  --dyviz-ramp-3: #b39b7e;
+  --dyviz-ramp-4: #8a5f45;
+  --dyviz-ramp-5: #5d2f1e;
+  --dyviz-ramp-ink-1: #1d1c1a;
+  --dyviz-ramp-ink-2: #1d1c1a;
+  --dyviz-ramp-ink-3: #1d1c1a;
+  --dyviz-ramp-ink-4: #ffffff;
+  --dyviz-ramp-ink-5: #ffffff;
+
+  --dyviz-focus: var(--primary--accent, #d14424);
+
+  /* -- type --
+     Sizes are in viewBox units for the SVG text, which equal CSS pixels
+     because the chart re-renders at its measured width. -- */
+  --dyviz-rowname-size: 11px;       /* row names inside the plot   */
+  --dyviz-rowname-weight: 600;
+  --dyviz-tick-size: 10px;          /* year ticks along the bottom */
+  --dyviz-tick-weight: 400;
+  --dyviz-axis-size: 10px;          /* axis titles                 */
+  --dyviz-axis-weight: 400;
+  --dyviz-control-size: 13px;       /* the y-axis switch buttons   */
+  --dyviz-control-weight: 400;
+  --dyviz-tip-size: 12px;           /* tooltip                     */
+  --dyviz-table-size: 13px;         /* fallback data table         */
+  --dyviz-cell-name-size: 11px;     /* treemap cell name           */
+  --dyviz-cell-count-size: 10px;
+}
+
+/* --- 1b. tokens, dark ---
+   Keyed on the theme class the design system's toggle owns, NEVER on
+   prefers-color-scheme: the toggle can put the page in a mode the OS did not
+   ask for, and asking the media query paints dark marks on a light page. */
+:where(html.u-mode-dark) :where([data-dataviz]) {
+  --dyviz-surface: #1d1c1a;
+  --dyviz-ink: #f2efe6;
+  --dyviz-muted: #a09a8e;
+  --dyviz-line: #4a4640;
+  --dyviz-grid: #33302b;
+  --dyviz-mark: var(--primary--accent, #d8563c);
+  --dyviz-ramp-1: #2b2823;
+  --dyviz-ramp-2: #463d33;
+  --dyviz-ramp-3: #6b5745;
+  --dyviz-ramp-4: #96725a;
+  --dyviz-ramp-5: #c99a78;
+  --dyviz-ramp-ink-1: #f2efe6;
+  --dyviz-ramp-ink-2: #f2efe6;
+  --dyviz-ramp-ink-3: #f2efe6;
+  --dyviz-ramp-ink-4: #1d1c1a;
+  --dyviz-ramp-ink-5: #1d1c1a;
+}
+
+/* --- 1c. where each token is applied --- */
+
+/* bubbles */
+.dyviz-mark {
+  fill: var(--dyviz-mark);
+  fill-opacity: var(--dyviz-mark-fill-opacity);
+  stroke: var(--dyviz-mark-stroke);
+  stroke-width: var(--dyviz-mark-stroke-width);
+}
+/* a work with no location has nothing to link to, so it is drawn hollow */
+.dyviz-mark-none {
+  fill: none;
+  stroke: var(--dyviz-mark-none-ring);
+  stroke-width: var(--dyviz-mark-none-width);
+}
+
+/* chart text */
+.dyviz-rowname {
+  fill: var(--dyviz-ink);
+  font-size: var(--dyviz-rowname-size);
+  font-weight: var(--dyviz-rowname-weight);
+}
+.dyviz-tick {
+  fill: var(--dyviz-muted);
+  font-size: var(--dyviz-tick-size);
+  font-weight: var(--dyviz-tick-weight);
+}
+.dyviz-axis {
+  fill: var(--dyviz-muted);
+  font-size: var(--dyviz-axis-size);
+  font-weight: var(--dyviz-axis-weight);
+}
+
+/* graph lines — drawn by the script as .dyviz-rule / .dyviz-baseline */
+.dyviz-rule { stroke: var(--dyviz-line); }
+.dyviz-baseline { stroke: var(--dyviz-grid); }
+
+/* the y-axis switch */
+.dyviz-toggle-btn {
+  border: 1px solid var(--dyviz-line);
+  background: transparent;
+  color: var(--dyviz-muted);
+  font-size: var(--dyviz-control-size);
+  font-weight: var(--dyviz-control-weight);
+}
+.dyviz-toggle-btn[aria-pressed="true"] {
+  border-color: var(--dyviz-mark);
+  background: var(--dyviz-mark);
+  color: var(--dyviz-surface);
+}
+
+/* focus and hover */
+.dyviz-a:focus-visible,
+.dyviz-cell:focus-visible,
+.dyviz-toggle-btn:focus-visible {
+  outline: 2px solid var(--dyviz-focus);
+}
+.dyviz-a:hover .dyviz-mark,
+.dyviz-a:focus-visible .dyviz-mark {
+  stroke: var(--dyviz-focus);
+  stroke-width: 2px;
+}
+.dyviz-cell:hover { filter: brightness(1.06); }
+
+/* tooltip */
+.dyviz-tip {
+  background: var(--dyviz-ink);
+  color: var(--dyviz-surface);
+  font-size: var(--dyviz-tip-size);
+}
+
+/* treemap cells */
+.dyviz-cell-name { font-size: var(--dyviz-cell-name-size); font-weight: 600; }
+.dyviz-cell-count { font-size: var(--dyviz-cell-count-size); }
+
+/* fallback table */
+.dyviz-table { font-size: var(--dyviz-table-size); }
+.dyviz-table th,
+.dyviz-table td { border-bottom: 1px solid var(--dyviz-grid); }
+
+/* ============================================================
+ * PART 2 — STRUCTURE / LAYOUT  (no colours below this line)
+ * ============================================================ */
+
+.dyviz-plot { position: relative; }
+.dyviz-svg { display: block; width: 100%; height: auto; overflow: visible; }
+
+/* an invisible >= 22px target over each mark: a 9px circle is a legitimate
+   size for the ENCODING and an illegitimate one for a finger */
+.dyviz-hit { fill: transparent; stroke: none; }
+.dyviz-a { cursor: pointer; outline-offset: 2px; }
+
+.dyviz-toggle { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.dyviz-toggle-btn {
+  padding: 4px 12px;
+  font: inherit;
+  line-height: 1.5;
+  cursor: pointer;
+}
+.dyviz-toggle-btn:focus-visible { outline-offset: 2px; }
+
+.dyviz-tree { position: relative; width: 100%; }
+.dyviz-cell {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  overflow: hidden;
+  padding: 4px;
+  text-align: center;
+  text-decoration: none;
+  box-sizing: border-box;
+  outline-offset: -2px;
+}
+/* A long name in a small box has to lose its tail, not push the count out of
+   the box or crop through the middle of a glyph. Two lines, clipped cleanly;
+   the full name is in the tooltip, the accessible name and the table. */
+.dyviz-cell-name {
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.dyviz-cell-count { flex: none; line-height: 1; opacity: 0.75; }
+
+.dyviz-tip {
+  position: absolute;
+  z-index: 9;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -100%);
+  white-space: nowrap;
+  padding: 6px 8px;
+  line-height: 1.35;
+  transition: opacity 0.1s;
+}
+.dyviz-tip[data-on] { opacity: 1; }
+
+.dyviz-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.dyviz-ramp { display: flex; align-items: center; gap: 2px; }
+.dyviz-ramp-step { width: 20px; height: 10px; }
+
+.dyviz-table { width: 100%; border-collapse: collapse; }
+.dyviz-table th,
+.dyviz-table td { padding: 4px 8px; text-align: left; }
+
+@media (prefers-reduced-motion: reduce) {
+  .dyviz-tip { transition: none; }
+}
