@@ -114,19 +114,74 @@ the charts render light, which is the right way to fail against a white page.
 
 Nothing re-renders when the toggle flips — these are CSS custom properties.
 
-## Colour lives in CSS, geometry lives in JS
+## The look lives in `dataviz.css`
 
-`dataviz.js` writes inline `x`/`y`/`width`/`height` because those are computed per
-viewport and cannot be classes. Every **colour**, by contrast, is a
-`--dyviz-*` custom property. The defaults are injected once under
-`:where([data-dataviz])` — **zero specificity** — so any rule authored in the
-Webflow Designer overrides them with no `!important` and no edit to this file.
-Retheme by re-declaring `--dyviz-*` on `.section`, on `[data-dataviz]`, or in the
-project override block.
+`dataviz.js` writes inline `x`/`y`/`width`/`height` because those are computed
+per viewport and cannot be classes. Everything else — colour, type, spacing,
+bubble size — lives in **`dataviz.css`**, laid out like `filmtv/cooccur.css`:
 
-The injected stylesheet carries **structure only** (positioning, overflow,
-focus ring). Anything that is a design decision — type, spacing, the card border —
-belongs to the Webflow classes.
+* **PART 1 — colour, type and spacing.** Every token, plus the rules that apply
+  them. This is the only part you edit to change how the chart looks.
+* **PART 2 — structure.** No colour below that line.
+
+Tokens are declared on `:where([data-dataviz])` — **zero specificity** — so
+re-declaring any of them on a Webflow class that wraps the chart wins with no
+`!important` and no edit to either file:
+
+```css
+.viz-card.cc-home { --dyviz-rowname-size: 15px; }
+.viz-plot { height: 60svh; --dyviz-bubble-growth: 1; }
+```
+
+### ⚠️ The stylesheet is linked by the script, not by the page
+
+**There is no `<link>` in Webflow, and nothing to find in the Designer.**
+`dataviz.js` resolves `dataviz.css` from its own `src` — the two files sit side
+by side on the seam — and injects the `<link>` into `<head>` itself. This is the
+same trick the file uses to locate its sample data.
+
+The reason is that four pages load this chart (homepage, `/dataviz`,
+`/en/dataviz`, the local harness) and a fifth will be added eventually. One
+forgotten `<link>` fails as "the chart looks wrong on the new page" with no
+visible cause; self-linking cannot be forgotten.
+
+The cost is that **the dependency is invisible on the page**, which is why it is
+written down here. If you ever move or rename either file, move both — they must
+remain siblings. An explicit `<link>` is honoured and not duplicated (the check
+compares resolved hrefs), so adding one by hand is safe if you would rather
+declare it.
+
+`dataviz.js` still injects a **minimal structural floor**: only the handful of
+rules without which the layout collapses rather than merely looking plain
+(absolutely-positioned treemap cells, tooltip positioning, mark fill). A missing
+`dataviz.css` therefore degrades to a readable unstyled chart, not a broken page.
+
+### Two token groups that behave differently
+
+| | Consumed as | Units |
+|---|---|---|
+| colour, font size/weight, opacity | real CSS | **take units** — `15px`, `1rem`, `var(--_typography---paragraph-sm--font-size)` |
+| spacing and bubble size | read by JS via `parseFloat` | **unitless only** — `12`, not `12px` |
+
+The second group (`--dyviz-pad-*`, `--dyviz-rowname-x`/`-y`, `--dyviz-tick-gap`,
+`--dyviz-axis-*`, `--dyviz-band-*`, `--dyviz-bubble-*`) is read back out of CSS
+by `cssNum()`. An unregistered custom property is never resolved to pixels, so
+`12px` reads as `12` and `1rem` reads as `1`. They are viewBox units, which equal
+CSS pixels because the chart re-renders at its measured width.
+
+`--dyviz-rowname-y` is a text **baseline** offset, not a top edge: raise it when
+you raise `--dyviz-rowname-size`, or the label crowds the hairline above it.
+
+### Bubble size
+
+`r = --dyviz-bubble-base × count ^ --dyviz-bubble-growth`, capped at half the
+band. `0.5` is **area-true** — four works draw four times the ink. `1` makes the
+radius proportional instead, so four works draw *sixteen* times the ink; it reads
+as more dramatic and overstates the big years. Both are legitimate editorial
+choices, but the cap bites sooner at higher growth: at `growth: 1, base: 4.5` a
+count of 8 wants r=36, which fits the homepage's tall plot (rMax ≈ 46) but clamps
+on `/dataviz`'s 10-row location axis (rMax ≈ 19), where every count above 4 draws
+the same size. Lower `--dyviz-bubble-base` there if that matters.
 
 ## The data seam
 

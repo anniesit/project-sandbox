@@ -24,21 +24,21 @@
 /* --- 1a. tokens, light --- */
 :where([data-dataviz]) {
   /* -- surfaces and text -- */
-  --dyviz-surface: #ffffff;         /* tooltip bg; also the ring that separates
+  --dyviz-surface: #ffffff; /* tooltip bg; also the ring that separates
                                        overlapping bubbles                     */
-  --dyviz-ink: #1d1c1a;             /* row names, tooltip text                 */
-  --dyviz-muted: #6f6a60;           /* year ticks, axis titles, button label   */
+  --dyviz-ink: #1d1c1a; /* row names, tooltip text                 */
+  --dyviz-muted: #6f6a60; /* year ticks, axis titles, button label   */
 
   /* -- graph lines -- */
-  --dyviz-line: #cccabf;            /* the two axis rules, button border       */
-  --dyviz-grid: #e6e3da;            /* row baselines, table rules              */
+  --dyviz-line: #cccabf; /* the two axis rules, button border       */
+  --dyviz-grid: #e6e3da; /* row baselines, table rules              */
 
   /* -- the bubble -- */
-  --dyviz-mark: var(--primary--accent, #c0442a);  /* fill                      */
-  --dyviz-mark-fill-opacity: 1;     /* drop to ~.55 for a translucent look     */
-  --dyviz-mark-stroke: var(--dyviz-surface);      /* ring around each bubble   */
+  --dyviz-mark: var(--primary--accent, #c0442a); /* fill                      */
+  --dyviz-mark-fill-opacity: 0.7;  /* translucent, so overlaps read as overlaps */
+  --dyviz-mark-stroke: var(--primary--accent-dark, #9d1e01);  /* a darker shade of the mark, so the ring reads as a border */
   --dyviz-mark-stroke-width: 2px;
-  --dyviz-mark-none-ring: #8d877b;  /* the hollow, unlinked bubble             */
+  --dyviz-mark-none-ring: #8d877b; /* the hollow, unlinked bubble             */
   --dyviz-mark-none-width: 1.5px;
 
   /* -- bubble size --
@@ -48,7 +48,7 @@
      them. base is the radius of a single work — below ~4px a dot stops being
      clickable, which is why the hit target is separate.                       */
   --dyviz-bubble-base: 4.5;
-  --dyviz-bubble-growth: 0.5;
+  --dyviz-bubble-growth: 1;  /* radius-proportional; see the note above */
 
   /* -- treemap ramp (collaborators chart; unused on the homepage) -- */
   --dyviz-ramp-1: #efece3;
@@ -65,20 +65,27 @@
   --dyviz-focus: var(--primary--accent, #d14424);
 
   /* -- type --
-     Sizes are in viewBox units for the SVG text, which equal CSS pixels
-     because the chart re-renders at its measured width. -- */
-  --dyviz-rowname-size: 11px;       /* row names inside the plot   */
+     These are consumed as real CSS, so they TAKE UNITS (unlike the spacing
+     block further down, which is read by JS and must be unitless). SVG text
+     sizes are viewBox units, which equal CSS pixels because the chart
+     re-renders at its measured width. */
+  /* Bound to the project's fluid type scale so the chart tracks the rest of the
+     page rather than drifting from it. Each carries a px FALLBACK: those Webflow
+     variables do not exist in the local harness or any non-Webflow host, and
+     without one the declaration would be invalid and the size would silently
+     inherit.                                                                 */
+  --dyviz-rowname-size: var(--_typography---paragraph-sm--font-size, 11px);
   --dyviz-rowname-weight: 600;
-  --dyviz-tick-size: 10px;          /* year ticks along the bottom */
+  --dyviz-tick-size: var(--_typography---paragraph-sm--font-size, 10px);
   --dyviz-tick-weight: 400;
-  --dyviz-axis-size: 10px;          /* axis titles                 */
+  --dyviz-axis-size: var(--_typography---paragraph-sm--font-size, 10px);
   --dyviz-axis-weight: 400;
-  --dyviz-control-size: 13px;       /* the y-axis switch buttons   */
-  --dyviz-control-weight: 400;
-  --dyviz-tip-size: 12px;           /* tooltip                     */
-  --dyviz-table-size: 13px;         /* fallback data table         */
-  --dyviz-cell-name-size: 11px;     /* treemap cell name           */
-  --dyviz-cell-count-size: 10px;
+  --dyviz-control-size: var(--_typography---paragraph-body--font-size, 13px);
+  --dyviz-control-weight: 600;
+  --dyviz-tip-size: var(--_typography---paragraph-sm--font-size, 12px);
+  --dyviz-table-size: var(--_typography---paragraph-body--font-size, 13px);
+  --dyviz-cell-name-size: var(--_typography---paragraph-sm--font-size, 11px);
+  --dyviz-cell-count-size: var(--_typography---paragraph-body--font-size, 10px);
 
   /* -- spacing --
      SVG <text> ignores CSS padding, so the chart's breathing room is geometry
@@ -100,12 +107,12 @@
      when you raise --dyviz-rowname-size or the label will crowd the hairline
      above it. Roughly size + 2 is a safe floor.                              */
   --dyviz-rowname-x: 6;
-  --dyviz-rowname-y: 13;
+  --dyviz-rowname-y: 18;  /* raised to clear the larger row-name type */
 
   /* Year ticks below the axis rule, and the two axis titles. */
-  --dyviz-tick-gap: 13;             /* rule -> tick baseline       */
-  --dyviz-axis-x-gap: 4;            /* bottom edge -> axis title   */
-  --dyviz-axis-y-inset: 11;         /* left edge -> rotated title  */
+  --dyviz-tick-gap: 13; /* rule -> tick baseline       */
+  --dyviz-axis-x-gap: 4; /* bottom edge -> axis title   */
+  --dyviz-axis-y-inset: 11; /* left edge -> rotated title  */
 }
 
 /* --- 1b. tokens, dark ---
@@ -165,16 +172,18 @@
 }
 
 /* graph lines — drawn by the script as .dyviz-rule / .dyviz-baseline */
-.dyviz-rule { stroke: var(--dyviz-line); }
-.dyviz-baseline { stroke: var(--dyviz-grid); }
+.dyviz-rule {
+  stroke: var(--dyviz-line);
+}
+.dyviz-baseline {
+  stroke: var(--dyviz-grid);
+}
 
 /* the y-axis switch */
 .dyviz-toggle-btn {
   border: 1px solid var(--dyviz-line);
   background: transparent;
   color: var(--dyviz-muted);
-  font-size: var(--dyviz-control-size);
-  font-weight: var(--dyviz-control-weight);
 }
 .dyviz-toggle-btn[aria-pressed="true"] {
   border-color: var(--dyviz-mark);
@@ -193,7 +202,9 @@
   stroke: var(--dyviz-focus);
   stroke-width: 2px;
 }
-.dyviz-cell:hover { filter: brightness(1.06); }
+.dyviz-cell:hover {
+  filter: brightness(1.06);
+}
 
 /* tooltip */
 .dyviz-tip {
@@ -203,36 +214,70 @@
 }
 
 /* treemap cells */
-.dyviz-cell-name { font-size: var(--dyviz-cell-name-size); font-weight: 600; }
-.dyviz-cell-count { font-size: var(--dyviz-cell-count-size); }
+.dyviz-cell-name {
+  font-size: var(--dyviz-cell-name-size);
+  font-weight: 600;
+}
+.dyviz-cell-count {
+  font-size: var(--dyviz-cell-count-size);
+}
 
 /* fallback table */
-.dyviz-table { font-size: var(--dyviz-table-size); }
+.dyviz-table {
+  font-size: var(--dyviz-table-size);
+}
 .dyviz-table th,
-.dyviz-table td { border-bottom: 1px solid var(--dyviz-grid); }
+.dyviz-table td {
+  border-bottom: 1px solid var(--dyviz-grid);
+}
 
 /* ============================================================
  * PART 2 — STRUCTURE / LAYOUT  (no colours below this line)
  * ============================================================ */
 
-.dyviz-plot { position: relative; }
-.dyviz-svg { display: block; width: 100%; height: auto; overflow: visible; }
+.dyviz-plot {
+  position: relative;
+}
+.dyviz-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
 
 /* an invisible >= 22px target over each mark: a 9px circle is a legitimate
    size for the ENCODING and an illegitimate one for a finger */
-.dyviz-hit { fill: transparent; stroke: none; }
-.dyviz-a { cursor: pointer; outline-offset: 2px; }
+.dyviz-hit {
+  fill: transparent;
+  stroke: none;
+}
+.dyviz-a {
+  cursor: pointer;
+  outline-offset: 2px;
+}
 
-.dyviz-toggle { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.dyviz-toggle {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
 .dyviz-toggle-btn {
   padding: 4px 12px;
   font: inherit;
   line-height: 1.5;
   cursor: pointer;
+  font-size: var(--dyviz-control-size);
+  font-weight: var(--dyviz-control-weight);
 }
-.dyviz-toggle-btn:focus-visible { outline-offset: 2px; }
+.dyviz-toggle-btn:focus-visible {
+  outline-offset: 2px;
+}
 
-.dyviz-tree { position: relative; width: 100%; }
+.dyviz-tree {
+  position: relative;
+  width: 100%;
+}
 .dyviz-cell {
   position: absolute;
   display: flex;
@@ -259,7 +304,11 @@
   max-width: 100%;
   overflow-wrap: anywhere;
 }
-.dyviz-cell-count { flex: none; line-height: 1; opacity: 0.75; }
+.dyviz-cell-count {
+  flex: none;
+  line-height: 1;
+  opacity: 0.75;
+}
 
 .dyviz-tip {
   position: absolute;
@@ -272,7 +321,9 @@
   line-height: 1.35;
   transition: opacity 0.1s;
 }
-.dyviz-tip[data-on] { opacity: 1; }
+.dyviz-tip[data-on] {
+  opacity: 1;
+}
 
 .dyviz-legend {
   display: flex;
@@ -283,13 +334,28 @@
   margin: 0;
   padding: 0;
 }
-.dyviz-ramp { display: flex; align-items: center; gap: 2px; }
-.dyviz-ramp-step { width: 20px; height: 10px; }
+.dyviz-ramp {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.dyviz-ramp-step {
+  width: 20px;
+  height: 10px;
+}
 
-.dyviz-table { width: 100%; border-collapse: collapse; }
+.dyviz-table {
+  width: 100%;
+  border-collapse: collapse;
+}
 .dyviz-table th,
-.dyviz-table td { padding: 4px 8px; text-align: left; }
+.dyviz-table td {
+  padding: 4px 8px;
+  text-align: left;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .dyviz-tip { transition: none; }
+  .dyviz-tip {
+    transition: none;
+  }
 }
