@@ -371,7 +371,11 @@
     tableTemporal(host, ax, t);
 
     empty(plot);
-    plot.className = "dyviz-plot";
+    /* ADD, never assign: [data-plot] is authored in Webflow and may carry
+       classes that size it or re-declare --dyviz-* tokens. Overwriting
+       className silently destroys them, and on a fixed-height plot that also
+       breaks the height read below. */
+    plot.classList.add("dyviz-plot");
     var rows = ax.rows || [];
     var points = ax.points || [];
     if (!points.length || !rows.length) {
@@ -563,7 +567,7 @@
     var axes = (data && data.axes) || [];
     if (axes.length < 2) { empty(box); return; }
     empty(box);
-    box.className = "dyviz-legend dyviz-toggle";
+    box.classList.add("dyviz-legend", "dyviz-toggle");
     box.setAttribute("role", "group");
     box.setAttribute("aria-label", t.yAxis);
     var current = axisOf(root, data);
@@ -603,7 +607,7 @@
     tableCollab(host, data, t);
 
     empty(plot);
-    plot.className = "dyviz-plot dyviz-tree";
+    plot.classList.add("dyviz-plot", "dyviz-tree");   /* see note in drawTemporal */
     if (!list.length) {
       plot.appendChild(el("div", null, t.empty));
       return;
@@ -721,7 +725,7 @@
     var box = part(host, "legend");
     if (!box) return;
     empty(box);
-    box.className = "dyviz-legend";
+    box.classList.add("dyviz-legend");
     box.appendChild(el("span", null, t.legendCredits));
     var ramp = el("span", { class: "dyviz-ramp", "aria-hidden": "true" });
     ramp.appendChild(el("span", null, t.fewer));
