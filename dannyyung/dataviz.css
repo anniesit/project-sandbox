@@ -1,7 +1,7 @@
 /* ============================================================
  * dataviz.css — look and layout for the Danny Yung archive charts.
  * Pairs with dataviz.js. Same convention as filmtv/cooccur.css:
- * ALL colour and type live in PART 1; PART 2 is structure only.
+ * ALL colour, type and spacing live in PART 1; PART 2 is structure only.
  *
  * REQUIRED. dataviz.js injects a minimal structural floor so a missing
  * stylesheet degrades to a plain-but-readable chart rather than a broken
@@ -18,7 +18,7 @@
  * ============================================================ */
 
 /* ============================================================
- * PART 1 — COLOUR AND TYPE  (edit everything visual here)
+ * PART 1 — COLOUR, TYPE AND SPACING  (edit everything visual here)
  * ============================================================ */
 
 /* --- 1a. tokens, light --- */
@@ -79,6 +79,33 @@
   --dyviz-table-size: 13px;         /* fallback data table         */
   --dyviz-cell-name-size: 11px;     /* treemap cell name           */
   --dyviz-cell-count-size: 10px;
+
+  /* -- spacing --
+     SVG <text> ignores CSS padding, so the chart's breathing room is geometry
+     that dataviz.js reads back out of here. UNITLESS numbers only: an
+     unregistered custom property is never resolved to px, so `12px` would be
+     read as 12 and `1rem` as 1. They are viewBox units, which equal CSS pixels
+     because the chart re-renders at its measured width.
+
+     Padding around the plot area. The bottom has to hold the year ticks AND
+     the axis title under them; the left holds the rotated axis title. Raise
+     the gaps below and you usually want to raise these to match.             */
+  --dyviz-pad-top: 10;
+  --dyviz-pad-right: 12;
+  --dyviz-pad-bottom: 34;
+  --dyviz-pad-left: 34;
+
+  /* Row label, measured from its band's top-left corner. -y is a TEXT BASELINE
+     offset, not a top edge: it needs to clear the font's ascender, so raise it
+     when you raise --dyviz-rowname-size or the label will crowd the hairline
+     above it. Roughly size + 2 is a safe floor.                              */
+  --dyviz-rowname-x: 6;
+  --dyviz-rowname-y: 13;
+
+  /* Year ticks below the axis rule, and the two axis titles. */
+  --dyviz-tick-gap: 13;             /* rule -> tick baseline       */
+  --dyviz-axis-x-gap: 4;            /* bottom edge -> axis title   */
+  --dyviz-axis-y-inset: 11;         /* left edge -> rotated title  */
 }
 
 /* --- 1b. tokens, dark ---

@@ -387,7 +387,23 @@
        names sit INSIDE the plot at the top of their own band, as in the Figma
        frame, which buys the data the full width. */
     var W = Math.max(plot.clientWidth || 0, 320);
-    var M = { top: 10, right: 12, bottom: 34, left: 34 };
+    /* Plot padding. SVG <text> ignores CSS padding, so all of this chart's
+       breathing room is geometry — which means it has to be readable from CSS
+       to be editable at all. --dyviz-pad-bottom has to leave room for the year
+       ticks AND the axis title beneath them; --dyviz-pad-left holds the rotated
+       axis title. Raise the tick/axis gaps below and you usually want to raise
+       --dyviz-pad-bottom with them. */
+    var M = {
+      top: cssNum(plot, "--dyviz-pad-top", 10),
+      right: cssNum(plot, "--dyviz-pad-right", 12),
+      bottom: cssNum(plot, "--dyviz-pad-bottom", 34),
+      left: cssNum(plot, "--dyviz-pad-left", 34),
+    };
+    var rowX = cssNum(plot, "--dyviz-rowname-x", 6);
+    var rowY = cssNum(plot, "--dyviz-rowname-y", 13);
+    var tickGap = cssNum(plot, "--dyviz-tick-gap", 13);
+    var axisXGap = cssNum(plot, "--dyviz-axis-x-gap", 4);
+    var axisYInset = cssNum(plot, "--dyviz-axis-y-inset", 11);
     /* The band has to shrink as rows are added, or switching from 5 categories
        to 10 locations would double the chart's height and push half of it off
        the screen. Floored at 36 so the largest bubble plus its label still fit. */
@@ -478,7 +494,7 @@
         }));
       }
       s.appendChild(svg("text", {
-        x: x0 + 6, y: by + 13, "class": "dyviz-rowname",
+        x: x0 + rowX, y: by + rowY, "class": "dyviz-rowname",
       }, rows[c].label + " · " + rows[c].count));
     }
     s.appendChild(svg("line", {
@@ -494,17 +510,17 @@
     if (ticks[ticks.length - 1] !== maxY) ticks.push(maxY);
     for (var k = 0; k < ticks.length; k++) {
       s.appendChild(svg("text", {
-        x: X(ticks[k]), y: y1 + 13, "class": "dyviz-tick",
+        x: X(ticks[k]), y: y1 + tickGap, "class": "dyviz-tick",
         "text-anchor": k === 0 ? "start" : k === ticks.length - 1 ? "end" : "middle",
       }, String(ticks[k])));
     }
     s.appendChild(svg("text", {
-      x: (x0 + x1) / 2, y: H - 4, "class": "dyviz-axis",
+      x: (x0 + x1) / 2, y: H - axisXGap, "class": "dyviz-axis",
       "text-anchor": "middle",
     }, t.year + paren(t.en, minY + "\u2013" + maxY)));
     s.appendChild(svg("text", {
       "class": "dyviz-axis", "text-anchor": "middle",
-      transform: "translate(11," + (y0 + y1) / 2 + ") rotate(-90)",
+      transform: "translate(" + axisYInset + "," + (y0 + y1) / 2 + ") rotate(-90)",
     }, ax.label));
 
     /* One bubble per (year x row) — no dodging, because there is nothing left
