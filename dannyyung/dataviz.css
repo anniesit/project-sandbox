@@ -50,17 +50,25 @@
   --dyviz-bubble-base: 4.5;
   --dyviz-bubble-growth: 1;  /* radius-proportional; see the note above */
 
-  /* -- treemap ramp (collaborators chart; unused on the homepage) -- */
-  --dyviz-ramp-1: #efece3;
-  --dyviz-ramp-2: #d9cfbd;
-  --dyviz-ramp-3: #b39b7e;
-  --dyviz-ramp-4: #8a5f45;
-  --dyviz-ramp-5: #5d2f1e;
-  --dyviz-ramp-ink-1: #1d1c1a;
-  --dyviz-ramp-ink-2: #1d1c1a;
-  --dyviz-ramp-ink-3: #1d1c1a;
-  --dyviz-ramp-ink-4: #ffffff;
-  --dyviz-ramp-ink-5: #ffffff;
+  /* -- treemap ramp (collaborators chart; unused on the homepage) --
+     The project's fire ramp, light to dark. Each -ink- is the text colour that
+     sits ON that step; the pairs are chosen for contrast, so if you re-order
+     the steps re-check the inks with them. Bound to the Webflow primitives with
+     hex fallbacks for the harness.
+     Steps skip ramp positions on purpose: consecutive fire values are too close
+     to tell apart as areas. Validated in both modes — every step/ink pair is
+     AA or better, and no two adjacent steps are under 1.4:1. Re-run that check
+     if you re-pick any of them. */
+  --dyviz-ramp-1: var(--_color---fire--025, #fff3f0);
+  --dyviz-ramp-2: var(--_color---fire--200, #f4b3a4);
+  --dyviz-ramp-3: var(--_color---fire--400, #f55f3d);
+  --dyviz-ramp-4: var(--_color---fire--600, #9d1e01);
+  --dyviz-ramp-5: var(--_color---fire--800, #3f0c01);
+  --dyviz-ramp-ink-1: var(--_color---fire--900, #280c05);
+  --dyviz-ramp-ink-2: var(--_color---fire--900, #280c05);
+  --dyviz-ramp-ink-3: var(--_color---fire--900, #280c05);
+  --dyviz-ramp-ink-4: var(--_color---fire--025, #fff3f0);
+  --dyviz-ramp-ink-5: var(--_color---fire--025, #fff3f0);
 
   --dyviz-focus: var(--primary--accent, #d14424);
 
@@ -126,16 +134,16 @@
   --dyviz-line: #4a4640;
   --dyviz-grid: #33302b;
   --dyviz-mark: var(--primary--accent, #d8563c);
-  --dyviz-ramp-1: #2b2823;
-  --dyviz-ramp-2: #463d33;
-  --dyviz-ramp-3: #6b5745;
-  --dyviz-ramp-4: #96725a;
-  --dyviz-ramp-5: #c99a78;
-  --dyviz-ramp-ink-1: #f2efe6;
-  --dyviz-ramp-ink-2: #f2efe6;
-  --dyviz-ramp-ink-3: #f2efe6;
-  --dyviz-ramp-ink-4: #1d1c1a;
-  --dyviz-ramp-ink-5: #1d1c1a;
+  --dyviz-ramp-1: var(--_color---fire--900, #280c05);
+  --dyviz-ramp-2: var(--_color---fire--700, #621402);
+  --dyviz-ramp-3: var(--_color---fire--600, #9d1e01);
+  --dyviz-ramp-4: var(--_color---fire--500, #fe3f14);
+  --dyviz-ramp-5: var(--_color---fire--300, #f38972);
+  --dyviz-ramp-ink-1: var(--_color---fire--050, #ffeae5);
+  --dyviz-ramp-ink-2: var(--_color---fire--050, #ffeae5);
+  --dyviz-ramp-ink-3: var(--_color---fire--050, #ffeae5);
+  --dyviz-ramp-ink-4: var(--_color---fire--900, #280c05);
+  --dyviz-ramp-ink-5: var(--_color---fire--900, #280c05);
 }
 
 /* --- 1c. where each token is applied --- */
