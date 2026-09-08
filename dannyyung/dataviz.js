@@ -66,7 +66,9 @@
  *                                        axis switch
  *
  * COLOUR AND TYPE LIVE IN dataviz.css, GEOMETRY LIVES HERE.
- * That file is REQUIRED and must be linked before this script. It is organised
+ * That file is REQUIRED. The script LINKS IT AUTOMATICALLY from its own URL
+ * (they sit side by side on the seam), so no page has to remember a <link>;
+ * an explicit link is still honoured and not duplicated. It is organised
  * like filmtv/cooccur.css: PART 1 is every colour, type size/weight and bubble
  * parameter; PART 2 is structure. This file injects only a minimal floor so a
  * missing stylesheet degrades to a plain chart rather than a broken one.
@@ -243,6 +245,26 @@
     s.id = "dyviz-css";
     s.textContent = CSS;
     (document.head || document.documentElement).appendChild(s);
+    linkStylesheet();
+  }
+
+  /* dataviz.css sits next to this file on the same seam, so the script can find
+     it from its own URL rather than every page having to remember a <link>.
+     One consumer to wire instead of four, and the pair cannot drift apart.
+     A page that DOES link it explicitly (the local harnesses do, as
+     documentation) is left alone — the check below is by resolved href, so a
+     relative link and this absolute one still match. */
+  function linkStylesheet() {
+    var href = SELF.replace(/dataviz\.js(\?.*)?$/, "dataviz.css");
+    if (href === SELF) return;                    /* unrecognised filename */
+    var links = document.querySelectorAll('link[rel~="stylesheet"]');
+    for (var i = 0; i < links.length; i++) {
+      if (links[i].href === href) return;         /* already linked */
+    }
+    var l = document.createElement("link");
+    l.rel = "stylesheet";
+    l.href = href;
+    (document.head || document.documentElement).appendChild(l);
   }
 
   /* ---------- small DOM helpers ---------- */
