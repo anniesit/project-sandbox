@@ -194,6 +194,16 @@
     if (!el) return null;
     var clone = el.cloneNode(true);
     clone.removeAttribute(sel.replace(/[\[\]]/g, ""));
+    /* The design system stamps data-accordion-bound on every accordion it has
+       wired up, and skips anything already carrying it. cloneNode copies that
+       stamp but NOT the listeners it stands for, so an un-stripped clone would
+       be invisible to MastAccordion.init() forever — and silently lose its
+       open/close animation. Strip it here, once, for the template and anything
+       nested inside it. */
+    if (clone.removeAttribute) clone.removeAttribute("data-accordion-bound");
+    all(clone, "[data-accordion-bound]").forEach(function (n) {
+      n.removeAttribute("data-accordion-bound");
+    });
     el.parentNode.removeChild(el);
     root.__tpl[key] = clone;
     return clone;
@@ -329,10 +339,26 @@
     if (!host || !groupTpl || !thumbTpl) return;
 
     removeClones(host);
-    groups.forEach(function (g) {
+    groups.forEach(function (g, i) {
       var node = groupTpl.cloneNode(true);
       node.setAttribute("data-clone", "");
       node.setAttribute("data-group-key", g.key || "");
+
+      /* Only the FIRST group starts open; the rest are collapsed.
+         Both attributes are needed, and neither can come from the template:
+         Webflow drops a valueless `open` when it publishes, and
+         data-accordion-start-open only PROTECTS an existing `open` from being
+         stripped by the design system — it never adds one.
+         The others must NOT carry data-accordion-start-open, or the design
+         system skips collapsing them to height:0 and their first open animates
+         from full height to full height, i.e. visibly not at all. */
+      if (i === 0) {
+        node.setAttribute("open", "");
+        node.setAttribute("data-accordion-start-open", "true");
+      } else {
+        node.removeAttribute("open");
+        node.removeAttribute("data-accordion-start-open");
+      }
       setField(node, "groupLabel", g.label);
       setField(node, "groupCount", (g.items || []).length);
 
@@ -345,6 +371,15 @@
       }
       host.appendChild(node);
     });
+
+    /* The accordion open/close animation is a pair of listeners the design
+       system attaches on DOMContentLoaded — it is not CSS. cloneNode does not
+       copy listeners, so every group above is unbound and would fall back to
+       the browser's instant native toggle. This wires up the new ones.
+       Must run AFTER the appends: init() reads the document, and it is what
+       collapses the closed groups to height:0. Re-running it is safe; already
+       bound accordions (the 備註 one) are skipped. */
+    if (window.MastAccordion) window.MastAccordion.init();
   }
 
   /* The template is the <li>, not the button inside it. Cloning the button

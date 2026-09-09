@@ -201,12 +201,12 @@
 
           <div class="materials">
             <div class="material-groups" data-groups>
-              <!-- Each content category is a design system accordion, open by
-                   default: the mockup exists so the client can SEE their data,
-                   so nothing starts hidden. Collapsing matters for the record
-                   with 141 materials in one group. -->
-              <details class="accordion-component cc-group" data-group-template
-                       data-accordion-start-open="true" open>
+              <!-- Each content category is a design system accordion. Only the
+                   FIRST rendered group starts open; entry.js sets `open` and
+                   data-accordion-start-open on that clone and strips both from
+                   the rest, so the template must carry neither. Collapsing
+                   matters for the record with 141 materials in one group. -->
+              <details class="accordion-component cc-group" data-group-template>
                 <summary class="accordion-trigger cc-group">
                   <span class="accordion-title cc-group" data-field="groupLabel">演出照片</span>
                   <span class="material-group-count" data-field="groupCount">8</span>

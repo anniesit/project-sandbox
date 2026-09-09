@@ -180,23 +180,44 @@ Each content category is the same design system accordion as 備註, with a
 header, the count beside the title and the icon pushed right with
 `margin-left: auto`.
 
-**They start open** (`data-accordion-start-open="true"` plus `open`). The mockup
-exists so the client can see their data, so nothing hides by default. Collapsing
+**Only the first group starts open**; the rest render collapsed. Collapsing
 earns its place on the worst record: `DYP-000074` has **141 materials in three
 groups**, and its left column measures **7,769px** — the accordion is the only
-thing that makes that record reviewable.
+thing that makes that record reviewable. Opening the first group means the
+reader still lands on visible material rather than a stack of closed bars.
+
+`entry.js` sets this per clone, and the template in Webflow must carry neither
+attribute. Both are needed on the open one, and neither can come from the
+template:
+
+- Webflow **drops a valueless `open` attribute when it publishes**, so a
+  template marked open in the Designer arrives closed on the live site.
+- `data-accordion-start-open="true"` only *protects* an existing `open` from
+  being stripped by the design system. It never adds one.
+- The closed groups must **not** carry `data-accordion-start-open`, or the
+  design system skips collapsing them to `height: 0` and their first open
+  animates from full height to full height — i.e. visibly not at all.
 
 **Two global classes cannot share an element in Webflow**, so the old
 `.material-group` and `.material-group-label` are gone; the accordion classes
 plus `cc-group` carry the styling. Both dead classes were deleted.
 
-**Known limitation: the cloned groups animate natively, not smoothly.** The
-design system's `accordion.js` collects `document.querySelectorAll("details")`
-once at `DOMContentLoaded`, and `entry.js` clones its groups later, after the
-data arrives — so the clones never get the height animation the 備註 accordion
-has. They still open and close correctly, because `<details>` needs no JS. Worth
-knowing before someone reports it as a bug: it is the initialisation order, not
-the markup.
+**The cloned groups need `MastAccordion.init()` to animate.** The open/close
+transition is a pair of listeners the design system attaches on
+`DOMContentLoaded` — it is not CSS. `cloneNode()` copies attributes and children
+but **not listeners**, so every group `entry.js` builds is an unbound copy and
+falls back to the browser's instant native toggle. `buildGroups()` therefore
+calls `window.MastAccordion.init()` after appending, which wires up anything new
+and skips anything already bound.
+
+Two rules follow for anyone touching this code:
+
+- The call must come **after** the appends. `init()` reads the document, and it
+  is what collapses the closed groups to `height: 0`.
+- `template()` strips `data-accordion-bound` from the lifted template. The
+  design system stamps that attribute on every accordion it wires up and skips
+  anything carrying it; a clone inherits the stamp without the listeners, so an
+  un-stripped clone is invisible to `init()` forever.
 
 ## 備註 is the design system's accordion
 
