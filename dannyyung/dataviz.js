@@ -111,9 +111,7 @@
      one file serves /dataviz and /en/dataviz with no configuration. */
   function lang(root) {
     var el = (root.closest && root.closest("[lang]")) || document.documentElement;
-    return (el.getAttribute("lang") || "zh-Hant").toLowerCase().indexOf("en") === 0
-      ? "en"
-      : "zh";
+    return (el.getAttribute("lang") || "zh-Hant").toLowerCase().indexOf("en") === 0 ? "en" : "zh";
   }
 
   /* Chinese uses full-width brackets and no space before them; English uses
@@ -128,8 +126,12 @@
       en: false,
       year: "年份",
       yAxis: "縱軸",
-      works: function (n) { return n + " 項作品"; },
-      credits: function (n) { return n + " 項合作"; },
+      works: function (n) {
+        return n + " 項作品";
+      },
+      credits: function (n) {
+        return n + " 項合作";
+      },
       filter: "篩選目錄：",
       unfilterable: "未註明，無法在目錄中篩選",
       legendCredits: "合作數量",
@@ -140,17 +142,14 @@
       tableName: "姓名",
       tableCredits: "合作數",
       noteTemporal: function (d) {
-        var s = "共 " + d.works + " 項作品，" + d.dated + " 項有年份可繪於圖上。"
-          + "每個圓點是同一年、同一" + d.axis + "的所有作品，面積為數量。";
+        var s = "共 " + d.works + " 項作品，" + d.dated + " 項有年份可繪於圖上。" + "每個圓點是同一年、同一" + d.axis + "的所有作品，面積為數量。";
         if (d.unfilterable) {
-          s += "其中 " + d.unfilterable + " 項未註明" + d.axis
-            + "，以空心圓表示，目錄沒有相應的篩選項，故不設連結。";
+          s += "其中 " + d.unfilterable + " 項未註明" + d.axis + "，以空心圓表示，目錄沒有相應的篩選項，故不設連結。";
         }
         return s;
       },
       noteCollab: function (d) {
-        return "共 " + d.n + " 位合作者。榮念曾本人不列於此圖：他參與大部分作品，"
-          + "若計入將佔去大半圖面，其他人便看不見了。";
+        return "共 " + d.n + " 位合作者。榮念曾本人不列於此圖。";
       },
       empty: "沒有可顯示的資料。",
     },
@@ -158,8 +157,12 @@
       en: true,
       year: "Year",
       yAxis: "Y axis",
-      works: function (n) { return n + (n === 1 ? " work" : " works"); },
-      credits: function (n) { return n + (n === 1 ? " credit" : " credits"); },
+      works: function (n) {
+        return n + (n === 1 ? " work" : " works");
+      },
+      credits: function (n) {
+        return n + (n === 1 ? " credit" : " credits");
+      },
       filter: "Filter the catalogue: ",
       unfilterable: "unspecified — the catalogue cannot filter for this",
       legendCredits: "Number of credits",
@@ -170,20 +173,14 @@
       tableName: "Name",
       tableCredits: "Credits",
       noteTemporal: function (d) {
-        var s = d.works + " works, " + d.dated + " of them dated and plottable. "
-          + "One bubble is every work sharing a year and a " + d.axis.toLowerCase()
-          + "; its area is how many.";
+        var s = d.works + " works, " + d.dated + " of them dated and plottable. " + "One bubble is every work sharing a year and a " + d.axis.toLowerCase() + "; its area is how many.";
         if (d.unfilterable) {
-          s += " " + d.unfilterable + " of them have no "
-            + d.axis.toLowerCase() + " recorded: those are drawn hollow and carry "
-            + "no link, because the catalogue has no filter for an empty value.";
+          s += " " + d.unfilterable + " of them have no " + d.axis.toLowerCase() + " recorded: those are drawn hollow and carry " + "no link, because the catalogue has no filter for an empty value.";
         }
         return s;
       },
       noteCollab: function (d) {
-        return d.n + " collaborators. Danny Yung himself is left off this chart — "
-          + "he is credited on most of the archive, and including him would cover "
-          + "the chart and hide everyone else.";
+        return d.n + " collaborators. Danny Yung himself is left off this chart — " + "he is credited on most of the archive, and including him would cover " + "the chart and hide everyone else.";
       },
       empty: "Nothing to show.",
     },
@@ -256,10 +253,10 @@
      relative link and this absolute one still match. */
   function linkStylesheet() {
     var href = SELF.replace(/dataviz\.js(\?.*)?$/, "dataviz.css");
-    if (href === SELF) return;                    /* unrecognised filename */
+    if (href === SELF) return; /* unrecognised filename */
     var links = document.querySelectorAll('link[rel~="stylesheet"]');
     for (var i = 0; i < links.length; i++) {
-      if (links[i].href === href) return;         /* already linked */
+      if (links[i].href === href) return; /* already linked */
     }
     var l = document.createElement("link");
     l.rel = "stylesheet";
@@ -364,10 +361,15 @@
       plot.appendChild(el("div", null, t.empty));
       return;
     }
-    note(host, t.noteTemporal({
-      works: data.totals.works, dated: data.totals.dated,
-      axis: ax.label, unfilterable: ax.unfilterable || 0,
-    }));
+    note(
+      host,
+      t.noteTemporal({
+        works: data.totals.works,
+        dated: data.totals.dated,
+        axis: ax.label,
+        unfilterable: ax.unfilterable || 0,
+      }),
+    );
     tableTemporal(host, ax, t);
 
     empty(plot);
@@ -434,19 +436,16 @@
       H = given;
       bandH = Math.max(1, (H - M.top - M.bottom) / rows.length);
     } else {
-      bandH = Math.max(
-        cssNum(plot, "--dyviz-band-min", 36),
-        Math.min(
-          cssNum(plot, "--dyviz-band-max", 66),
-          Math.round(cssNum(plot, "--dyviz-band-budget", 440) / rows.length)
-        )
-      );
+      bandH = Math.max(cssNum(plot, "--dyviz-band-min", 36), Math.min(cssNum(plot, "--dyviz-band-max", 66), Math.round(cssNum(plot, "--dyviz-band-budget", 440) / rows.length)));
       H = M.top + bandH * rows.length + M.bottom;
     }
-    var x0 = M.left, x1 = W - M.right;
-    var y0 = M.top, y1 = H - M.bottom;
+    var x0 = M.left,
+      x1 = W - M.right;
+    var y0 = M.top,
+      y1 = H - M.bottom;
 
-    var minY = data.years.min, maxY = data.years.max;
+    var minY = data.years.min,
+      maxY = data.years.max;
     /* Guard the degenerate one-year archive: a zero-width domain would put every
        bubble on the axis line and divide by zero. */
     var span = Math.max(maxY - minY, 1);
@@ -459,7 +458,9 @@
 
     var index = {};
     for (var i = 0; i < rows.length; i++) index[rows[i].key] = i;
-    function bandTop(key) { return y0 + index[key] * bandH; }
+    function bandTop(key) {
+      return y0 + index[key] * bandH;
+    }
 
     /* Area, not radius, carries the count — a radius-proportional bubble makes
        4 works look 16 times 1. rMin is 4.5 so a single work is still a >= 9px
@@ -471,15 +472,19 @@
        CSS so the curve is a design decision: dataviz.css PART 1. */
     var rBase = cssNum(plot, "--dyviz-bubble-base", 4.5);
     var rGrow = cssNum(plot, "--dyviz-bubble-growth", 0.5);
-    function R(count) { return Math.min(rBase * Math.pow(count, rGrow), rMax); }
+    function R(count) {
+      return Math.min(rBase * Math.pow(count, rGrow), rMax);
+    }
 
     var s = svg("svg", {
       class: "dyviz-svg",
       viewBox: "0 0 " + W + " " + H,
       role: "img",
       "aria-label": t.noteTemporal({
-        works: data.totals.works, dated: data.totals.dated,
-        axis: ax.label, unfilterable: ax.unfilterable || 0,
+        works: data.totals.works,
+        dated: data.totals.dated,
+        axis: ax.label,
+        unfilterable: ax.unfilterable || 0,
       }),
     });
 
@@ -488,40 +493,91 @@
     for (var c = 0; c < rows.length; c++) {
       var by = bandTop(rows[c].key);
       if (c > 0) {
-        s.appendChild(svg("line", {
-          x1: x0, x2: x1, y1: by, y2: by,
-          class: "dyviz-baseline", "stroke-width": 1,
-        }));
+        s.appendChild(
+          svg("line", {
+            x1: x0,
+            x2: x1,
+            y1: by,
+            y2: by,
+            class: "dyviz-baseline",
+            "stroke-width": 1,
+          }),
+        );
       }
-      s.appendChild(svg("text", {
-        x: x0 + rowX, y: by + rowY, "class": "dyviz-rowname",
-      }, rows[c].label + " · " + rows[c].count));
+      s.appendChild(
+        svg(
+          "text",
+          {
+            x: x0 + rowX,
+            y: by + rowY,
+            class: "dyviz-rowname",
+          },
+          rows[c].label + " · " + rows[c].count,
+        ),
+      );
     }
-    s.appendChild(svg("line", {
-      x1: x0, x2: x1, y1: y1, y2: y1, class: "dyviz-rule", "stroke-width": 1,
-    }));
-    s.appendChild(svg("line", {
-      x1: x0, x2: x0, y1: y0, y2: y1, class: "dyviz-rule", "stroke-width": 1,
-    }));
+    s.appendChild(
+      svg("line", {
+        x1: x0,
+        x2: x1,
+        y1: y1,
+        y2: y1,
+        class: "dyviz-rule",
+        "stroke-width": 1,
+      }),
+    );
+    s.appendChild(
+      svg("line", {
+        x1: x0,
+        x2: x0,
+        y1: y0,
+        y2: y1,
+        class: "dyviz-rule",
+        "stroke-width": 1,
+      }),
+    );
 
     /* Year ticks every 6 years, plus the last year if the step misses it. */
     var ticks = [];
     for (var yr = minY; yr <= maxY; yr += 6) ticks.push(yr);
     if (ticks[ticks.length - 1] !== maxY) ticks.push(maxY);
     for (var k = 0; k < ticks.length; k++) {
-      s.appendChild(svg("text", {
-        x: X(ticks[k]), y: y1 + tickGap, "class": "dyviz-tick",
-        "text-anchor": k === 0 ? "start" : k === ticks.length - 1 ? "end" : "middle",
-      }, String(ticks[k])));
+      s.appendChild(
+        svg(
+          "text",
+          {
+            x: X(ticks[k]),
+            y: y1 + tickGap,
+            class: "dyviz-tick",
+            "text-anchor": k === 0 ? "start" : k === ticks.length - 1 ? "end" : "middle",
+          },
+          String(ticks[k]),
+        ),
+      );
     }
-    s.appendChild(svg("text", {
-      x: (x0 + x1) / 2, y: H - axisXGap, "class": "dyviz-axis",
-      "text-anchor": "middle",
-    }, t.year + paren(t.en, minY + "\u2013" + maxY)));
-    s.appendChild(svg("text", {
-      "class": "dyviz-axis", "text-anchor": "middle",
-      transform: "translate(" + axisYInset + "," + (y0 + y1) / 2 + ") rotate(-90)",
-    }, ax.label));
+    s.appendChild(
+      svg(
+        "text",
+        {
+          x: (x0 + x1) / 2,
+          y: H - axisXGap,
+          class: "dyviz-axis",
+          "text-anchor": "middle",
+        },
+        t.year + paren(t.en, minY + "\u2013" + maxY),
+      ),
+    );
+    s.appendChild(
+      svg(
+        "text",
+        {
+          class: "dyviz-axis",
+          "text-anchor": "middle",
+          transform: "translate(" + axisYInset + "," + (y0 + y1) / 2 + ") rotate(-90)",
+        },
+        ax.label,
+      ),
+    );
 
     /* One bubble per (year x row) — no dodging, because there is nothing left
        to collide with. Sitting a little below the band's midpoint keeps the
@@ -531,8 +587,7 @@
     for (var b = 0; b < points.length; b++) {
       var d = points[b];
       if (!(d.row in index)) continue;
-      marks.appendChild(bubble(d, X(d.year), bandTop(d.row) + bandH / 2 + 5,
-        R(d.count), ax, t, tip, plot));
+      marks.appendChild(bubble(d, X(d.year), bandTop(d.row) + bandH / 2 + 5, R(d.count), ax, t, tip, plot));
     }
     s.appendChild(marks);
     plot.appendChild(s);
@@ -551,24 +606,33 @@
     var linked = !!d.href;
     if (!linked) label += " · " + t.unfilterable;
 
-    var node = linked
-      ? svg("a", { class: "dyviz-a", href: d.href, "aria-label": t.filter + label })
-      : svg("g", { role: "img", "aria-label": label });
+    var node = linked ? svg("a", { class: "dyviz-a", href: d.href, "aria-label": t.filter + label }) : svg("g", { role: "img", "aria-label": label });
     node.appendChild(svg("title", null, label));
 
     /* Fill, ring colour and ring width are all CSS (dataviz.css PART 1c). The
        only thing decided here is WHICH of the two looks applies: a work with no
        location has nothing to link to, so it is drawn hollow. */
-    node.appendChild(svg("circle", {
-      class: linked ? "dyviz-mark" : "dyviz-mark dyviz-mark-none",
-      cx: cx, cy: cy, r: r,
-    }));
+    node.appendChild(
+      svg("circle", {
+        class: linked ? "dyviz-mark" : "dyviz-mark dyviz-mark-none",
+        cx: cx,
+        cy: cy,
+        r: r,
+      }),
+    );
     /* An invisible >= 22px target over the mark. A 9px circle is a legitimate
        size for the ENCODING and an illegitimate one for a finger. */
-    node.appendChild(svg("circle", {
-      class: "dyviz-hit", cx: cx, cy: cy, r: Math.max(r, 11),
-    }));
-    hover(node, tip, plot, label, function () { return { x: cx, y: cy - r - 6 }; });
+    node.appendChild(
+      svg("circle", {
+        class: "dyviz-hit",
+        cx: cx,
+        cy: cy,
+        r: Math.max(r, 11),
+      }),
+    );
+    hover(node, tip, plot, label, function () {
+      return { x: cx, y: cy - r - 6 };
+    });
     return node;
   }
 
@@ -581,17 +645,25 @@
     var box = part(host, "legend");
     if (!box) return;
     var axes = (data && data.axes) || [];
-    if (axes.length < 2) { empty(box); return; }
+    if (axes.length < 2) {
+      empty(box);
+      return;
+    }
     empty(box);
     box.classList.add("dyviz-legend", "dyviz-toggle");
     box.setAttribute("role", "group");
     box.setAttribute("aria-label", t.yAxis);
     var current = axisOf(root, data);
     axes.forEach(function (a) {
-      var b = el("button", {
-        type: "button", class: "dyviz-toggle-btn",
-        "aria-pressed": a === current ? "true" : "false",
-      }, a.label);
+      var b = el(
+        "button",
+        {
+          type: "button",
+          class: "dyviz-toggle-btn",
+          "aria-pressed": a === current ? "true" : "false",
+        },
+        a.label,
+      );
       b.addEventListener("click", function () {
         if (root.__axis === a.key) return;
         root.__axis = a.key;
@@ -623,7 +695,7 @@
     tableCollab(host, data, t);
 
     empty(plot);
-    plot.classList.add("dyviz-plot", "dyviz-tree");   /* see note in drawTemporal */
+    plot.classList.add("dyviz-plot", "dyviz-tree"); /* see note in drawTemporal */
     if (!list.length) {
       plot.appendChild(el("div", null, t.empty));
       return;
@@ -635,41 +707,48 @@
     var H = Math.max(320, Math.min(760, Math.round(Math.sqrt(list.length) * W * 0.11)));
     plot.style.height = H + "px";
 
-    var min = list[list.length - 1].count, max = list[0].count;
+    var min = list[list.length - 1].count,
+      max = list[0].count;
     var tip = tooltip(plot);
 
-    squarify(list.map(function (d) { return { d: d, v: d.count }; }),
-      { x: 0, y: 0, w: W, h: H }).forEach(function (cell) {
-        var d = cell.d;
-        var step = ramp(d.count, min, max);
-        var label = d.name + " · " + t.credits(d.count);
-        var a = el("a", {
-          class: "dyviz-cell", href: d.href, "aria-label": t.filter + label,
-          title: label,
-        });
-        a.style.left = cell.x + "px";
-        a.style.top = cell.y + "px";
-        /* The 2px gap is taken OUT of each box rather than added between them,
+    squarify(
+      list.map(function (d) {
+        return { d: d, v: d.count };
+      }),
+      { x: 0, y: 0, w: W, h: H },
+    ).forEach(function (cell) {
+      var d = cell.d;
+      var step = ramp(d.count, min, max);
+      var label = d.name + " · " + t.credits(d.count);
+      var a = el("a", {
+        class: "dyviz-cell",
+        href: d.href,
+        "aria-label": t.filter + label,
+        title: label,
+      });
+      a.style.left = cell.x + "px";
+      a.style.top = cell.y + "px";
+      /* The 2px gap is taken OUT of each box rather than added between them,
            so the areas still sum to the container and the encoding stays true. */
-        a.style.width = Math.max(cell.w - 2, 0) + "px";
-        a.style.height = Math.max(cell.h - 2, 0) + "px";
-        a.style.background = "var(--dyviz-ramp-" + step + ")";
-        a.style.color = "var(--dyviz-ramp-ink-" + step + ")";
+      a.style.width = Math.max(cell.w - 2, 0) + "px";
+      a.style.height = Math.max(cell.h - 2, 0) + "px";
+      a.style.background = "var(--dyviz-ramp-" + step + ")";
+      a.style.color = "var(--dyviz-ramp-ink-" + step + ")";
 
-        /* Direct-label whatever has room; the rest are reachable by hover, by
+      /* Direct-label whatever has room; the rest are reachable by hover, by
            the accessible name, and by the table below. Writing a name into a
            28px box just produces a smear of clipped glyphs. */
-        if (cell.w >= 46 && cell.h >= 26) {
-          a.appendChild(el("span", { class: "dyviz-cell-name" }, d.name));
-          if (cell.h >= 40) {
-            a.appendChild(el("span", { class: "dyviz-cell-count" }, String(d.count)));
-          }
+      if (cell.w >= 46 && cell.h >= 26) {
+        a.appendChild(el("span", { class: "dyviz-cell-name" }, d.name));
+        if (cell.h >= 40) {
+          a.appendChild(el("span", { class: "dyviz-cell-count" }, String(d.count)));
         }
-        hover(a, tip, plot, label, function () {
-          return { x: cell.x + cell.w / 2, y: cell.y + 6 };
-        });
-        plot.appendChild(a);
+      }
+      hover(a, tip, plot, label, function () {
+        return { x: cell.x + cell.w / 2, y: cell.y + 6 };
       });
+      plot.appendChild(a);
+    });
   }
 
   /* Five steps, assigned by where the value sits in the range rather than by
@@ -684,41 +763,58 @@
      unclickable; this keeps every rectangle near square. */
   function squarify(items, rect) {
     var out = [];
-    var total = items.reduce(function (a, i) { return a + i.v; }, 0);
+    var total = items.reduce(function (a, i) {
+      return a + i.v;
+    }, 0);
     if (!total) return out;
     /* Work in area units so a value maps straight to pixels. */
     var scale = (rect.w * rect.h) / total;
-    var queue = items.map(function (i) { return { d: i.d, a: i.v * scale }; });
+    var queue = items.map(function (i) {
+      return { d: i.d, a: i.v * scale };
+    });
     var free = { x: rect.x, y: rect.y, w: rect.w, h: rect.h };
     var row = [];
 
-    function side() { return Math.min(free.w, free.h); }
+    function side() {
+      return Math.min(free.w, free.h);
+    }
     function worst(r, extra) {
       var s = side();
-      var sum = r.reduce(function (a, i) { return a + i.a; }, 0) + (extra ? extra.a : 0);
+      var sum =
+        r.reduce(function (a, i) {
+          return a + i.a;
+        }, 0) + (extra ? extra.a : 0);
       if (!sum) return Infinity;
-      var mx = 0, mn = Infinity;
+      var mx = 0,
+        mn = Infinity;
       r.concat(extra ? [extra] : []).forEach(function (i) {
-        mx = Math.max(mx, i.a); mn = Math.min(mn, i.a);
+        mx = Math.max(mx, i.a);
+        mn = Math.min(mn, i.a);
       });
-      var s2 = s * s, sum2 = sum * sum;
+      var s2 = s * s,
+        sum2 = sum * sum;
       return Math.max((s2 * mx) / sum2, sum2 / (s2 * mn));
     }
     function flush() {
       if (!row.length) return;
-      var sum = row.reduce(function (a, i) { return a + i.a; }, 0);
+      var sum = row.reduce(function (a, i) {
+        return a + i.a;
+      }, 0);
       var horizontal = free.w >= free.h;
       var thick = sum / side();
       var at = horizontal ? free.y : free.x;
       row.forEach(function (i) {
         var len = i.a / thick;
-        out.push(horizontal
-          ? { d: i.d, x: free.x, y: at, w: thick, h: len }
-          : { d: i.d, x: at, y: free.y, w: len, h: thick });
+        out.push(horizontal ? { d: i.d, x: free.x, y: at, w: thick, h: len } : { d: i.d, x: at, y: free.y, w: len, h: thick });
         at += len;
       });
-      if (horizontal) { free.x += thick; free.w -= thick; }
-      else { free.y += thick; free.h -= thick; }
+      if (horizontal) {
+        free.x += thick;
+        free.w -= thick;
+      } else {
+        free.y += thick;
+        free.h -= thick;
+      }
       row = [];
     }
 
@@ -779,7 +875,9 @@
       tip.style.top = p.y + "px";
       tip.setAttribute("data-on", "");
     }
-    function hide() { tip.removeAttribute("data-on"); }
+    function hide() {
+      tip.removeAttribute("data-on");
+    }
     node.addEventListener("mouseenter", show);
     node.addEventListener("mouseleave", hide);
     node.addEventListener("focus", show);
@@ -799,7 +897,9 @@
     if (!box) return;
     empty(box);
     var label = {};
-    (ax.rows || []).forEach(function (r) { label[r.key] = r.label; });
+    (ax.rows || []).forEach(function (r) {
+      label[r.key] = r.label;
+    });
     var tb = el("table", { class: "dyviz-table" });
     var head = el("tr");
     [t.tableYear, ax.label, t.tableCount].forEach(function (h) {
@@ -874,7 +974,9 @@
         if (!r.ok) throw new Error("HTTP " + r.status + " for " + url);
         return r.json();
       })
-      .then(function (data) { render(root, data); })
+      .then(function (data) {
+        render(root, data);
+      })
       .catch(function (err) {
         if (window.console) console.error("[dataviz] " + err.message);
       });
