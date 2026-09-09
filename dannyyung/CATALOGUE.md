@@ -389,6 +389,31 @@ The state that reveals the check — `.dropdown-option[aria-selected="true"]
 Designer canvas does not run embeds, so the check is always invisible there.**
 That is expected, not a bug; check it on a published page.
 
+## The reset button says `always` but is not always visible
+
+`button.button[type=reset][data-clear-all="always"][hidden]`, last child of the
+filters form. The attribute looks wrong and is not:
+
+- `forms.js` offers `show-on-input`, which reveals the button on the first
+  input event and then **leaves it up**. Type a keyword, delete it again, and a
+  reset button sits there offering to reset nothing.
+- `"always"` is that script's *hands-off* mode — "JS never touches visibility;
+  markup controls it". So it is the only value that lets `catalogue.js` own the
+  decision without the two fighting over the same property.
+
+`syncReset()` runs from `emit()` — which every control already goes through —
+and from `applyQuery()`, so a URL like `/catalogue?location=日本` arrives with
+the button showing. It counts only fields **inside the button's own form**,
+because the search box is in the panel on the Chinese page and in the toolbar
+on the English one, and a button that appears for a keyword it cannot clear is
+worse than one that stays hidden. Sort never counts: it is outside the form,
+and ordering results is not filtering them.
+
+`hidden` in the markup only prevents a flash before the script runs — the
+script hides it on init regardless. Note the site-wide override block carries
+`[hidden]{display:none!important}`, without which `.button`'s
+`display:inline-flex` would beat the browser's own `[hidden]` rule.
+
 ## Keyword search
 
 The search field is the design system's **input clear** component (#10), pasted
