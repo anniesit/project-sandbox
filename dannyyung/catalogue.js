@@ -84,7 +84,19 @@
  *   [data-sort]                       the sort .dropdown
  *   [data-count]                      result count line (aria-live)
  *   [data-empty]                      shown when nothing matches
- *   [data-pagination]                 nav; buttons are generated into it
+ *   [data-pagination]                 nav; page buttons are cloned into it
+ *   [data-page-template]              a .pagination-btn authored in Webflow and
+ *                                     left visible on the canvas so it can be
+ *                                     styled. Lifted out of the DOM on the
+ *                                     first paint and cloned per page number.
+ *                                     DELETE IT AND PAGINATION DISAPPEARS.
+ *   [data-option-template]            the "all" <li> in the location and
+ *                                     director dropdown lists. Cloned to build
+ *                                     every generated option, so the design
+ *                                     system's own option markup (the check
+ *                                     icon included) is never copied into this
+ *                                     file. DELETE IT AND THOSE TWO FACETS
+ *                                     RENDER NO OPTIONS.
  *
  * Dropdowns reuse the design system's markup (.dropdown / .dropdown-trigger /
  * .dropdown-list / .dropdown-option). Option <li>s for location and director

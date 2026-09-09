@@ -1,7 +1,19 @@
 # Catalogue page (目錄) — build notes and data contract
 
-Webflow site `6a8fda591c4e266dbbb91533` (Danny Yung Archive, duplicated from Mast Fork).
-Page `6a8fe9ff31603947cc29fa0f`, slug `/catalogue`, Traditional Chinese.
+> **Two Webflow sites exist. Build on the right one.**
+>
+> | Site | id | Status |
+> |---|---|---|
+> | **Danny Yung Archive Design** | `6a9a35a2fff31509fd87b275` | **The live project — all work goes here.** Catalogue `6a9a35a2fff31509fd87b254`, EN catalogue `…b256`, Components `…b24b`. |
+> | Danny Yung Archive | `6a8fda591c4e266dbbb91533` | Frozen client mockup (page `6a8fe9ff31603947cc29fa0f`). Leave it alone. |
+>
+> Both load the **same** `catalogue.js` from Vercel. Anything that couples the
+> script to page markup has to exist on both sites before the push, or the site
+> missing it loses its dropdown options and pagination. That happened on
+> 2026-09-09, when a session's edits went into the mockup because this file
+> still named the old site.
+
+Slug `/catalogue`, Traditional Chinese. Duplicated from Mast Fork.
 
 Built from the Figma frame `BrowseList` (file `PM7YYo9FuEQtVO82kvggvn`, node
 `394:1977`; the result item is `394:2173`). Everything except the result list is
@@ -345,6 +357,37 @@ Notes on the build:
 - One trap: `data_element_builder` gives a `Heading` a placeholder String child
   ("Heading") *in addition to* the children you ask for. It has to be removed
   explicitly, or the title renders as "Heading標題".
+
+## Templates: the markup is authored in Webflow, never built in JS
+
+Three things are cloned from markup the designer owns, rather than constructed
+in `catalogue.js`. Each template stays **visible on the Designer canvas** so it
+can be styled; two of them are lifted out of the DOM at runtime.
+
+| Hook | Where | Lifted out? |
+|---|---|---|
+| `[data-row-template]` | the `li.result-item` in the result list | yes, on first render |
+| `[data-page-template]` | a `button.pagination-btn` in the pagination nav | yes, on first paint |
+| `[data-option-template]` | the "all" `li` in the location and director dropdown lists | no — it is a real option and stays |
+
+**Deleting any of these silently removes the feature.** No console error: the
+renderer simply returns, so the rows, the page buttons or the two facets'
+options just never appear.
+
+The reason for the option template is that the design system owns the dropdown
+option's markup — including the `svg.dropdown-option-check` that appears next to
+the label when an option is selected. An earlier version pasted that SVG path
+into `catalogue.js`, which meant the design system's markup lived in two places
+and the generated options could drift from the authored ones. Cloning keeps one
+copy. The same reasoning applies to `.pagination-btn`: only the current-page
+combo class `.cc-current` is added by the script, because which page is current
+is state, not markup.
+
+The state that reveals the check — `.dropdown-option[aria-selected="true"]
+.dropdown-option-check { opacity: 1 }` — lives in the design system's
+`forms.css`, which loads at runtime through the Custom Code embed. **The
+Designer canvas does not run embeds, so the check is always invisible there.**
+That is expected, not a bug; check it on a published page.
 
 ## Keyword search
 
