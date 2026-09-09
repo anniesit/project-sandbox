@@ -33,11 +33,24 @@
   --dyviz-line: #cccabf; /* the two axis rules, button border       */
   --dyviz-grid: #e6e3da; /* row baselines, table rules              */
 
+  /* -- the y-axis switch --
+     These mirror .button.secondary in the Webflow design system, so the one
+     control on the page reads as the same kind of object as every other
+     button. The hover wash and the rising inset shadow are that component's
+     signature, not something invented here: if .button.secondary is
+     restyled upstream, re-check these against it. The fallbacks are the
+     resolved light-mode values of those same tokens, for the local harness
+     where the Webflow variables do not exist. */
+  --dyviz-control-border: var(--primary--accent, #cd2600);
+  --dyviz-control-bg: var(--primary--background, #f0eee6);
+  --dyviz-control-ink: var(--primary--text, #031333);
+  --dyviz-control-hover-fill: var(--primary--surface, #c4d8ff); /* the inset shadow that wipes up on hover */
+
   /* -- the bubble -- */
   --dyviz-mark: var(--primary--accent, #c0442a); /* fill                      */
-  --dyviz-mark-fill-opacity: 0.7;  /* translucent, so overlaps read as overlaps */
-  --dyviz-mark-stroke: var(--primary--accent-dark, #9d1e01);  /* a darker shade of the mark, so the ring reads as a border */
-  --dyviz-mark-stroke-width: 2px;
+  --dyviz-mark-fill-opacity: 0.7; /* translucent, so overlaps read as overlaps */
+  --dyviz-mark-stroke: var(--primary--accent-dark, #9d1e01); /* a darker shade of the mark, so the ring reads as a border */
+  --dyviz-mark-stroke-width: 1px;
   --dyviz-mark-none-ring: #8d877b; /* the hollow, unlinked bubble             */
   --dyviz-mark-none-width: 1.5px;
 
@@ -48,7 +61,7 @@
      them. base is the radius of a single work — below ~4px a dot stops being
      clickable, which is why the hit target is separate.                       */
   --dyviz-bubble-base: 4.5;
-  --dyviz-bubble-growth: 1;  /* radius-proportional; see the note above */
+  --dyviz-bubble-growth: 1; /* radius-proportional; see the note above */
 
   /* -- treemap ramp (collaborators chart; unused on the homepage) --
      The project's fire ramp, light to dark. Each -ink- is the text colour that
@@ -59,11 +72,11 @@
      to tell apart as areas. Validated in both modes — every step/ink pair is
      AA or better, and no two adjacent steps are under 1.4:1. Re-run that check
      if you re-pick any of them. */
-  --dyviz-ramp-1: var(--_color---fire--025, #fff3f0);
-  --dyviz-ramp-2: var(--_color---fire--200, #f4b3a4);
+  --dyviz-ramp-1: var(--_color---fire--200, #f4b3a4);
+  --dyviz-ramp-2: var(--_color---fire--300, #f38972);
   --dyviz-ramp-3: var(--_color---fire--400, #f55f3d);
   --dyviz-ramp-4: var(--_color---fire--600, #9d1e01);
-  --dyviz-ramp-5: var(--_color---fire--800, #3f0c01);
+  --dyviz-ramp-5: var(--_color---fire--700, #621402);
   --dyviz-ramp-ink-1: var(--_color---fire--900, #280c05);
   --dyviz-ramp-ink-2: var(--_color---fire--900, #280c05);
   --dyviz-ramp-ink-3: var(--_color---fire--900, #280c05);
@@ -115,7 +128,7 @@
      when you raise --dyviz-rowname-size or the label will crowd the hairline
      above it. Roughly size + 2 is a safe floor.                              */
   --dyviz-rowname-x: 6;
-  --dyviz-rowname-y: 18;  /* raised to clear the larger row-name type */
+  --dyviz-rowname-y: 18; /* raised to clear the larger row-name type */
 
   /* Year ticks below the axis rule, and the two axis titles. */
   --dyviz-tick-gap: 13; /* rule -> tick baseline       */
@@ -134,6 +147,10 @@
   --dyviz-line: #4a4640;
   --dyviz-grid: #33302b;
   --dyviz-mark: var(--primary--accent, #d8563c);
+  --dyviz-control-border: var(--primary--accent, #fe3f14);
+  --dyviz-control-bg: var(--primary--background, #0e2147);
+  --dyviz-control-ink: var(--primary--text, #ffffff);
+  --dyviz-control-hover-fill: var(--primary--surface, #031333);
   --dyviz-ramp-1: var(--_color---fire--900, #280c05);
   --dyviz-ramp-2: var(--_color---fire--700, #621402);
   --dyviz-ramp-3: var(--_color---fire--600, #9d1e01);
@@ -187,16 +204,35 @@
   stroke: var(--dyviz-grid);
 }
 
-/* the y-axis switch */
+/* the y-axis switch — the unpressed button is .button.secondary; the pressed
+   one stays filled, because it is the only thing marking which axis is
+   showing. Only box-shadow and colour transition, matching .button: the
+   background-colour change is meant to land at once, under the shadow that
+   wipes up behind it. */
 .dyviz-toggle-btn {
-  border: 1px solid var(--dyviz-line);
-  background: transparent;
-  color: var(--dyviz-muted);
+  border: 1px solid var(--dyviz-control-border);
+  background: var(--dyviz-control-bg);
+  color: var(--dyviz-control-ink);
+  transition:
+    box-shadow 0.3s cubic-bezier(0.165, 0.84, 0.44, 1),
+    color 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+/* Hover is scoped away from the pressed button on purpose: pressing it again
+   is a no-op in dataviz.js, so offering a hover state there would promise a
+   change that never comes. */
+.dyviz-toggle-btn:not([aria-pressed="true"]):hover {
+  box-shadow: inset 0 -3rem 0 0 var(--dyviz-control-hover-fill);
+  background: color-mix(in hsl, var(--dyviz-control-border) 10%, transparent 90%);
 }
 .dyviz-toggle-btn[aria-pressed="true"] {
   border-color: var(--dyviz-mark);
   background: var(--dyviz-mark);
   color: var(--dyviz-surface);
+}
+@media (prefers-reduced-motion: reduce) {
+  .dyviz-toggle-btn {
+    transition: none;
+  }
 }
 
 /* focus and hover */
