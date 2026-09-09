@@ -295,6 +295,26 @@
     }
   }
 
+  var SVG_NS = "http://www.w3.org/2000/svg";
+
+  /* Matches the design system's dropdown-option markup exactly (see the
+     Components page): a check icon sibling after the label, hidden until
+     [aria-selected="true"]. Built here because location/director options are
+     generated at runtime — a hand-authored Webflow option gets this for free,
+     a JS-built one does not. */
+  function optionCheckIcon() {
+    var svg = document.createElementNS(SVG_NS, "svg");
+    svg.setAttribute("class", "dropdown-option-check");
+    svg.setAttribute("width", "100%");
+    svg.setAttribute("fill", "currentColor");
+    svg.setAttribute("viewBox", "0 0 256 256");
+    svg.setAttribute("aria-hidden", "true");
+    var path = document.createElementNS(SVG_NS, "path");
+    path.setAttribute("d", "M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z");
+    svg.appendChild(path);
+    return svg;
+  }
+
   function option(value, label) {
     var li = document.createElement("li");
     li.className = "dropdown-option";
@@ -309,6 +329,7 @@
     span.setAttribute("data-dropdown-option-label", "");
     span.textContent = label;
     li.appendChild(span);
+    li.appendChild(optionCheckIcon());
     return li;
   }
 
@@ -387,14 +408,21 @@
     }
     setInput(root.querySelector("[data-year-from]"), q.yearFrom);
     setInput(root.querySelector("[data-year-to]"), q.yearTo);
-    setInput(root.querySelector("[data-search]"), q.q);
+    setInput(root.querySelector("[data-search]"), q.q, true);
     selectOption(root.querySelector('[data-facet="location"]'), q.location || "all");
     selectOption(root.querySelector('[data-facet="director"]'), q.director || "all");
     selectOption(root.querySelector("[data-sort]"), q.sort || "year-desc");
   }
 
-  function setInput(el, v) {
-    if (el) el.value = v == null || v === "" ? "" : String(v);
+  /* syncClear fires a non-bubbling "input" event after setting .value, so the
+     design system's input-clear button (its listener is bound directly to
+     this input, not delegated) shows or hides itself. Non-bubbling keeps it
+     from reaching the root's delegated "input" listener above, which would
+     call emit() and violate applyQuery's no-dy:query contract. */
+  function setInput(el, v, syncClear) {
+    if (!el) return;
+    el.value = v == null || v === "" ? "" : String(v);
+    if (syncClear) el.dispatchEvent(new Event("input", { bubbles: false }));
   }
 
   /* Mirrors what a user click does to a design system dropdown: aria-selected on
@@ -463,6 +491,28 @@
       }
       emit(root, 1);
     });
+
+    /* The left-panel filters sit inside a <form> so the design system's native
+       reset button (type="reset", data-clear-all) works with no extra wiring —
+       every dropdown and date-range control already re-syncs its own display
+       on the form's "reset" event (see forms.js). That event fixes the
+       controls but never touches state, so this page still has to emit
+       dy:query itself once the reset has actually applied to the fields —
+       hence the setTimeout, matching how forms.js schedules its own resyncs.
+       The "submit" guard exists only because a <form> with a text input can
+       implicitly submit on Enter with no submit button in the picture; there
+       is nowhere for that navigation to go. */
+    var facetsForm = root.querySelector("form");
+    if (facetsForm) {
+      facetsForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+      });
+      facetsForm.addEventListener("reset", function () {
+        setTimeout(function () {
+          emit(root, 1);
+        }, 0);
+      });
+    }
   }
 
   /* ---------- utils ---------- */

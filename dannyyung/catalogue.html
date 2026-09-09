@@ -13,8 +13,11 @@
              font-family:"Chiron Sung HK","Noto Serif HK",serif; }
       .wrap { max-width:1200px; margin:0 auto; }
       .catalogue-layout { display:grid; grid-template-columns:16rem 1fr; gap:40px; align-items:start; }
-      .catalogue-facets { display:flex; flex-direction:column; gap:2rem; padding-right:1.5rem; border-right:1px solid #cccabf; }
+      .catalogue-facets { display:flex; flex-direction:column; padding-right:1.5rem; border-right:1px solid #cccabf; }
+      .catalogue-facets-form { display:flex; flex-direction:column; gap:2rem; }
       .facet { display:flex; flex-direction:column; gap:.5rem; }
+      .button { display:inline-flex; align-self:flex-start; padding:.5rem 1rem; border:1px solid #d14424;
+                border-radius:.5rem; background:#d14424; color:#fff; font:inherit; cursor:pointer; }
       .facet-options { display:flex; flex-direction:column; gap:.25rem; }
       .eyebrow { font-size:.8rem; letter-spacing:.1em; opacity:.6; margin:0; }
       .catalogue-toolbar { display:flex; flex-wrap:wrap; align-items:flex-end;
@@ -34,9 +37,12 @@
                        padding:.25rem; list-style:none; max-height:16rem; overflow:auto;
                        background:#fff; border:1px solid #cccabf; border-radius:.5rem; }
       .dropdown.is-open .dropdown-list { display:block; }
-      .dropdown-option { padding:.35rem .5rem; border-radius:.25rem; cursor:pointer; }
+      .dropdown-option { display:flex; align-items:center; justify-content:space-between;
+                         gap:.5rem; padding:.35rem .5rem; border-radius:.25rem; cursor:pointer; }
       .dropdown-option:hover { background:#f0eee6; }
       .dropdown-option[aria-selected="true"] { font-weight:600; }
+      .dropdown-option-check { width:1rem; height:1rem; flex-shrink:0; opacity:0; }
+      .dropdown-option[aria-selected="true"] .dropdown-option-check { opacity:1; color:#d14424; }
       /* Result list — mirrors the Webflow classes created for the updated
          Figma layout (result-list / result-item / result-meta / result-tag).
          Typography on the real page comes from the DS .paragraph-xl and
@@ -114,6 +120,7 @@
 
       <div class="catalogue-layout" data-catalogue data-src="./sample-data/catalogue-sample.json">
         <aside class="catalogue-facets" aria-label="篩選條件">
+        <form class="catalogue-facets-form">
           <div class="facet" data-facet="category">
             <div class="eyebrow cc-facet">類別</div>
             <div class="facet-options">
@@ -144,7 +151,7 @@
                 <svg class="dropdown-trigger-icon" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true"><path d="M216.49,104.49l-80,80a12,12,0,0,1-17,0l-80-80a12,12,0,0,1,17-17L128,159l71.51-71.52a12,12,0,0,1,17,17Z"/></svg>
               </button>
               <ul class="dropdown-list" role="listbox" data-dropdown-list>
-                <li class="dropdown-option" role="option" aria-selected="true" tabindex="-1" data-value="all" data-dropdown-option><span class="dropdown-option-label" data-dropdown-option-label>全部</span></li>
+                <li class="dropdown-option" role="option" aria-selected="true" tabindex="-1" data-value="all" data-dropdown-option><span class="dropdown-option-label" data-dropdown-option-label>全部</span><svg class="dropdown-option-check" width="100%" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg></li>
               </ul>
             </div>
           </div>
@@ -158,10 +165,13 @@
                 <svg class="dropdown-trigger-icon" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true"><path d="M216.49,104.49l-80,80a12,12,0,0,1-17,0l-80-80a12,12,0,0,1,17-17L128,159l71.51-71.52a12,12,0,0,1,17,17Z"/></svg>
               </button>
               <ul class="dropdown-list" role="listbox" data-dropdown-list>
-                <li class="dropdown-option" role="option" aria-selected="true" tabindex="-1" data-value="all" data-dropdown-option><span class="dropdown-option-label" data-dropdown-option-label>全部</span></li>
+                <li class="dropdown-option" role="option" aria-selected="true" tabindex="-1" data-value="all" data-dropdown-option><span class="dropdown-option-label" data-dropdown-option-label>全部</span><svg class="dropdown-option-check" width="100%" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg></li>
               </ul>
             </div>
           </div>
+
+          <button class="button" type="reset" data-clear-all="always">重設篩選</button>
+        </form>
         </aside>
 
         <div class="catalogue-results">
@@ -250,6 +260,27 @@
           input.focus();
         });
         sync();
+      });
+
+      /* Demo-page only: the design system's per-dropdown reset resync, which on
+         the real site comes from forms.js. Every dropdown remembers whichever
+         option started aria-selected="true" and restores it (label + selection)
+         when its <form> fires "reset" — native reset only touches the hidden
+         input's value, never the visible trigger label. */
+      document.querySelectorAll("[data-dropdown]").forEach(function (dd) {
+        var form = dd.closest("form");
+        if (!form) return;
+        var initial = dd.querySelector('[data-dropdown-option][aria-selected="true"]');
+        form.addEventListener("reset", function () {
+          setTimeout(function () {
+            var opts = dd.querySelectorAll("[data-dropdown-option]");
+            opts.forEach(function (o) {
+              o.setAttribute("aria-selected", o === initial ? "true" : "false");
+            });
+            var label = dd.querySelector("[data-dropdown-value]");
+            if (label && initial) label.textContent = initial.querySelector("[data-dropdown-option-label]").textContent;
+          }, 0);
+        });
       });
 
       document.addEventListener("click", function (e) {
