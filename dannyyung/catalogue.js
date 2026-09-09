@@ -288,27 +288,48 @@
     var wrap = root.querySelector('[data-facet="' + facetName + '"]');
     if (!wrap) return;
     var list = wrap.querySelector("[data-dropdown-list]");
-    var tpl = list && list.querySelector("[data-option-template]");
-    if (!tpl) return;
+    if (!list) return;
     removeClones(list);
     for (var i = 0; i < values.length; i++) {
-      list.appendChild(option(tpl, values[i]));
+      list.appendChild(option(values[i], values[i]));
     }
   }
 
-  /* Clones the option authored in Webflow rather than building one here, so
-     the design system keeps owning the markup: the check icon, its classes,
-     and anything added to the option later arrive without this file knowing
-     they exist. The template is the "all" option, which has to sit in the
-     list anyway, so nothing invisible is carried for the sake of cloning. */
-  function option(tpl, value) {
-    var li = tpl.cloneNode(true);
-    li.removeAttribute("data-option-template");
+  var SVG_NS = "http://www.w3.org/2000/svg";
+
+  /* Matches the design system's dropdown-option markup exactly (see the
+     Components page): a check icon sibling after the label, hidden until
+     [aria-selected="true"]. Built here because location/director options are
+     generated at runtime — a hand-authored Webflow option gets this for free,
+     a JS-built one does not. */
+  function optionCheckIcon() {
+    var svg = document.createElementNS(SVG_NS, "svg");
+    svg.setAttribute("class", "dropdown-option-check");
+    svg.setAttribute("width", "100%");
+    svg.setAttribute("fill", "currentColor");
+    svg.setAttribute("viewBox", "0 0 256 256");
+    svg.setAttribute("aria-hidden", "true");
+    var path = document.createElementNS(SVG_NS, "path");
+    path.setAttribute("d", "M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z");
+    svg.appendChild(path);
+    return svg;
+  }
+
+  function option(value, label) {
+    var li = document.createElement("li");
+    li.className = "dropdown-option";
+    li.setAttribute("role", "option");
     li.setAttribute("aria-selected", "false");
+    li.setAttribute("tabindex", "-1");
     li.setAttribute("data-value", value);
+    li.setAttribute("data-dropdown-option", "");
     li.setAttribute("data-clone", "");
-    var label = li.querySelector("[data-dropdown-option-label]");
-    if (label) label.textContent = value;
+    var span = document.createElement("span");
+    span.className = "dropdown-option-label";
+    span.setAttribute("data-dropdown-option-label", "");
+    span.textContent = label;
+    li.appendChild(span);
+    li.appendChild(optionCheckIcon());
     return li;
   }
 
@@ -317,8 +338,6 @@
   function paint(root, page, pages) {
     var nav = root.querySelector("[data-pagination]");
     if (!nav) return;
-    var tpl = pageTemplate(root);
-    if (!tpl) return;
     removeClones(nav);
     if (pages < 2) return;
     var seq = [];
@@ -327,39 +346,20 @@
       else if (seq[seq.length - 1] !== "…") seq.push("…");
     }
     for (var k = 0; k < seq.length; k++) {
-      nav.appendChild(pageButton(root, tpl, seq[k], page));
+      nav.appendChild(pageButton(root, seq[k], page));
     }
   }
 
-  /* Same deal as the result-item template: authored in Webflow, left VISIBLE
-     on the canvas so the designer can style it, lifted out of the DOM on the
-     first paint. Lifting happens before the single-page bail-out, or a result
-     set with one page would leave the template sitting there as a stray
-     button. The current-page look is the design system's own
-     .pagination-btn.cc-current combo, added here rather than authored, since
-     which button is current is state, not markup. */
-  function pageTemplate(root) {
-    if (root.__pageTpl) return root.__pageTpl;
-    var el = root.querySelector("[data-page-template]");
-    if (!el) return null;
-    var clone = el.cloneNode(true);
-    clone.removeAttribute("data-page-template");
-    el.remove();
-    root.__pageTpl = clone;
-    return clone;
-  }
-
-  function pageButton(root, tpl, value, current) {
-    var b = tpl.cloneNode(true);
+  function pageButton(root, value, current) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "pagination-btn" + (value === current ? " cc-current" : "");
     b.textContent = value;
     b.setAttribute("data-clone", "");
     if (value === "…") {
       b.disabled = true;
     } else {
-      if (value === current) {
-        b.classList.add("cc-current");
-        b.setAttribute("aria-current", "page");
-      }
+      if (value === current) b.setAttribute("aria-current", "page");
       b.addEventListener("click", function () {
         root.__pageChanged = true;
         emit(root, value);
