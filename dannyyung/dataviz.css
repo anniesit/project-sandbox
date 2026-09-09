@@ -120,7 +120,7 @@
      the gaps below and you usually want to raise these to match.             */
   --dyviz-pad-top: 10;
   --dyviz-pad-right: 12;
-  --dyviz-pad-bottom: 34;
+  --dyviz-pad-bottom: 51;
   --dyviz-pad-left: 34;
 
   /* Row label, measured from its band's top-left corner. -y is a TEXT BASELINE
@@ -130,9 +130,24 @@
   --dyviz-rowname-x: 6;
   --dyviz-rowname-y: 18; /* raised to clear the larger row-name type */
 
-  /* Year ticks below the axis rule, and the two axis titles. */
-  --dyviz-tick-gap: 13; /* rule -> tick baseline       */
-  --dyviz-axis-x-gap: 4; /* bottom edge -> axis title   */
+  /* Year ticks below the axis rule, and the two axis titles.
+     These three and --dyviz-pad-bottom share one stack, measured on the x
+     axis from the rule downwards:
+         rule --tick-gap-> tick baseline ... axis title baseline <-x-gap- H
+     so the tick-to-title gap is what is LEFT OVER:
+         pad-bottom - tick-gap - axis-x-gap.
+     Raising tick-gap therefore steals from that gap unless pad-bottom goes up
+     with it, which is the trap in tuning these.
+
+     The original 34/13/4 were sized for ~10px ticks. The live type scale is
+     fluid 12.8-15.4px, so the glyphs had grown into all three gaps: measured
+     on the published page, the ticks cleared the rule by 0.5px, the axis title
+     cleared the ticks by 2px and the title's descenders sat 1.5px off the
+     bottom edge. Retuned for the real ascent (12.5px at 12.8px type) to give
+     roughly 8px of clear space at each step, and still ~5px at the top of the
+     fluid range. Re-measure rather than eyeball if the type scale moves. */
+  --dyviz-tick-gap: 20; /* rule -> tick baseline       */
+  --dyviz-axis-x-gap: 8; /* bottom edge -> axis title   */
   --dyviz-axis-y-inset: 11; /* left edge -> rotated title  */
 }
 
