@@ -84,6 +84,12 @@
  *   [data-sort]                       the sort .dropdown
  *   [data-count]                      result count line (aria-live)
  *   [data-empty]                      shown when nothing matches
+ *   [data-clear-all]                  the design system's reset button, inside
+ *                                     the filters <form>. Must be
+ *                                     data-clear-all="always" (forms.js's
+ *                                     hands-off mode) and start `hidden`:
+ *                                     this file shows it only while a field
+ *                                     that form would clear is set.
  *   [data-pagination]                 nav; page buttons are cloned into it
  *   [data-page-template]              a .pagination-btn authored in Webflow and
  *                                     left visible on the canvas so it can be
@@ -402,7 +408,47 @@
 
   function emit(root, page) {
     var detail = getQuery(root, page);
+    syncReset(root);
     root.dispatchEvent(new CustomEvent("dy:query", { detail: detail, bubbles: true }));
+  }
+
+  /* The reset button shows only while something is actually filtered.
+
+     forms.js has a "show-on-input" mode for exactly this, but it reveals the
+     button on the first keystroke and then leaves it up: type a keyword,
+     delete it again, and a reset button stays offering to reset nothing. So
+     the markup asks for data-clear-all="always", which is the design system's
+     hands-off mode — forms.js never touches visibility — and this drives it
+     from the state instead. Anything that changes the query calls emit(), and
+     emit() syncs the button, so there is one path, not a listener per control. */
+  function syncReset(root) {
+    var btn = root.querySelector("[data-clear-all]");
+    if (!btn) return;
+    var form = btn.form || (btn.closest && btn.closest("form"));
+    if (!form) return;
+    btn.hidden = !isFiltered(form);
+  }
+
+  /* Only the fields this form's reset would really clear count. The search box
+     sits inside the panel on the Chinese page and out in the toolbar on the
+     English one, and a button that appears for a keyword it cannot clear is
+     worse than one that stays hidden. Sort is never counted: it lives outside
+     the form, and ordering results is not filtering them. */
+  function isFiltered(form) {
+    var radios = form.querySelectorAll("input[data-facet-value]");
+    for (var i = 0; i < radios.length; i++) {
+      if (radios[i].checked && radios[i].getAttribute("data-facet-value") !== "all") return true;
+    }
+    var fields = form.querySelectorAll("[data-year-from], [data-year-to], [data-search]");
+    for (var j = 0; j < fields.length; j++) {
+      if (fields[j].value) return true;
+    }
+    var dropdowns = form.querySelectorAll("[data-dropdown]");
+    for (var k = 0; k < dropdowns.length; k++) {
+      var opt = dropdowns[k].querySelector('[data-dropdown-option][aria-selected="true"]');
+      if (opt && opt.getAttribute("data-value") !== "all") return true;
+    }
+    return false;
   }
 
   /* Set the controls to match a query. The inverse of getQuery(), and the other
@@ -424,6 +470,7 @@
     selectOption(root.querySelector('[data-facet="location"]'), q.location || "all");
     selectOption(root.querySelector('[data-facet="director"]'), q.director || "all");
     selectOption(root.querySelector("[data-sort]"), q.sort || "year-desc");
+    syncReset(root);
   }
 
   /* syncClear fires a non-bubbling "input" event after setting .value, so the
@@ -525,6 +572,8 @@
         }, 0);
       });
     }
+
+    syncReset(root);
   }
 
   /* ---------- utils ---------- */

@@ -18,6 +18,9 @@
       .facet { display:flex; flex-direction:column; gap:.5rem; }
       .button { display:inline-flex; align-self:flex-start; padding:.5rem 1rem; border:1px solid #d14424;
                 border-radius:.5rem; background:#d14424; color:#fff; font:inherit; cursor:pointer; }
+      /* mirrors the site-wide override block: a class that sets `display` beats
+         the UA's [hidden] rule, so the reset button would ignore `hidden` */
+      [hidden] { display:none !important; }
       .facet-options { display:flex; flex-direction:column; gap:.25rem; }
       .eyebrow { font-size:.8rem; letter-spacing:.1em; opacity:.6; margin:0; }
       .catalogue-toolbar { display:flex; flex-wrap:wrap; align-items:flex-end;
@@ -121,6 +124,15 @@
       <div class="catalogue-layout" data-catalogue data-src="./sample-data/catalogue-sample.json">
         <aside class="catalogue-facets" aria-label="篩選條件">
         <form class="catalogue-facets-form">
+          <div class="input-group cc-search">
+            <label class="input-label cc-w-auto" for="catalogue-search">搜尋</label>
+            <div class="input-clear-wrapper">
+            <input class="input" type="search" id="catalogue-search" name="q" placeholder="搜尋作品、導演、地點…" data-search />
+            <button class="input-clear-btn" type="button" data-input-clear aria-label="清除搜尋" hidden>
+              <svg class="input-clear-icon" xmlns="http://www.w3.org/2000/svg" width="100%" fill="currentColor" viewBox="0 0 256 256"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"/></svg>
+            </button>
+            </div>
+          </div>
           <div class="facet" data-facet="category">
             <div class="eyebrow cc-facet">類別</div>
             <div class="facet-options">
@@ -170,21 +182,12 @@
             </div>
           </div>
 
-          <button class="button" type="reset" data-clear-all="always">重設篩選</button>
+          <button class="button" type="reset" data-clear-all="always" hidden>重設篩選</button>
         </form>
         </aside>
 
         <div class="catalogue-results">
           <div class="catalogue-toolbar">
-            <div class="input-group cc-search">
-              <label class="input-label cc-w-auto" for="catalogue-search">搜尋</label>
-              <div class="input-clear-wrapper">
-                <input class="input" type="search" id="catalogue-search" name="q" placeholder="搜尋作品、導演、地點…" data-search />
-                <button class="input-clear-btn" type="button" data-input-clear aria-label="清除搜尋" hidden>
-                  <svg class="input-clear-icon" xmlns="http://www.w3.org/2000/svg" width="100%" fill="currentColor" viewBox="0 0 256 256"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"/></svg>
-                </button>
-              </div>
-            </div>
             <div class="catalogue-sort">
               <label class="input-label" for="catalogue-sort">排序</label>
               <div class="dropdown" data-dropdown data-sort>
