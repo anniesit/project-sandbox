@@ -140,3 +140,26 @@ a public-facing archive section. Alternatives proposed in conversation
 2026-09-02 — not yet chosen or applied. Whichever is picked needs three
 edits: the Nav link (if one exists yet — none does today, same gap DATAVIZ.md
 notes for its own page), the page's SEO title, and the `<h1>`.
+
+
+## English page
+
+`/en/supplementary-materials` (Webflow page `6aa3a86d21f62f433125916e`) is a
+folder duplicate sharing `supplementary.js`. Only the authored text,
+`lang="en"` on `.page-wrapper`, and `data-src`
+(`sample-data/supplementary-sample-en.json`, as a full absolute URL) differ.
+
+`supplementary.js` generates two strings rather than reading them from the
+markup — the record count and the `Untitled` fallback — and both switch on the
+nearest `[lang]` ancestor, so `lang="en"` is the only thing that has to be set
+for them.
+
+The page title is **Further Reading** in English, pairing with 延伸閱覽. That is
+one of the alternatives put to the client after they rejected 其他資料; if they
+settle on a different pair, both the page title and the Nav/Footer link label
+have to move together.
+
+There is no local behaviour harness for this page in either language.
+
+See ENTRY.md, "The English pages", for the site-wide picture.
+

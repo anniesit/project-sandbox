@@ -332,3 +332,21 @@ In that harness, at 800px and 1000px wide, light and dark, both languages:
   `Border Radius/SM` instead.
 - The "1,xxx views" counter in the frame's footer is not built — there is no
   view-count source.
+
+
+## English page
+
+`/en/dataviz` (Webflow page `6aa3a86a5a7e019e2ebc0118`) is a folder duplicate
+sharing the same `dataviz.js` and `dataviz.css`. Only the authored text,
+`lang="en"` on `.page-wrapper`, and `data-src` differ — the latter pointing at
+`sample-data/dataviz-sample-en.json` as a **full absolute URL**, because the
+mock driver does a bare `fetch()` and a relative path would resolve against
+`/en/`.
+
+**Nothing in the chart needs a language switch.** Row labels, axis names and the
+y-axis toggle all come from the aggregate, and `build-dataviz-sample.py` writes
+`cataloguePath: "/en/catalogue"` into the English file, so every mark's `href`
+already lands on the English catalogue. The homepage overview chart reuses the
+same English aggregate.
+
+See ENTRY.md, "The English pages", for the site-wide picture.

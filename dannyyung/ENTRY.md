@@ -504,21 +504,31 @@ a second copy of the component.
 mock driver reads them from the page rather than hardcoding. A backend that owns
 routing passes real URLs in `context` and neither is used.
 
-### Two things the Designer cannot do
+### Three things about building the folder headlessly
 
 - **There is no folder-creation API.** `create_page` accepts `parentFolderId`
-  but nothing creates the folder. Worse, a slug containing a slash is *accepted*
+  but nothing creates the folder, and a slug containing a slash is *accepted*
   and then silently flattened — `slug: "en/catalogue"` came back with
   `publishedPath: "/catalogue"`, which would have collided with the live Chinese
-  page. Both English pages are therefore `en-catalogue` / `en-entry` and **draft**
-  until the `en` folder exists in the Designer and they can be moved into it.
+  page. On the design site the folder already exists (`en`, page id
+  `6a9a35a2fff31509fd87b258`, title "English Version"), made by hand in the
+  Designer. **`list_pages` does not return folders**, so its absence from that
+  list proves nothing — fetch the id with `get_page_metadata` before concluding
+  there is no folder.
 - **`set_text` fails on a `Block`** ("This element doesn't support text") even
-  when the div holds a text node. It works on `Span`, `Heading`, `Link` and
-  `DOM`-tagged elements. The six block-level labels needed the WHTML route:
-  append a `<span>`, then remove the original String.
+  when the div holds a text node — but it **succeeds when aimed at the `String`
+  child itself**, which `query_elements` returns with its own element id. That
+  is the cheap route for block-level labels; the WHTML swap (append a `<span>`,
+  remove the original String) is only needed when the element has to change.
+- **A duplicated page keeps the original's literal `href` attribute**, which is
+  separate from the Link *setting*. After repointing a link with `set_link` /
+  `set_settings`, sweep `remove_attribute` for `href` or the two disagree. Hit
+  on the language switcher and the footer logo.
 
 Also: **`href` on a `Link` is a setting, not an attribute.** `set_attributes`
-with `name: "href"` returns "internal error"; use `set_link`.
+with `name: "href"` returns "internal error"; use `set_link` — and on
+`NavbarLink` / `NavbarBrand` even `set_link` is refused ("only Link elements
+do"), so write `key: "link"` through `data_element_settings_tool > set_settings`.
 
 ## The category chip had lost its data hook
 
@@ -533,11 +543,117 @@ Worth knowing for anyone restyling one of these: the `data-field` span is the
 sink `entry.js` writes into and the `data-field-group` is what disappears when
 the value is empty. Restyle the wrapper, keep the span.
 
+## The English pages (site-wide, built 2026-09-11)
+
+All five Chinese pages of the **Danny Yung Archive Design** site
+(`6a9a35a2fff31509fd87b275`) were duplicated into the `en` folder. A duplicate
+inherits every class and every element, which is the point: the two languages
+stay layout-identical, so responsive work done later on a Chinese page only has
+to be repeated, never re-derived.
+
+| Page | Chinese | English | English page id | `data-src` |
+|---|---|---|---|---|
+| Home | `/` | `/en/home` | `6aa3a868f2217b655720e072` | `dataviz-sample-en.json` (overview chart) |
+| Catalogue | `/catalogue` | `/en/catalogue` | `6aa3a8680690102570993ca2` | `catalogue-sample-en.json` |
+| Work | `/entry` | `/en/entry` | `6aa3a8692f4f5523cddec85d` | `entry-sample-en.json` |
+| Data Viz | `/dataviz` | `/en/dataviz` | `6aa3a86a5a7e019e2ebc0118` | `dataviz-sample-en.json` |
+| Further Reading | `/supplementary-materials` | `/en/supplementary-materials` | `6aa3a86d21f62f433125916e` | `supplementary-sample-en.json` |
+
+Per page, exactly four things differ from the Chinese original: the authored
+text, `lang="en"` on `.page-wrapper`, `data-src` on the data root, and the
+`Nav EN` / `Footer EN` instances in place of `Nav` / `Footer`. The entry page
+adds its two path attributes (see the table above).
+
+**`data-src` must be an absolute URL.** Every renderer does a bare
+`fetch(root.getAttribute("data-src"))`, so a relative path resolves against the
+*page*, and `./sample-data/…` on `/en/catalogue` would ask for
+`/en/sample-data/…`. All five carry the full
+`https://hkbuproject-sandbox.vercel.app/dannyyung/sample-data/…-en.json`.
+
+### The home page is the one pair that is not 1:1
+
+Webflow folders have **no index page**, so the English home cannot sit at
+`/en/` — it is `/en/home`. Everything else keeps its Chinese slug, so the
+switcher's strip-or-add-the-folder logic covers it.
+
+The stand-in switcher therefore carries one constant, `EN_HOME = '/home'`, and
+two lines that map `/` ↔ `/en/home` in both directions (the `.html` variants are
+there for a static export served without directory indexes). If `/en` ever
+becomes a real page — a Webflow redirect, or an `index.html` added after export
+— delete the constant and those two lines.
+
+Note that a Webflow **redirect would not survive the code export**: an exported
+build that wants `/en/` to work needs a real `en/index.html`, made by hand.
+
+### English typography: the `English Font Setting` embed
+
+The Webflow `Typography` and `Components` collections hold **one** type scale and
+it is the Chinese one — written from the Figma `ZH/*` text styles on 2026-09-01,
+with a single Base mode and no ZH/EN split. English therefore has no variable
+mode of its own.
+
+The seam is a component called **`English Font Setting`**
+(`26c2398e-498d-fa1a-02ff-98b0e5cf37c5`), whose root *is* an HTML embed. It
+re-declares all 14 letter-spacing variables under `[lang="en"]`:
+
+| Where | Variables |
+|---|---|
+| `Typography` | `h1`–`h6`, `eyebrow`, `paragraph-xl`, `-lg`, `-body`, `-sm` |
+| `Components` | `button`, `input`, `input-label` |
+
+**Every value in it is the Chinese value, copied verbatim**, so the block is
+inert until someone changes a number. That is deliberate: it is a tuning
+surface, and a diff against it shows exactly how far English has drifted from
+Chinese.
+
+Why it wins the cascade: Webflow declares these on `:root`, `[lang="en"]` has
+the same specificity (0,1,0), and a `<style>` in the body is parsed after the
+site stylesheet — so the later rule takes it. `lang="en"` sits on
+`.page-wrapper`, so the values inherit to the whole page. Scoping to the
+attribute rather than `:root` also means the block cannot leak onto a Chinese
+page if the component is ever dropped on one.
+
+Two things to know before editing it:
+
+- **A typo in a variable name fails silently.** The declaration is dropped and
+  the Chinese value simply stays. Change numbers, not names.
+- **`--_typography---eyebrow--letter-spacing` is `1em`, and that is correct for
+  Chinese** — the deliberate wide-spaced CJK label style, confirmed with the
+  designer and not to be "fixed" back. It is also the one value most likely to
+  be wrong for English: the Figma `EN/Eyebrow` style is 10% (`0.1em`).
+
+**Not yet placed on the other four English pages.** The component is only
+instanced on `/en/home`, so the overrides apply there alone. Nothing looks wrong
+today because the values are identical to the Chinese ones — which is exactly
+what makes this easy to miss later, when a tuned number moves the home page and
+nothing else. Add an instance to the other four (as a sibling of the Custom Code
+instance, before `Nav EN`) at the same time as the first real change.
+
+### Still open
+
+- There is no `About` / `項目介紹` page in either language; the nav and footer
+  links for it are `#` on both sides.
+- The repo harnesses in `en/` cover catalogue, entry and dataviz only — there is
+  no `en/supplementary-materials` or English home harness. The Webflow pages
+  exist; only the local behaviour harnesses are missing.
+- The English wording is a first pass. Where an English string already existed
+  (the `en/*.html` harnesses, the earlier mockup site) that wording was reused
+  rather than re-invented; the rest is new and the `[placeholder]` markers on the
+  home page are kept, because that copy is still placeholder in Chinese too.
+
 ## Bilingual chrome
 
 `Nav` / `Footer` are Webflow components, so their text is shared by every page
 that uses them. The English pages therefore use **duplicated definitions**:
-`Nav EN` (`615f384a-…`) and `Footer EN` (`afb09d71-…`), in the `Global` group.
+`Nav EN` (`cca0570e-…`) and `Footer EN` (`2774b87d-…`), in the `Global` group.
+
+Those two were re-cut on 2026-09-11 by duplicating the *current* Chinese Nav and
+Footer, because the first pair had been built against an older nav design (a
+single-embed logo, no Further Reading link) and had drifted. The originals are
+still on the site, renamed `Nav EN (superseded)` / `Footer EN (superseded)` with
+zero instances — delete them once the new pair has been eyeballed. **A duplicate
+inherits the Chinese page links**, so every link in it has to be repointed at
+the English page, not only the visible labels.
 
 This is the `nav.html` / `navZH.html` split the `bilingual-build` skill
 describes, expressed in Webflow. **They are separate definitions, not variants

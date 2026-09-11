@@ -942,8 +942,13 @@ published or previewed page.
 
 ## English page
 
-`/en/catalogue` is a folder duplicate sharing the same `catalogue.js`. Only the
-static text, `lang`, and `data-src` (`catalogue-sample-en.json`) differ.
+`/en/catalogue` (Webflow page `6aa3a8680690102570993ca2`) is a folder duplicate
+sharing the same `catalogue.js`. Only the static text, `lang`, `data-src`
+(`catalogue-sample-en.json`) and the `Nav EN` / `Footer EN` instances differ.
+
+`data-src` has to be a **full absolute URL** — the mock driver does a bare
+`fetch(root.getAttribute("data-src"))`, so a relative path resolves against the
+page and `./sample-data/…` on `/en/catalogue` would ask for `/en/sample-data/…`.
 
 `catalogue.js` generates exactly two strings rather than reading them from the
 markup — the result count and the "Untitled" fallback — because both interpolate
