@@ -3,11 +3,11 @@
  "cataloguePath": "/en/catalogue",
  "years": {
   "min": 1974,
-  "max": 2020
+  "max": 2011
  },
  "totals": {
-  "works": 88,
-  "dated": 88,
+  "works": 80,
+  "dated": 80,
   "undated": 0,
   "collaborators": 45
  },
@@ -19,17 +19,12 @@
     {
      "key": "theatre-production",
      "label": "Theatre Production",
-     "count": 69
+     "count": 67
     },
     {
      "key": "event",
      "label": "Event",
      "count": 8
-    },
-    {
-     "key": "other",
-     "label": "Other",
-     "count": 6
     },
     {
      "key": "visual-arts",
@@ -212,22 +207,10 @@
      "href": "/en/catalogue?category=theatre-production&from=2008&to=2008"
     },
     {
-     "year": 2009,
-     "row": "theatre-production",
-     "count": 1,
-     "href": "/en/catalogue?category=theatre-production&from=2009&to=2009"
-    },
-    {
      "year": 2011,
      "row": "theatre-production",
      "count": 1,
      "href": "/en/catalogue?category=theatre-production&from=2011&to=2011"
-    },
-    {
-     "year": 2020,
-     "row": "theatre-production",
-     "count": 1,
-     "href": "/en/catalogue?category=theatre-production&from=2020&to=2020"
     },
     {
      "year": 2000,
@@ -258,42 +241,6 @@
      "row": "event",
      "count": 1,
      "href": "/en/catalogue?category=event&from=2006&to=2006"
-    },
-    {
-     "year": 1996,
-     "row": "other",
-     "count": 1,
-     "href": "/en/catalogue?category=other&from=1996&to=1996"
-    },
-    {
-     "year": 1998,
-     "row": "other",
-     "count": 1,
-     "href": "/en/catalogue?category=other&from=1998&to=1998"
-    },
-    {
-     "year": 2008,
-     "row": "other",
-     "count": 1,
-     "href": "/en/catalogue?category=other&from=2008&to=2008"
-    },
-    {
-     "year": 2011,
-     "row": "other",
-     "count": 1,
-     "href": "/en/catalogue?category=other&from=2011&to=2011"
-    },
-    {
-     "year": 2012,
-     "row": "other",
-     "count": 1,
-     "href": "/en/catalogue?category=other&from=2012&to=2012"
-    },
-    {
-     "year": 2020,
-     "row": "other",
-     "count": 1,
-     "href": "/en/catalogue?category=other&from=2020&to=2020"
     },
     {
      "year": 1986,
@@ -335,12 +282,12 @@
     {
      "key": "Hong Kong",
      "label": "Hong Kong",
-     "count": 51
+     "count": 50
     },
     {
      "key": "",
      "label": "Unspecified",
-     "count": 16
+     "count": 9
     },
     {
      "key": "Taipei",
@@ -523,12 +470,6 @@
      "href": "/en/catalogue?location=Hong+Kong&from=2008&to=2008"
     },
     {
-     "year": 2009,
-     "row": "Hong Kong",
-     "count": 1,
-     "href": "/en/catalogue?location=Hong+Kong&from=2009&to=2009"
-    },
-    {
      "year": 2011,
      "row": "Hong Kong",
      "count": 1,
@@ -579,37 +520,7 @@
     {
      "year": 1996,
      "row": "",
-     "count": 2,
-     "href": null
-    },
-    {
-     "year": 1998,
-     "row": "",
      "count": 1,
-     "href": null
-    },
-    {
-     "year": 2008,
-     "row": "",
-     "count": 1,
-     "href": null
-    },
-    {
-     "year": 2011,
-     "row": "",
-     "count": 1,
-     "href": null
-    },
-    {
-     "year": 2012,
-     "row": "",
-     "count": 1,
-     "href": null
-    },
-    {
-     "year": 2020,
-     "row": "",
-     "count": 2,
      "href": null
     },
     {
@@ -727,7 +638,7 @@
      "href": "/en/catalogue?location=Oslo&from=2004&to=2004"
     }
    ],
-   "unfilterable": 16
+   "unfilterable": 9
   }
  ],
  "collaborators": [

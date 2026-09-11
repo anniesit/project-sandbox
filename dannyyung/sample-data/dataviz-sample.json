@@ -3,11 +3,11 @@
  "cataloguePath": "/catalogue",
  "years": {
   "min": 1974,
-  "max": 2020
+  "max": 2011
  },
  "totals": {
-  "works": 88,
-  "dated": 88,
+  "works": 80,
+  "dated": 80,
   "undated": 0,
   "collaborators": 43
  },
@@ -19,17 +19,12 @@
     {
      "key": "theatre-production",
      "label": "劇場",
-     "count": 69
+     "count": 67
     },
     {
      "key": "event",
      "label": "活動",
      "count": 8
-    },
-    {
-     "key": "other",
-     "label": "其他",
-     "count": 6
     },
     {
      "key": "visual-arts",
@@ -212,22 +207,10 @@
      "href": "/catalogue?category=theatre-production&from=2008&to=2008"
     },
     {
-     "year": 2009,
-     "row": "theatre-production",
-     "count": 1,
-     "href": "/catalogue?category=theatre-production&from=2009&to=2009"
-    },
-    {
      "year": 2011,
      "row": "theatre-production",
      "count": 1,
      "href": "/catalogue?category=theatre-production&from=2011&to=2011"
-    },
-    {
-     "year": 2020,
-     "row": "theatre-production",
-     "count": 1,
-     "href": "/catalogue?category=theatre-production&from=2020&to=2020"
     },
     {
      "year": 2000,
@@ -258,42 +241,6 @@
      "row": "event",
      "count": 1,
      "href": "/catalogue?category=event&from=2006&to=2006"
-    },
-    {
-     "year": 1996,
-     "row": "other",
-     "count": 1,
-     "href": "/catalogue?category=other&from=1996&to=1996"
-    },
-    {
-     "year": 1998,
-     "row": "other",
-     "count": 1,
-     "href": "/catalogue?category=other&from=1998&to=1998"
-    },
-    {
-     "year": 2008,
-     "row": "other",
-     "count": 1,
-     "href": "/catalogue?category=other&from=2008&to=2008"
-    },
-    {
-     "year": 2011,
-     "row": "other",
-     "count": 1,
-     "href": "/catalogue?category=other&from=2011&to=2011"
-    },
-    {
-     "year": 2012,
-     "row": "other",
-     "count": 1,
-     "href": "/catalogue?category=other&from=2012&to=2012"
-    },
-    {
-     "year": 2020,
-     "row": "other",
-     "count": 1,
-     "href": "/catalogue?category=other&from=2020&to=2020"
     },
     {
      "year": 1986,
@@ -335,12 +282,12 @@
     {
      "key": "香港",
      "label": "香港",
-     "count": 51
+     "count": 50
     },
     {
      "key": "",
      "label": "未註明",
-     "count": 16
+     "count": 9
     },
     {
      "key": "台北",
@@ -523,12 +470,6 @@
      "href": "/catalogue?location=%E9%A6%99%E6%B8%AF&from=2008&to=2008"
     },
     {
-     "year": 2009,
-     "row": "香港",
-     "count": 1,
-     "href": "/catalogue?location=%E9%A6%99%E6%B8%AF&from=2009&to=2009"
-    },
-    {
      "year": 2011,
      "row": "香港",
      "count": 1,
@@ -579,37 +520,7 @@
     {
      "year": 1996,
      "row": "",
-     "count": 2,
-     "href": null
-    },
-    {
-     "year": 1998,
-     "row": "",
      "count": 1,
-     "href": null
-    },
-    {
-     "year": 2008,
-     "row": "",
-     "count": 1,
-     "href": null
-    },
-    {
-     "year": 2011,
-     "row": "",
-     "count": 1,
-     "href": null
-    },
-    {
-     "year": 2012,
-     "row": "",
-     "count": 1,
-     "href": null
-    },
-    {
-     "year": 2020,
-     "row": "",
-     "count": 2,
      "href": null
     },
     {
@@ -727,7 +638,7 @@
      "href": "/catalogue?location=%E7%B4%90%E7%B4%84&from=1974&to=1974"
     }
    ],
-   "unfilterable": 16
+   "unfilterable": 9
   }
  ],
  "collaborators": [

@@ -9,7 +9,15 @@ shortest path that does not add a Node dependency to the sandbox.
 Usage:  python3 sample-data/build-catalogue-sample.py
 Reads:  data/DIR_current_data.xlsx                 (one row per WORK)
         data/input_by_dept_media_meta_data.xlsx    (one row per MEDIA ITEM)
-Writes: sample-data/catalogue-sample.json
+Writes: sample-data/catalogue-sample.json      (+ -en) -- the CATALOGUE page
+        sample-data/catalogue-full.json        (+ -en) -- build input only
+
+TWO OUTPUTS, and the difference is the point. `catalogue-sample*.json` is what
+the catalogue page loads and it EXCLUDES the supplementary records (see
+SUPPLEMENTARY_IDS below), because those are listed on the Further Reading page
+instead and a record shown on both pages is listed twice. `catalogue-full*.json`
+is the same build with nothing removed; no page loads it, it exists so
+build-supplementary-sample.py can still find the records the catalogue drops.
 
 `DIR_current_data.xlsx` superseded `input_by_dept.xlsx` on 2026-09-01. The old
 file is kept in data/ for comparison only — nothing reads it. Two differences
@@ -48,8 +56,33 @@ ENTRY_PATH = {"zh-Hant": "/entry", "en": "/en/entry"}
 # media sheet spells Traditional Chinese "zht" while the works sheet spells it
 # "zh-Hant"; the callers pass the right one.
 LANGS = {
-    "zh-Hant": {"want": "zh-Hant", "other": "en", "out": "catalogue-sample.json"},
-    "en": {"want": "en", "other": "zh-Hant", "out": "catalogue-sample-en.json"},
+    "zh-Hant": {"want": "zh-Hant", "other": "en",
+                "out": "catalogue-sample.json", "full": "catalogue-full.json"},
+    "en": {"want": "en", "other": "zh-Hant",
+           "out": "catalogue-sample-en.json", "full": "catalogue-full-en.json"},
+}
+
+# Records that belong to the Further Reading page, not the catalogue: books and
+# commentary ABOUT the work rather than productions. They are built here like
+# any other work and then held out of `out`, so the two pages never list the
+# same record twice.
+#
+# THIS SET IS THE SINGLE SOURCE OF TRUTH for the split.
+# build-supplementary-sample.py imports it from here rather than keeping a
+# second copy, because two copies would drift and the failure is silent: a
+# record would simply vanish from both pages, or appear on both.
+#
+# It is an explicit ID allowlist, not a category filter, because the page is
+# currently a MOCKUP of the concept using exactly the 8 records the client
+# named (DYP-000099, 102-109; 103 does not exist in the spreadsheet). Two of
+# them -- 000099 and 000104 -- are tagged 劇場 in the source, so this is NOT
+# the same set as "categoryKey is empty". Before this ships for real the client
+# has to decide whether those rows get re-tagged (then a category filter picks
+# the set up on its own and this constant goes away) or the ID list becomes the
+# permanent mechanism. See SUPPLEMENTARY.md.
+SUPPLEMENTARY_IDS = {
+    "DYP-000099", "DYP-000102", "DYP-000104", "DYP-000105",
+    "DYP-000106", "DYP-000107", "DYP-000108", "DYP-000109",
 }
 
 CATEGORY_KEY = {
@@ -297,7 +330,16 @@ def build(lang, header, works, counts):
             "href": ENTRY_PATH[lang] + "?id=" + wid,
         })
 
-    payload = {"lang": lang, "items": items}
+    # Everything built, before the split -- this is what the supplementary
+    # build reads, so it must keep carrying the records the catalogue drops.
+    full_path = os.path.join(HERE, cfg["full"])
+    with open(full_path, "w", encoding="utf-8") as f:
+        json.dump({"lang": lang, "items": items}, f, ensure_ascii=False, indent=1)
+
+    # The catalogue page's own file, minus the Further Reading records.
+    shown = [i for i in items if i["id"] not in SUPPLEMENTARY_IDS]
+    held_back = [i["id"] for i in items if i["id"] in SUPPLEMENTARY_IDS]
+    payload = {"lang": lang, "items": shown}
     out_path = os.path.join(HERE, cfg["out"])
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, indent=1)
@@ -305,21 +347,24 @@ def build(lang, header, works, counts):
     # ---- data quality report ------------------------------------------------
     print()
     print("== %s ==" % lang)
-    print("works           :", len(items))
-    print("no category     :", sum(1 for i in items if not i["category"]))
-    print("no title        :", sum(1 for i in items if not i["title"]))
-    print("no director     :", sum(1 for i in items if not i["directors"]))
-    print("no location     :", sum(1 for i in items if not i["location"]))
-    print("no venue        :", sum(1 for i in items if not i["venue"]))
-    yrs = [i["year"] for i in items if i["year"]]
+    print("works built     :", len(items))
+    print("held back       :", len(held_back), "->", cfg["full"],
+          "(Further Reading:", ", ".join(sorted(held_back)) + ")")
+    print("works on page   :", len(shown))
+    print("no category     :", sum(1 for i in shown if not i["category"]))
+    print("no title        :", sum(1 for i in shown if not i["title"]))
+    print("no director     :", sum(1 for i in shown if not i["directors"]))
+    print("no location     :", sum(1 for i in shown if not i["location"]))
+    print("no venue        :", sum(1 for i in shown if not i["venue"]))
+    yrs = [i["year"] for i in shown if i["year"]]
     print("year range      :", min(yrs), "-", max(yrs))
     print("language fallback used:", dict(FELL_BACK) if FELL_BACK else "none",
           "(%s missing, %s shown instead)" % (want, other))
-    notes = [i["notes"] for i in items]
+    notes = [i["notes"] for i in shown]
     print("notes filled    :", sum(1 for n in notes if n),
           "— multi-line:", sum(1 for n in notes if "\n" in n))
     print("wrote           :", out_path)
-    return items, out_path
+    return shown, out_path
 
 
 def main():

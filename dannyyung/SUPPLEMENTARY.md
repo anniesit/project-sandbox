@@ -163,3 +163,28 @@ There is no local behaviour harness for this page in either language.
 
 See ENTRY.md, "The English pages", for the site-wide picture.
 
+## The catalogue no longer lists these 8 (2026-09-11)
+
+Until now the same 8 records appeared on **both** the catalogue and this page.
+They are now held out of the catalogue, so each record is listed once: the
+catalogue is 88 → **80**.
+
+The mechanics are in CATALOGUE.md, "The catalogue excludes the Further Reading
+records". The two things that matter here:
+
+- **`SUPPLEMENTARY_IDS` moved to `build-catalogue-sample.py`** and is imported
+  by this script. That script has to know the set too (to hold the records
+  back), and a second copy would drift silently.
+- **This script reads `catalogue-full*.json`, not `catalogue-sample*.json`.**
+  The sample no longer contains these ids; pointing back at it produces an empty
+  page, so the build now raises instead.
+
+Entry pages are untouched — `build-entry-sample.py` reads the spreadsheets
+directly, so all 88 works still have a record and every `href` on this page
+still resolves.
+
+**This sharpens the open question rather than settling it.** The split is now
+load-bearing: it decides what the catalogue shows, not just what this page
+shows. So the client's decision — re-tag `DYP-000099`/`000104` and let a
+category filter do the work, or keep an explicit ID list forever — now has to be
+made before launch, and the backend has to implement whichever it is.

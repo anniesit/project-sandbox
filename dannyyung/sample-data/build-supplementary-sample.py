@@ -4,16 +4,25 @@ build-supplementary-sample.py -- catalogue sample + works sheet -> supplementary
 
 The Supplementary Materials page holds records that are not a production or
 event: books and commentary about Danny Yung's work, written by him or other
-authors. It reads sample-data/catalogue-sample*.json for id/title/year/
+authors. It reads sample-data/catalogue-full*.json for id/title/year/
 location/href/category (already resolved by build-catalogue-sample.py's
 language pick() logic), plus data/DIR_current_data.xlsx directly for the one
 field the catalogue does not carry: authors_en / authors_zh-Hant. Rebuild
 order is fixed: catalogue first, then this.
 
+READ catalogue-FULL, NOT catalogue-sample. As of 2026-09-11 the catalogue page
+excludes these 8 records so they are not listed on two pages at once, which
+means catalogue-sample*.json no longer contains them. `catalogue-full*.json` is
+the same build with nothing held back and exists for exactly this reason; point
+this script at catalogue-sample and it silently produces an EMPTY page.
+
 Selection rule -- an explicit ID allowlist, not a category filter. This page
 is a MOCKUP for the client to see the concept of the split, so it uses
 exactly the 8 records the client named (DYP-000099, 102-109; DYP-000103 does
 not exist in the current spreadsheet, leaving 8): 099, 102, 104-109.
+The list itself now lives in build-catalogue-sample.py and is imported below:
+that script has to know it too (to hold the records back), and two copies of
+the same set would drift silently.
 
 Two of those -- 000099 and 000104 -- are tagged "劇場" (theatre-production) in
 the spreadsheet, not blank, so this is NOT the same set as "categoryKey is
@@ -39,11 +48,12 @@ list page. Same pick()/multi() convention as director: semicolon-separated,
 preferred language falling back to the other.
 
 Usage:  python3 sample-data/build-supplementary-sample.py
-Reads:  sample-data/catalogue-sample.json, catalogue-sample-en.json
+Reads:  sample-data/catalogue-full.json, catalogue-full-en.json
         data/DIR_current_data.xlsx
 Writes: sample-data/supplementary-sample.json, supplementary-sample-en.json
 """
 
+import importlib.util
 import json
 import os
 import openpyxl
@@ -52,19 +62,23 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 WORKS_XLSX = os.path.join(ROOT, "data", "DIR_current_data.xlsx")
 
-SUPPLEMENTARY_IDS = {
-    "DYP-000099", "DYP-000102", "DYP-000104", "DYP-000105",
-    "DYP-000106", "DYP-000107", "DYP-000108", "DYP-000109",
-}
+# Single source of truth for the split -- same import pattern
+# build-entry-sample.py uses. See the docstring for why it is not duplicated.
+_spec = importlib.util.spec_from_file_location(
+    "cat", os.path.join(HERE, "build-catalogue-sample.py"))
+cat = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(cat)
+
+SUPPLEMENTARY_IDS = cat.SUPPLEMENTARY_IDS
 
 LANGS = {
     "zh-Hant": {
-        "catalogue": "catalogue-sample.json",
+        "catalogue": "catalogue-full.json",
         "want": "zh-Hant", "other": "en",
         "out": "supplementary-sample.json",
     },
     "en": {
-        "catalogue": "catalogue-sample-en.json",
+        "catalogue": "catalogue-full-en.json",
         "want": "en", "other": "zh-Hant",
         "out": "supplementary-sample-en.json",
     },
@@ -134,6 +148,14 @@ def build(lang, cfg, works_by_id):
                 "mediaCount": it["mediaCount"],
                 "href": it["href"],
             }
+        )
+
+    if not out_items:
+        raise SystemExit(
+            "No supplementary records found in %s.\n"
+            "That file must be the FULL catalogue build -- catalogue-sample*.json\n"
+            "deliberately excludes these ids. Run build-catalogue-sample.py first."
+            % cfg["catalogue"]
         )
 
     out_items.sort(key=lambda x: (x["year"] or 0, x["id"]))

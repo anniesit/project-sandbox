@@ -940,6 +940,59 @@ Designer will show the page with one template row; the script only runs on a
 published or previewed page.
 
 
+## The catalogue excludes the Further Reading records (2026-09-11)
+
+The catalogue page lists **80** works, not 88. The 8 records on the Further
+Reading page — `DYP-000099`, `102`, `104`–`109` — are held out, because a record
+shown on both pages is listed twice and the counts on each page then contradict
+each other.
+
+`build-catalogue-sample.py` now writes **two** files per language:
+
+| File | Contains | Who loads it |
+|---|---|---|
+| `catalogue-sample.json` / `-en` | 80 works | the catalogue page, and `build-dataviz-sample.py` |
+| `catalogue-full.json` / `-en` | all 88 | **nothing serves it** — build input for `build-supplementary-sample.py` |
+
+`SUPPLEMENTARY_IDS` lives in `build-catalogue-sample.py` and is **imported** by
+`build-supplementary-sample.py` (the same importlib pattern `build-entry-sample.py`
+already uses). One set, one place: two copies would drift, and the failure is
+silent — a record would quietly appear on both pages or on neither.
+
+**Rebuild order is now three steps, not two:**
+
+```
+python3 sample-data/build-catalogue-sample.py      # first  — writes sample + full
+python3 sample-data/build-supplementary-sample.py  # second — reads full
+python3 sample-data/build-dataviz-sample.py        # third  — reads sample
+```
+
+`build-supplementary-sample.py` raises rather than writing an empty page if it
+is ever pointed back at `catalogue-sample*.json`, because that file no longer
+contains the records it is looking for.
+
+### What the backend has to reimplement
+
+This is a real rule, not a mock artefact: whatever serves the catalogue must
+apply the same exclusion, or the split silently stops working in production
+while it looks fine in the preview. It is one predicate — *the catalogue is the
+works that are not Further Reading records* — and today that set is an ID list
+pending the client's decision (see SUPPLEMENTARY.md).
+
+### Two consequences of the smaller set
+
+- **The year range is now 1974–2011**, not 1974–2020: `DYP-000102` (2012),
+  `DYP-000104` (2020) and `DYP-000109` (2020) all moved. The year inputs' `max`
+  and the "to" placeholder were updated on both catalogue pages to match.
+  `catalogue.js` never reads `min`/`max` — they are browser hints only — so this
+  is cosmetic, but a placeholder advertising a year with no data is a lie.
+- **The "其他 / Other" radio now matches nothing.** It selects records whose
+  `categoryKey` is empty, and all six of those were among the eight that moved.
+  The option is still in the markup, deliberately: it is the escape hatch for
+  uncategorised records, and the client may yet re-tag rows or add new ones. But
+  until then it can only ever show the empty state. **Decide before launch**
+  whether to hide it — that is a design call, not a data one.
+
 ## English page
 
 `/en/catalogue` (Webflow page `6aa3a8680690102570993ca2`) is a folder duplicate
