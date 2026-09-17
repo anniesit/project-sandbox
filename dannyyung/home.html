@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>榮念曾戲劇作品資料庫 · 首頁精選檔案</title>
+    <style>
+      /* Demo-page chrome ONLY. The real styling lives in the Webflow design
+         system (.home-card, .home-card-chip, .button, tokens). This page exists
+         so home.js can be exercised without Webflow — it is a behaviour
+         harness, not a design reference. Do not copy styles from here. */
+      body { margin:0; padding:2rem clamp(1rem,4vw,3rem); background:#fff; color:#1d1c1a;
+             font-family:"Chiron Sung HK","Noto Serif HK",serif; }
+      .wrap { max-width:1200px; margin:0 auto; }
+      .home-block-title { display:flex; align-items:center; gap:1rem; }
+      .home-rule { flex:1; height:1px; background:#cccabf; }
+      .home-highlight-content { display:flex; align-items:flex-end;
+                                justify-content:space-between; gap:24px; margin:1rem 0 2rem; }
+      .paragraph-wrap.cc-narrow { max-width:44rem; }
+      .button { display:inline-flex; align-items:center; padding:.5rem 1rem; border:1px solid #d14424;
+                border-radius:.5rem; background:#d14424; color:#fff; font:inherit; cursor:pointer;
+                white-space:nowrap; }
+      .home-card-wrap { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+      .home-card { position:relative; display:flex; flex-direction:column; gap:.75rem; }
+      .home-card-media { position:relative; aspect-ratio:3/2; overflow:hidden; background:#e6e4dc; }
+      .home-card-img { position:relative; z-index:1; width:100%; height:100%; object-fit:cover; display:block; }
+      .u-img-cover.cc-background { position:absolute; inset:0; z-index:0; background:#e6e4dc; }
+      .home-card-detail { display:flex; flex-direction:column; gap:.5rem; }
+      .home-card-meta { display:flex; flex-direction:column; gap:.25rem; }
+      .home-card-meta-group { display:flex; flex-wrap:wrap; align-items:center; gap:.5rem; }
+      .home-card-chip { padding:.1rem .5rem; border:1px solid #cccabf; border-radius:1rem; }
+      .home-card-credit { display:flex; flex-wrap:wrap; gap:.25rem; }
+      .paragraph-lg { opacity:.6; }
+      .u-mb-0 { margin:0; }
+      .u-link-cover { position:absolute; inset:0; z-index:2; }
+      .u-sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
+      h3 { font-size:1.1rem; margin:0; }
+    </style>
+  </head>
+  <body>
+    <div class="page-wrapper wrap" lang="zh-Hant">
+      <!-- Mirrors the Webflow .home-highlight subtree. The data-* attributes
+           here are the contract home.js reads; see the header of home.js. -->
+      <div data-reveal-group="scroll" class="home-highlight">
+        <div data-reveal="1" class="home-block-title cc-full">
+          <h2 class="u-mb-0">精選檔案</h2>
+          <div class="home-rule"></div>
+        </div>
+
+        <div class="home-highlight-content">
+          <div data-reveal="2" class="paragraph-wrap cc-narrow">
+            <div class="text-wrap">
+              <p class="paragraph-lg u-mb-0">[placeholder] 從資料庫精選具代表性的作品，涵蓋劇場、視覺藝術及跨地域創作。點擊卡片瀏覽完整檔案資料。</p>
+            </div>
+          </div>
+          <div data-home-random="true" class="button">
+            <button type="button" class="btn-text" style="all:unset;cursor:pointer">換一批</button>
+          </div>
+        </div>
+
+        <div
+          data-reveal="3"
+          data-home-highlights
+          data-src="./sample-data/catalogue-full.json"
+          data-img-base="./images/home-highlights/"
+          class="home-card-wrap"
+        >
+          <!-- CARD 1 is the template. Cards 2 and 3 are the no-JS fallback:
+               home.js removes them the moment it lifts the template out. -->
+          <div data-card-template class="home-card">
+            <div data-card-media class="home-card-media">
+              <img data-field-img src="" alt="" class="home-card-img" />
+            </div>
+            <div class="home-card-detail">
+              <h3 data-field="title" class="u-mb-0">錄影窗</h3>
+              <div class="home-card-meta">
+                <div class="home-card-meta-group">
+                  <div data-field-group="category" class="home-card-chip">
+                    <span data-field="category" class="paragraph-xl u-mb-0">視覺藝術</span>
+                  </div>
+                  <span data-field="year" class="paragraph-xl u-mb-0">1987</span>
+                  <span data-field-group="location" class="paragraph-xl u-mb-0">/</span>
+                  <span data-field-group="location" data-field="location" class="paragraph-xl u-mb-0">香港</span>
+                </div>
+                <div data-field-group="director" class="home-card-credit">
+                  <span class="paragraph-lg u-mb-0">導演：</span>
+                  <span data-field="director" class="paragraph-xl u-mb-0">榮念曾</span>
+                </div>
+              </div>
+            </div>
+            <a data-field-link href="/entry" class="u-link-cover">
+              <span data-field="title" class="u-sr-only">錄影窗</span>
+            </a>
+            <div class="u-img-cover cc-background"></div>
+          </div>
+
+          <div class="home-card">
+            <div class="home-card-media"><div class="u-img-cover cc-background"></div></div>
+            <div class="home-card-detail"><h3 class="u-mb-0">拾日譚</h3></div>
+          </div>
+          <div class="home-card">
+            <div class="home-card-media"><div class="u-img-cover cc-background"></div></div>
+            <div class="home-card-detail"><h3 class="u-mb-0">佛洛伊德尋找中國情與事 (東京)</h3></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./home.js"></script>
+  </body>
+</html>
