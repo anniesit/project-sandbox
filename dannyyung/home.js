@@ -80,6 +80,9 @@
     "DYP-000024", // 錄影窗 / Video Window (1987)
     "DYP-000027", // 拾日譚 / Decameron (1988, 台北)
     "DYP-000087", // 佛洛伊德尋找中國情與事 (東京) / …in Search of… (Tokyo) (2003)
+    "DYP-000068", // 華麗緣 - 旅程2000藝術節
+    "DYP-000066", // 實驗莎士比亞－李爾王
+    "DYP-000035", // 中國文化深層結構－廣場
   ];
 
   /* How many cards to show. The Webflow grid is built for 3. */
@@ -110,9 +113,7 @@
      entry.js use. */
   function lang(root) {
     var el = (root.closest && root.closest("[lang]")) || document.documentElement;
-    return (el.getAttribute("lang") || "zh-Hant").toLowerCase().indexOf("en") === 0
-      ? "en"
-      : "zh";
+    return (el.getAttribute("lang") || "zh-Hant").toLowerCase().indexOf("en") === 0 ? "en" : "zh";
   }
 
   function noTitle(root) {
@@ -286,9 +287,7 @@
           else missing.push(HIGHLIGHT_IDS[k]);
         }
         if (missing.length) {
-          console.warn(
-            "[home] highlight ids not found in " + url + ": " + missing.join(", ")
-          );
+          console.warn("[home] highlight ids not found in " + url + ": " + missing.join(", "));
         }
         /* Nothing to show. The static cards are still in the DOM at this point
            — template() has not run — so leaving them alone is the best of the
@@ -305,8 +304,7 @@
            .home-highlight-content), so the search starts at the section and
            only falls back to the document. */
         var scope = (root.closest && root.closest(".home-highlight")) || document;
-        var btn = scope.querySelector("[data-home-random]") ||
-                  document.querySelector("[data-home-random]");
+        var btn = scope.querySelector("[data-home-random]") || document.querySelector("[data-home-random]");
         if (!btn) return;
         /* The attribute may be on the .button wrapper or on something inside
            it, and the Webflow button wraps a stretched <a>. Listening on the
