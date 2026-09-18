@@ -152,7 +152,7 @@
   };
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", refresh);
+    document.addEventListener("DOMContentLoaded", function () { refresh(); });
   } else {
     refresh();
   }

@@ -31,13 +31,16 @@
  * the archive holds for that year, turning a decorative block into a
  * readable picture of where the collection is thick and thin:
  *
- *   <div data-hero-year-grid
- *        data-year-start="1926" data-year-end="1997"
- *        data-year-counts='{"1926":3,"1927":11, ... }'>
+ *   window.FILMTV_YEAR_COUNTS = { "1926": 1, "1927": 0, ... };
  *
- * or, from script (handy once the counts come from the database):
+ * declared in the page's JS embed ahead of this file. That is the seam
+ * the backend replaces — emit the object and the grid shades itself,
+ * with no markup change. A short table can instead ride on the element
+ * as data-year-counts='{"1926":1, ... }', but Webflow rejects attribute
+ * values much past a few hundred characters, so a full 72-year run does
+ * not fit. render() also takes the object directly:
  *
- *   window.filmtvHeroYearGrid.render({ "1926": 3, "1927": 11 });
+ *   window.filmtvHeroYearGrid.render({ "1926": 1, "1927": 0 });
  *
  * With no counts, nothing is shaded and the grid looks exactly as it
  * does without this feature — so wiring the data later changes nothing
@@ -91,11 +94,32 @@
     return isNaN(n) ? fallback : n;
   }
 
-  /* Counts may arrive as a JSON object on the element, or be handed to
-   * render() directly. An array is accepted too, indexed from the start
-   * year, because that is the shape an aggregate query falls out in. */
+  /* Counts may arrive three ways, in this order of precedence:
+   *   1. handed to render() directly
+   *   2. window.FILMTV_YEAR_COUNTS  — a data block in the page's JS embed
+   *   3. data-year-counts on the element, as a JSON string
+   *
+   * (2) is the seam for the backend: emit the object and this picks it
+   * up, with no markup change. (3) suits a one-off grid, but Webflow
+   * rejects attribute values much beyond a few hundred characters, so a
+   * full 72-year table belongs in (2).
+   *
+   * An array is accepted too, indexed from the start year, because that
+   * is the shape an aggregate query tends to fall out in. */
   function readCounts(grid, supplied) {
-    var raw = supplied;
+    /* Guard against being handed something that is not a count table.
+     * render() used to be registered straight as the DOMContentLoaded
+     * handler, which quietly passed the Event object in here: truthy,
+     * an object, and with no year keys — so every square read as "no
+     * data" and the grid drew flat while a manual render() worked. */
+    var raw = (supplied && typeof supplied === "object" &&
+               !(window.Event && supplied instanceof window.Event))
+      ? supplied
+      : null;
+
+    if (!raw && typeof window.FILMTV_YEAR_COUNTS !== "undefined") {
+      raw = window.FILMTV_YEAR_COUNTS;
+    }
 
     if (!raw) {
       var attr = grid.getAttribute("data-year-counts");
@@ -245,7 +269,7 @@
   window.filmtvHeroYearGrid = { render: render };
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", render);
+    document.addEventListener("DOMContentLoaded", function () { render(); });
   } else {
     render();
   }

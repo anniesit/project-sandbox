@@ -40,14 +40,14 @@
  *                                    that animates FIRST (bottom left)
  *
  * State classes this file toggles (styled in hero.css / Webflow):
- *   gallery .is-ready   the script has taken over; BEFORE this is set,
- *                       hero.css leaves the first slide visible so the
- *                       Webflow Designer canvas and a no-JS page both
- *                       show the covers instead of an empty box
  *   slide   .is-active  currently shown     .is-leaving  animating out
  *           .is-retired the page-load default, once spent
  *   item    .is-active  the highlighted collection
  *   nav     .is-hidden  list fits, arrows not needed
+ *
+ * The covers start hidden, so nothing is visible until this script makes
+ * a slide active. hero.css carves out the Webflow Designer canvas
+ * (html.wf-design-mode), where page JavaScript never runs.
  *
  * ------------------------------------------------------------
  * TUNING (data attributes on [data-hero], all optional)
@@ -141,15 +141,9 @@
     this.wire();
     this.applyVisibleWindow();
 
-    /* Tell the stylesheet the script has taken over. Until this lands,
-     * hero.css leaves the first slide visible so the Webflow Designer
-     * canvas — which never runs page JavaScript — has something to lay
-     * out against, and so a no-JS visitor still sees the covers. */
-    if (this.gallery) this.gallery.classList.add("is-ready");
-
     /* Let one frame paint at the resting state before the first slide
-     * is made active, otherwise the browser goes straight to the final
-     * value and the opening animation is skipped. */
+     * is made active, otherwise the browser can collapse the two states
+     * into one style resolution and the opening animation is skipped. */
     var self = this;
     if (window.requestAnimationFrame) {
       requestAnimationFrame(function () {
@@ -503,7 +497,7 @@
   };
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
+    document.addEventListener("DOMContentLoaded", function () { init(); });
   } else {
     init();
   }

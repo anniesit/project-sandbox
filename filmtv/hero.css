@@ -55,47 +55,59 @@
   visibility: hidden;
 }
 
-/* --- before the script runs -------------------------------
- * Everything below hides the covers, which is right at runtime and
- * wrong everywhere else. The Webflow Designer never executes page
- * JavaScript, so on the canvas no slide is ever made active and all 25
- * covers sit at opacity 0 — an empty box you cannot position by eye.
- * The same applies to a visitor with JavaScript off.
+/* --- the individual cover images ---
  *
- * So the hidden state is gated behind `.is-ready`, which
- * hero-gallery-loop.js adds to the stage once it takes over. Until
- * then the FIRST slide shows at rest and the others are out of the way,
- * which is what you want to lay out against. Reorder the slides in the
- * Navigator to work on a different one. */
-.hero-gallery:not(.is-ready) .hero-slide:not(:first-child) {
-  display: none;
-}
-
-/* --- the individual cover images --- */
-
+ * Resting state = hidden, parked at the enter position. This is the
+ * DEFAULT rather than something the script switches on, and that matters:
+ * an earlier version left the covers visible until the script added a
+ * class, which meant the class itself animated them from opacity 1 to 0
+ * and the first slide's entrance was spent cancelling that fade instead
+ * of playing. Starting hidden means the first .is-active is a clean
+ * 0 -> 1 and the opening animation reads properly. */
 .hero-layer {
+  opacity: 0;
+  transform: translate3d(var(--hero-in-x), var(--hero-in-y), 0) rotate(var(--hero-in-rot));
   transition:
     opacity var(--hero-fade) var(--hero-ease),
     transform var(--hero-move) var(--hero-ease);
   will-change: opacity, transform;
 }
 
-/* Resting state = the enter start position. A layer that is not on
- * screen is already parked at the top right, so showing its slide
- * animates it in without any extra setup. */
-.hero-gallery.is-ready .hero-layer {
-  opacity: 0;
-  transform: translate3d(var(--hero-in-x), var(--hero-in-y), 0) rotate(var(--hero-in-rot));
-}
-
-.hero-gallery.is-ready .hero-slide.is-active .hero-layer {
+.hero-slide.is-active .hero-layer {
   opacity: 1;
   transform: translate3d(0, 0, 0) rotate(0deg);
 }
 
-.hero-gallery.is-ready .hero-slide.is-leaving .hero-layer {
+.hero-slide.is-leaving .hero-layer {
   opacity: 0;
   transform: translate3d(var(--hero-out-x), var(--hero-out-y), 0) rotate(var(--hero-out-rot));
+}
+
+/* --- the Webflow Designer canvas only ---------------------
+ * Webflow does not run page JavaScript on the canvas, so no slide is
+ * ever made active there and all 25 covers sit at opacity 0 — an empty
+ * box you cannot position by eye. Webflow marks the canvas with
+ * `wf-design-mode` on <html> (and `w-editor` in the Editor), so this
+ * fallback is scoped to those and can never reach a visitor.
+ *
+ * The first slide shows at rest and the rest are out of the way; reorder
+ * in the Navigator to work on a different one. Transitions are off so
+ * the covers follow the cursor instantly while you drag, rather than
+ * easing into place after every nudge.
+ *
+ * Trade-off worth knowing: a real visitor with JavaScript disabled now
+ * sees no covers. The covers are decorative and the rest of the hero is
+ * static markup, so the section still reads. */
+html.wf-design-mode .hero-slide:not(:first-child),
+html.w-editor .hero-slide:not(:first-child) {
+  display: none;
+}
+
+html.wf-design-mode .hero-layer,
+html.w-editor .hero-layer {
+  opacity: 1;
+  transform: none;
+  transition: none;
 }
 
 /* --- the stagger ---
@@ -159,9 +171,8 @@
     transform: none;
   }
 
-  .hero-gallery.is-ready .hero-layer,
-  .hero-gallery.is-ready .hero-slide.is-active .hero-layer,
-  .hero-gallery.is-ready .hero-slide.is-leaving .hero-layer {
+  .hero-slide.is-active .hero-layer,
+  .hero-slide.is-leaving .hero-layer {
     transform: none;
   }
 }

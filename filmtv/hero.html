@@ -57,6 +57,18 @@
     pointer-events: none;
   }
   .hero-paper { position: absolute; transform-origin: 50% 50%; }
+  /* Stand-in for the rule in the Webflow Page CSS embed: same dot motif
+     and pitch as the page wrapper, but translucent, because `overlay`
+     blows a near-white dot out on saturated colour. */
+  .hero-paper {
+    --dot-image:
+      radial-gradient(circle, rgba(255,255,255,.18) 1.3px, transparent 1.3px),
+      radial-gradient(circle, rgba(255,255,255,.18) 1.3px, transparent 1.3px);
+    background-image: var(--dot-image);
+    background-size: var(--dot-size);
+    background-position: var(--dot-offset);
+    background-blend-mode: overlay, overlay;
+  }
   .hero-paper.cc-green {
     width: 1444px; height: 1444px; left: 30.7%; top: 186px;
     background-color: #8eb27d; transform: rotate(25.41deg);
@@ -436,6 +448,11 @@
   </div>
 </section>
 
+<script>
+/* Stand-in for the data block in the Webflow Page JS embed. */
+window.FILMTV_YEAR_COUNTS = {"1926":1,"1927":0,"1928":0,"1929":0,"1930":1,"1931":0,"1932":0,"1933":0,"1934":0,"1935":0,"1936":0,"1937":1,"1938":2,"1939":2,"1940":0,"1941":0,"1942":0,"1943":3,"1944":0,"1945":0,"1946":0,"1947":2,"1948":6,"1949":18,"1950":26,"1951":67,"1952":133,"1953":97,"1954":72,"1955":89,"1956":91,"1957":75,"1958":102,"1959":100,"1960":132,"1961":74,"1962":53,"1963":43,"1964":30,"1965":21,"1966":21,"1967":26,"1968":60,"1969":70,"1970":60,"1971":62,"1972":63,"1973":60,"1974":61,"1975":59,"1976":64,"1977":61,"1978":57,"1979":59,"1980":61,"1981":67,"1982":65,"1983":59,"1984":56,"1985":57,"1986":53,"1987":57,"1988":52,"1989":58,"1990":53,"1991":53,"1992":55,"1993":56,"1994":77,"1995":58,"1996":54,"1997":35};
+</script>
+
 <script src="hero-year-grid.js"></script>
 <script src="hero-countup.js"></script>
 <script src="hero-gallery-loop.js"></script>
@@ -488,29 +505,16 @@
 
   /* Heat-map demo. Stands in for the per-year book counts the backend
      will supply; the shape is what render() expects. */
-  var heatOn = false;
-  var sample = (function () {
-    var counts = {};
-    for (var y = 1926; y <= 1997; y++) {
-      var n;
-      if (y < 1946)      n = Math.round(1 + 4 * Math.random());          // thin
-      else if (y < 1967) n = Math.round(4 + 14 * Math.random());
-      else               n = Math.round(30 + 40 * Math.random());        // weeklies
-      if (y === 1941 || y === 1942 || y === 1944) n = 0;                 // gaps
-      counts[y] = n;
-    }
-    return counts;
-  })();
-
+  var heatOn = true;
+  var real = window.FILMTV_YEAR_COUNTS;
   document.getElementById('heat').addEventListener('click', function () {
     heatOn = !heatOn;
-    window.filmtvHeroYearGrid.render(heatOn ? sample : null);
-    if (!heatOn) {
-      // render(null) falls back to the attribute, which this demo does not
-      // set, so clear the shading the previous pass wrote.
-      document.querySelectorAll('.hero-year-cell').forEach(function (c) {
-        c.style.opacity = ''; c.classList.remove('is-empty');
-      });
+    if (heatOn) {
+      window.FILMTV_YEAR_COUNTS = real;
+      window.filmtvHeroYearGrid.render();
+    } else {
+      delete window.FILMTV_YEAR_COUNTS;
+      window.filmtvHeroYearGrid.render();
     }
   });
 })();
