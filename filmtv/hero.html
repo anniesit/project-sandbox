@@ -249,6 +249,29 @@
   .hero-year-unit { font-size: 22px; }
   .hero-year-chip.cc-start { position: absolute; right: 0; top: 0;    z-index: 2; }
   .hero-year-chip.cc-end   { position: absolute; right: 0; bottom: 0; z-index: 2; }
+  /* Stand-ins for the site's own .popover and .paragraph-sm classes,
+     which live in Webflow. Only here so the tooltip is visible locally. */
+  .popover {
+    position: fixed;
+    width: 100%;
+    max-width: 20rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--sky-400);
+    border-radius: 0.25rem;
+    background: #d1ecb4;
+    color: var(--sky-700);
+  }
+  .popover.cc-year-tip {
+    top: 0; left: 0; right: auto; bottom: auto;
+    width: max-content;
+    max-width: 16rem;
+    margin-bottom: 0;
+    pointer-events: none;
+  }
+  .paragraph-sm { font-size: 0.95rem; line-height: 1.8; }
+  .paragraph-sm.cc-tip { margin: 0; white-space: nowrap; }
+  .hero-year-cell.is-empty { background: transparent; border: 2px solid #afd7e0; }
+
   .hero-year-line {
     position: absolute;
     right: 112px;
@@ -395,12 +418,16 @@
         </p>
         <div class="hero-year-grid" data-hero-year-grid data-year-start="1926" data-year-end="1997">
           <div class="hero-year-cell" data-year-cell-template></div>
+          <div class="hero-year-cell is-empty" data-year-cell-swatch></div>
         </div>
         <p class="hero-year-chip cc-end">
           <span class="hero-year-num" data-year-end-label>1997</span>
           <span class="hero-year-unit">年</span>
         </p>
         <div class="hero-year-line" aria-hidden="true"></div>
+        <div class="popover cc-year-tip" popover="manual" data-year-tip>
+          <p class="paragraph-sm cc-tip" data-year-tip-text>1952（133 本）</p>
+        </div>
       </div>
     </div>
 

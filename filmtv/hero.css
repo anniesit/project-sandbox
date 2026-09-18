@@ -211,9 +211,26 @@ html.w-editor .hero-layer {
  * begins at a year ending in 0 and the columns line up by last digit.
  * ============================================================ */
 
-/* A year the archive holds nothing for: no square at all, just the
- * panel showing through, so a gap in the collection reads as a gap. */
+/* A year the archive holds nothing for gets `.is-empty`, which is a real
+ * Webflow combo class — `.hero-year-cell.is-empty`, styled in the
+ * Designer, not here. There is a swatch of it authored inside the grid
+ * so you have something to select; the script replaces the grid's
+ * children on render, so that swatch never reaches the published page.
+ * Only the one thing a class cannot say stays here: the shading the
+ * heat map wrote must not dim an empty square as well. */
 .hero-year-cell.is-empty {
   opacity: 1;
-  background-color: var(--hero-year-empty, transparent);
+}
+
+/* --- the coverage-grid tooltip ---
+ * Authored in Webflow as `.popover.cc-year-tip`, so it inherits the
+ * site's popover look and stays restyleable there. Everything below is
+ * mechanism, not appearance.
+ *
+ * Browsers that support the popover API hide a closed popover
+ * themselves; older ones ignore the attribute entirely and would leave
+ * the box sitting on the page. The script adds `.is-visible` at the
+ * moment it opens, so keying off that covers both. */
+.popover.cc-year-tip:not(.is-visible) {
+  display: none;
 }

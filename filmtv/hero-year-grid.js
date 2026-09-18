@@ -22,7 +22,31 @@
  *   <div class="hero-year-cell" data-year="1926" title="1926"></div>
  *
  * Rows of ten come from the grid container's own Webflow styling
- * (display:grid, 10 columns) — not from this file.
+ * (display:grid, 10 columns) — not from this file. One row is one
+ * DECADE: the first square is indented into the column matching its
+ * last digit, so 1926 sits in column 7 and every later row starts on a
+ * year ending in 0.
+ *
+ * ------------------------------------------------------------
+ * THE TOOLTIP (optional)
+ * ------------------------------------------------------------
+ *   <div class="popover cc-year-tip" popover="manual" data-year-tip>
+ *     <p class="paragraph-sm cc-tip" data-year-tip-text>1952（133 本）</p>
+ *   </div>
+ *
+ * Authored in Webflow, next to the grid, reusing the site's own
+ * .popover class so it matches the search page's tooltips and can be
+ * restyled in the Designer. This file only writes the text into
+ * [data-year-tip-text] and positions the box; it creates nothing.
+ *
+ * Hover a square to show it, and on touch, tap. If no such element
+ * exists the squares fall back to a plain `title` attribute — the
+ * browser's own slow, unstyleable tooltip — so the grid still explains
+ * itself either way.
+ *
+ * The wording is built from the same data-year-unit used elsewhere,
+ * plus data-year-empty-label (default 沒有收藏) for a year with nothing
+ * in it.
  *
  * ------------------------------------------------------------
  * HEAT MAP (optional)
@@ -156,6 +180,114 @@
     return Math.sqrt(count) / Math.sqrt(max);
   }
 
+  /* ============================================================
+   * The hover tooltip
+   *
+   * The box itself is authored in Webflow — it reuses the site's own
+   * .popover class, so it looks like the tooltips on the search page
+   * and is restyled in the Designer like any other element. This file
+   * only fills in the text and places it.
+   *
+   * Two differences from the search page's popovers: those are opened by
+   * a click on a <button popovertarget>, and positioned by CSS anchor
+   * positioning against that one button. Neither works for 72 squares
+   * that want to respond to hover, so this opens the popover from script
+   * and positions it from the hovered square's rect.
+   *
+   * Still a NATIVE popover, though, and that part matters: a popover
+   * renders in the browser's top layer, so it is never clipped by an
+   * ancestor's overflow — and the hero's container does clip.
+   * ============================================================ */
+
+  var TIP_GAP = 10;      // px between the square and the tooltip
+  var TIP_EDGE = 8;      // px minimum gap from the viewport edge
+
+  var CAN_POPOVER = typeof HTMLElement !== "undefined" &&
+    Object.prototype.hasOwnProperty.call(HTMLElement.prototype, "popover");
+
+  function labelFor(year, count, unit, emptyLabel) {
+    if (count === null) return String(year);
+    if (count <= 0) return year + "（" + emptyLabel + "）";
+    return year + "（" + count + " " + unit + "）";
+  }
+
+  /* Scoped to the hero first, so a second grid on the same page would
+   * find its own tooltip rather than the first one's. */
+  function findTip(grid) {
+    var scope = grid.closest ? grid.closest("[data-hero]") : null;
+    return (scope || document).querySelector("[data-year-tip]");
+  }
+
+  function showTip(tipEl, cell) {
+    var text = tipEl.querySelector("[data-year-tip-text]") || tipEl;
+    text.textContent = cell.getAttribute("data-label") || "";
+
+    if (CAN_POPOVER && !tipEl.__open) {
+      try { tipEl.showPopover(); } catch (e) { /* already open */ }
+    }
+    tipEl.classList.add("is-visible");
+    tipEl.__open = true;
+
+    // Measure AFTER showing — a hidden box has no width to centre on.
+    var c = cell.getBoundingClientRect();
+    var t = tipEl.getBoundingClientRect();
+
+    var left = c.left + c.width / 2 - t.width / 2;
+    var top = c.top - t.height - TIP_GAP;
+
+    // Flip below when there is no room above, and stay on screen.
+    if (top < TIP_EDGE) top = c.bottom + TIP_GAP;
+    left = Math.max(TIP_EDGE, Math.min(left, window.innerWidth - t.width - TIP_EDGE));
+
+    tipEl.style.left = Math.round(left) + "px";
+    tipEl.style.top = Math.round(top) + "px";
+  }
+
+  function hideTip(tipEl) {
+    if (!tipEl.__open) return;
+    tipEl.classList.remove("is-visible");
+    tipEl.__open = false;
+    if (CAN_POPOVER) {
+      try { tipEl.hidePopover(); } catch (e) { /* already closed */ }
+    }
+  }
+
+  function cellFrom(e, grid) {
+    var el = e.target;
+    if (!el || !el.closest) return null;
+    var cell = el.closest("[data-year]");
+    return cell && grid.contains(cell) ? cell : null;
+  }
+
+  /* Listeners go on the GRID, not on each square — one set of handlers
+   * however many years the archive grows to, and they survive the
+   * squares being rebuilt on every render. */
+  function wireTip(grid, tipEl) {
+    if (!tipEl || grid.__tipWired) return;
+    grid.__tipWired = true;
+
+    grid.addEventListener("mouseover", function (e) {
+      var cell = cellFrom(e, grid);
+      if (cell) showTip(tipEl, cell);
+    });
+
+    grid.addEventListener("mouseleave", function () { hideTip(tipEl); });
+
+    // Touch: tap a square to read it, tap anywhere else to dismiss.
+    grid.addEventListener("click", function (e) {
+      var cell = cellFrom(e, grid);
+      if (cell) showTip(tipEl, cell);
+    });
+    document.addEventListener("click", function (e) {
+      if (!grid.contains(e.target)) hideTip(tipEl);
+    });
+
+    // A fixed-position box would otherwise hang in mid-air once the page
+    // moves under it.
+    window.addEventListener("scroll", function () { hideTip(tipEl); }, true);
+    window.addEventListener("resize", function () { hideTip(tipEl); });
+  }
+
   function renderGrid(grid, supplied) {
     var start = num(grid.getAttribute("data-year-start"), FALLBACK_START);
     var end = num(grid.getAttribute("data-year-end"), FALLBACK_END);
@@ -198,6 +330,8 @@
     var scale = grid.getAttribute("data-year-scale") || "sqrt";
     var heatMin = float(grid.getAttribute("data-year-heat-min"), HEAT_MIN);
     var unit = grid.getAttribute("data-year-unit") || "本";
+    var emptyLabel = grid.getAttribute("data-year-empty-label") || "沒有收藏";
+    var tipEl = findTip(grid);
 
     var max = 0;
     var total = 0;
@@ -218,17 +352,20 @@
 
       if (count === null) {
         // No data for this grid at all — leave the square as authored.
-        cell.setAttribute("title", String(year));
       } else if (count <= 0) {
         cell.classList.add("is-empty");
         cell.setAttribute("data-count", "0");
-        cell.setAttribute("title", year + "（沒有收藏）");
       } else {
         var t = intensity(count, max, scale);
         cell.style.opacity = String((heatMin + (1 - heatMin) * t).toFixed(3));
         cell.setAttribute("data-count", String(count));
-        cell.setAttribute("title", year + "（" + count + " " + unit + "）");
       }
+
+      /* The label the tooltip shows. Only fall back to `title` — and so
+       * to the browser's own slow, unstyleable tooltip — when no tooltip
+       * element was authored, so the grid still explains itself. */
+      cell.setAttribute("data-label", labelFor(year, count, unit, emptyLabel));
+      if (!tipEl) cell.setAttribute("title", cell.getAttribute("data-label"));
 
       frag.appendChild(cell);
     }
@@ -263,6 +400,8 @@
 
     syncLabel(grid, "[data-year-start-label]", start);
     syncLabel(grid, "[data-year-end-label]", end);
+
+    wireTip(grid, tipEl);
 
     return end - start + 1;
   }
