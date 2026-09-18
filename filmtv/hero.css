@@ -1,0 +1,140 @@
+/* ============================================================
+ * hero.css — motion for the Home page HERO CAROUSEL.
+ * Pairs with hero-gallery-loop.js.
+ *
+ * SCOPE — this file holds only what a Webflow class cannot express:
+ * the enter/leave transition states, the per-image stagger, and the
+ * reduced-motion fallback. Everything a designer tunes by eye —
+ * each image's position, size, tilt and shadow; the pill colours;
+ * the layout — lives on Webflow classes, where the style panel can
+ * reach it. If you find yourself wanting to add a colour or a size
+ * here, it probably belongs on a class instead.
+ *
+ * Loaded from the page's single "Page CSS" embed.
+ * ============================================================ */
+
+/* ============================================================
+ * PART 1 — MOTION TOKENS  (retune the animation here)
+ * ============================================================ */
+
+.hero-gallery {
+  /* Timing */
+  --hero-fade: 900ms;        /* opacity crossfade */
+  --hero-move: 1100ms;       /* drift + rotation */
+  --hero-stagger: 90ms;      /* gap between consecutive images */
+  --hero-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  /* Enter — from the TOP RIGHT, rotating CLOCKWISE into place.
+   * The start angle is negative and settles at 0, which reads as a
+   * clockwise turn. */
+  --hero-in-x: 4rem;
+  --hero-in-y: -3.5rem;
+  --hero-in-rot: -5deg;
+
+  /* Leave — out to the BOTTOM LEFT, rotating ANTI-CLOCKWISE.
+   * Starts at 0 and ends negative, the opposite turn. */
+  --hero-out-x: -4rem;
+  --hero-out-y: 3.5rem;
+  --hero-out-rot: -5deg;
+}
+
+/* ============================================================
+ * PART 2 — STRUCTURE + STATE
+ * ============================================================ */
+
+/* Every slide is stacked in the same box. Only the active one is
+ * visible, and none of them are ever a click target — the covers are
+ * decorative, the links live in the collection list. */
+.hero-slide {
+  pointer-events: none;
+}
+
+/* A slide that has been retired (the "page load default", once the auto
+ * loop has taken over) is out of the running for good. */
+.hero-slide.is-retired {
+  visibility: hidden;
+}
+
+/* --- the individual cover images --- */
+
+/* Resting state = the enter start position. A layer that is not on
+ * screen is already parked at the top right, so showing its slide
+ * animates it in without any extra setup. */
+.hero-layer {
+  opacity: 0;
+  transform:
+    translate3d(var(--hero-in-x), var(--hero-in-y), 0)
+    rotate(var(--hero-in-rot));
+  transition:
+    opacity var(--hero-fade) var(--hero-ease),
+    transform var(--hero-move) var(--hero-ease);
+  will-change: opacity, transform;
+}
+
+.hero-slide.is-active .hero-layer {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) rotate(0deg);
+}
+
+.hero-slide.is-leaving .hero-layer {
+  opacity: 0;
+  transform:
+    translate3d(var(--hero-out-x), var(--hero-out-y), 0)
+    rotate(var(--hero-out-rot));
+}
+
+/* --- the stagger ---
+ * data-layer="1" is the image nearest the BOTTOM LEFT and moves first;
+ * "5" is nearest the top right and moves last. Reordering the animation
+ * is a matter of changing the attribute in Webflow — no CSS edit, and
+ * no dependency on the source order of the markup. */
+.hero-layer[data-layer="1"] { transition-delay: 0ms; }
+.hero-layer[data-layer="2"] { transition-delay: calc(var(--hero-stagger) * 1); }
+.hero-layer[data-layer="3"] { transition-delay: calc(var(--hero-stagger) * 2); }
+.hero-layer[data-layer="4"] { transition-delay: calc(var(--hero-stagger) * 3); }
+.hero-layer[data-layer="5"] { transition-delay: calc(var(--hero-stagger) * 4); }
+.hero-layer[data-layer="6"] { transition-delay: calc(var(--hero-stagger) * 5); }
+
+/* The tilt each cover sits at is a Webflow class on the inner image, so
+ * it composes with the wrapper's animation instead of fighting it. This
+ * only guarantees the transform has something to apply to. */
+.hero-layer-img {
+  transform-origin: center center;
+}
+
+/* --- the indicator dot follows the pill ---
+ * The active collection is shown by a colour change, and the dot inside
+ * the pill changes with it. That needs a selector reaching from the pill
+ * to its own child, which no single Webflow class can express — but the
+ * COLOUR still can: set it on .hero-collection-link in the Designer's
+ * Custom properties as --hero-dot-active, and this rule just wires the
+ * two together. The fallback is the design's 電影雙周刊 red. */
+.hero-collection-link.is-active .hero-collection-dot {
+  background-color: var(--hero-dot-active, #b62602);
+}
+
+/* --- the up/down arrows ---
+ * hero-gallery-loop.js adds .is-hidden when the collection list fits
+ * without scrolling. Two class names, so it outranks a single-class
+ * display rule set in the Designer. */
+.hero-collection-nav.is-hidden {
+  display: none;
+}
+
+/* ============================================================
+ * PART 3 — REDUCED MOTION
+ * The collections still cycle; they just cut instead of drifting.
+ * ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-layer {
+    transition-duration: 1ms;
+    transition-delay: 0ms;
+    transform: none;
+  }
+
+  .hero-slide.is-active .hero-layer,
+  .hero-slide.is-leaving .hero-layer {
+    transform: none;
+  }
+}

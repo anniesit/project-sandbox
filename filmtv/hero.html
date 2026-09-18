@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>hero — local preview</title>
+
+<!--
+  Local preview harness for the Home page hero carousel.
+
+  This mirrors the DOM contract the Webflow build uses, so the JS can be
+  exercised without the Designer. The styling below is a STAND-IN for the
+  Webflow classes — it is deliberately rough and is NOT the source of
+  truth for anything visual. Only hero.css ships; everything in the
+  <style> block here stays local.
+
+  Serve it with:  python3 serve.py 8753   ->  /hero.html
+-->
+
+<link rel="stylesheet" href="hero.css">
+
+<style>
+  :root {
+    --sky-700: #003240;
+    --sky-400: #007c9e;
+    --grass-200: #b9e48b;
+    --watermelon-400: #b62602;
+    --neutral-025: #fdfefb;
+    --peach: #ffd1b1;
+  }
+
+  body {
+    margin: 0;
+    background: #ff9352;
+    font-family: system-ui, "PingFang TC", "Noto Sans TC", sans-serif;
+    color: var(--sky-700);
+  }
+
+  .demo-bar {
+    background: var(--sky-700);
+    color: #fff;
+    padding: 8px 16px;
+    font-size: 13px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .demo-bar button {
+    font: inherit;
+    padding: 4px 10px;
+    border: 0;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+
+  .hero-layout {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+    padding: 24px;
+  }
+
+  .hero-content { width: 456px; flex: none; }
+  .hero-stats   { width: 456px; flex: none; }
+  .hero-visual  { flex: 1 1 auto; min-width: 0; }
+
+  .hero-eyebrow { font-weight: 700; margin: 0 0 4px; }
+  .hero-title   { font-size: 44px; line-height: 1.1; margin: 0 0 16px; }
+  .hero-intro   { font-size: 15px; line-height: 1.7; margin: 0 0 24px; }
+
+  /* --- collection list --- */
+  .hero-collection-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+  }
+  .hero-collection-item { flex: none; }
+
+  .hero-collection-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 68px;
+    padding: 0 12px;
+    border-radius: 4px;
+    background: var(--grass-200);
+    box-shadow: 8px 8px 0 0 var(--sky-700);
+    color: inherit;
+    text-decoration: none;
+    transition: background-color 250ms ease;
+  }
+  .hero-collection-link.is-active { background: var(--peach); }
+
+  .hero-collection-dot {
+    width: 32px;
+    height: 32px;
+    flex: none;
+    border-radius: 50%;
+    background: var(--sky-400);
+    transition: background-color 250ms ease;
+  }
+  /* The active dot colour is NOT set here on purpose — hero.css owns that
+     rule, and duplicating it would hide a regression in the shipped file.
+     This is the Webflow-side override knob it reads. */
+  .hero-collection-link { --hero-dot-active: var(--watermelon-400); }
+
+  .hero-collection-label { font-size: 34px; font-weight: 700; line-height: 1.1; }
+
+  .hero-collection-nav {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 12px;
+  }
+  .hero-nav-btn {
+    width: 48px;
+    height: 48px;
+    border: 2px solid var(--sky-700);
+    border-radius: 50%;
+    background: var(--neutral-025);
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+  }
+
+  /* --- stats --- */
+  .hero-stats-label { font-size: 22px; font-weight: 700; margin: 0 0 12px; }
+  .stats-wrap { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+  .stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 2px 12px;
+    background: var(--neutral-025);
+    border: 2px solid var(--sky-700);
+  }
+  .stat.cc-1 { transform: rotate(-11.16deg); }
+  .stat.cc-2 { transform: rotate(5.07deg); align-self: center; }
+  .stat.cc-3 { transform: rotate(-1.51deg); align-self: flex-end; }
+  .stat-num  { font-size: 32px; color: var(--watermelon-400); font-weight: 700; }
+  .stat-unit { font-size: 18px; }
+
+  .hero-arrow-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 96px;
+    height: 96px;
+    margin: 24px 0;
+    border: 2px solid var(--sky-700);
+    border-radius: 50%;
+    background: var(--neutral-025);
+    box-shadow: 8px 8px 0 0 var(--sky-700);
+    color: inherit;
+    text-decoration: none;
+    font-size: 38px;
+  }
+
+  .hero-year-label { font-size: 18px; font-weight: 700; margin: 0 0 8px; }
+  .hero-year-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 24px);
+    gap: 4px;
+    padding: 24px 32px;
+    background: var(--neutral-025);
+    border: 2px solid var(--sky-700);
+    width: max-content;
+  }
+  .hero-year-cell { width: 24px; height: 24px; background: var(--sky-400); }
+  .hero-year-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0;
+    padding: 2px 12px;
+    background: var(--grass-200);
+    border: 2px solid var(--sky-700);
+  }
+  .hero-year-num  { font-size: 32px; color: var(--watermelon-400); font-weight: 700; }
+  .hero-year-unit { font-size: 18px; }
+
+  /* --- gallery --- */
+  .hero-gallery {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1004 / 1017;
+  }
+  .hero-slide { position: absolute; inset: 0; }
+  .hero-layer { position: absolute; }
+  .hero-layer-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: #d9d9d9;
+    border: 1px dashed rgba(0, 50, 64, .5);
+  }
+
+  /* placeholder geometry, traced from the Figma hero image box */
+  .hero-layer.cc-layer-1 { left: 0;     top: 64.6%; width: 36.7%; aspect-ratio: 368/442; }
+  .hero-layer.cc-layer-2 { left: 33.8%; top: 40.3%; width: 37.5%; aspect-ratio: 376/552; }
+  .hero-layer.cc-layer-3 { left: 8.0%;  top: 19.8%; width: 35.3%; aspect-ratio: 355/494; }
+  .hero-layer.cc-layer-4 { left: 2.6%;  top: 9.3%;  width: 31.9%; aspect-ratio: 320/102; }
+  .hero-layer.cc-layer-5 { right: 2.6%; top: 6.7%;  width: 34.7%; aspect-ratio: 349/505; }
+
+  .hero-layer-img.cc-tilt-1 { transform: rotate(-19.05deg); }
+  .hero-layer-img.cc-tilt-2 { transform: rotate(-3.97deg); }
+  .hero-layer-img.cc-tilt-3 { transform: rotate(13.73deg); }
+  .hero-layer-img.cc-tilt-4 { transform: rotate(-13.82deg); }
+  .hero-layer-img.cc-tilt-5 { transform: rotate(5.48deg); }
+</style>
+</head>
+<body>
+
+<div class="demo-bar">
+  <strong>hero preview</strong>
+  <span id="count-note"></span>
+  <button type="button" id="add">＋ add a collection</button>
+  <button type="button" id="remove">－ remove one</button>
+  <span>(4 or fewer hides the arrows; 5+ makes the list scroll)</span>
+</div>
+
+<!-- ============================================================
+     Everything below mirrors the Webflow element tree 1:1.
+     ============================================================ -->
+<section class="hero" data-hero
+         data-hero-interval="5000"
+         data-hero-first-delay="2500"
+         data-hero-visible="4">
+  <div class="hero-layout">
+
+    <!-- COLUMN 1 — hero-content -->
+    <div class="hero-content">
+      <p class="hero-eyebrow">香港浸會大學圖書館</p>
+      <h1 class="hero-title">中港電視電影刊物資料庫</h1>
+      <p class="hero-intro">　本網站主要收集香港（英國殖民地時期）或中國內地出版的電視和電影刊物。使用者可透過時間線或字詞搜尋功能，找出及查閱相關書刊。</p>
+
+      <ul class="hero-collection-list" data-hero-list>
+        <li class="hero-collection-item">
+          <a class="hero-collection-link" href="#" data-hero-item data-collection="tvw">
+            <span class="hero-collection-dot"></span>
+            <span class="hero-collection-label">香港電視</span>
+          </a>
+        </li>
+        <li class="hero-collection-item">
+          <a class="hero-collection-link" href="#" data-hero-item data-collection="fmp">
+            <span class="hero-collection-dot"></span>
+            <span class="hero-collection-label">電影小冊子</span>
+          </a>
+        </li>
+        <li class="hero-collection-item">
+          <a class="hero-collection-link" href="#" data-hero-item data-collection="cem">
+            <span class="hero-collection-dot"></span>
+            <span class="hero-collection-label">電影雙周刊</span>
+          </a>
+        </li>
+        <li class="hero-collection-item">
+          <a class="hero-collection-link" href="#" data-hero-item data-collection="ceb">
+            <span class="hero-collection-dot"></span>
+            <span class="hero-collection-label">電影雙周刊出版書籍</span>
+          </a>
+        </li>
+      </ul>
+
+      <div class="hero-collection-nav" data-hero-nav>
+        <button class="hero-nav-btn" type="button" data-hero-prev aria-label="上一個刊物">↑</button>
+        <button class="hero-nav-btn" type="button" data-hero-next aria-label="下一個刊物">↓</button>
+      </div>
+    </div>
+
+    <!-- COLUMN 2 — stats-wrap -->
+    <div class="hero-stats">
+      <p class="hero-stats-label">資料庫共有：</p>
+      <div class="stats-wrap">
+        <p class="stat cc-1">
+          <span class="stat-num countup" data-purecounter-end="3599">3,599</span>
+          <span class="stat-unit">本刊物</span>
+        </p>
+        <p class="stat cc-2">
+          <span class="stat-num countup" data-purecounter-end="302317">302,317</span>
+          <span class="stat-unit">頁掃描影像</span>
+        </p>
+        <p class="stat cc-3">
+          <span class="stat-num countup" data-purecounter-end="13529280">13,529,280</span>
+          <span class="stat-unit">字全文內容</span>
+        </p>
+      </div>
+
+      <a class="hero-arrow-btn" href="#" aria-label="進入資料庫">↗</a>
+
+      <div class="hero-year">
+        <p class="hero-year-label">涵蓋年份：</p>
+        <p class="hero-year-chip">
+          <span class="hero-year-num" data-year-start-label>1926</span>
+          <span class="hero-year-unit">年</span>
+        </p>
+        <div class="hero-year-grid" data-hero-year-grid data-year-start="1926" data-year-end="1997">
+          <div class="hero-year-cell" data-year-cell-template></div>
+        </div>
+        <p class="hero-year-chip">
+          <span class="hero-year-num" data-year-end-label>1997</span>
+          <span class="hero-year-unit">年</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- COLUMN 3 — hero image -->
+    <div class="hero-visual">
+      <div class="hero-gallery" data-hero-gallery>
+
+        <div class="hero-slide" data-hero-slide data-collection="__default__">
+          <div class="hero-layer cc-layer-1" data-layer="1"><img class="hero-layer-img cc-tilt-1" alt=""></div>
+          <div class="hero-layer cc-layer-2" data-layer="2"><img class="hero-layer-img cc-tilt-2" alt=""></div>
+          <div class="hero-layer cc-layer-3" data-layer="3"><img class="hero-layer-img cc-tilt-3" alt=""></div>
+          <div class="hero-layer cc-layer-4" data-layer="4"><img class="hero-layer-img cc-tilt-4" alt=""></div>
+          <div class="hero-layer cc-layer-5" data-layer="5"><img class="hero-layer-img cc-tilt-5" alt=""></div>
+        </div>
+
+        <div class="hero-slide" data-hero-slide data-collection="tvw">
+          <div class="hero-layer cc-layer-1" data-layer="1"><img class="hero-layer-img cc-tilt-1" alt=""></div>
+          <div class="hero-layer cc-layer-2" data-layer="2"><img class="hero-layer-img cc-tilt-2" alt=""></div>
+          <div class="hero-layer cc-layer-3" data-layer="3"><img class="hero-layer-img cc-tilt-3" alt=""></div>
+          <div class="hero-layer cc-layer-4" data-layer="4"><img class="hero-layer-img cc-tilt-4" alt=""></div>
+          <div class="hero-layer cc-layer-5" data-layer="5"><img class="hero-layer-img cc-tilt-5" alt=""></div>
+        </div>
+
+        <div class="hero-slide" data-hero-slide data-collection="fmp">
+          <div class="hero-layer cc-layer-1" data-layer="1"><img class="hero-layer-img cc-tilt-1" alt=""></div>
+          <div class="hero-layer cc-layer-2" data-layer="2"><img class="hero-layer-img cc-tilt-2" alt=""></div>
+          <div class="hero-layer cc-layer-3" data-layer="3"><img class="hero-layer-img cc-tilt-3" alt=""></div>
+          <div class="hero-layer cc-layer-4" data-layer="4"><img class="hero-layer-img cc-tilt-4" alt=""></div>
+          <div class="hero-layer cc-layer-5" data-layer="5"><img class="hero-layer-img cc-tilt-5" alt=""></div>
+        </div>
+
+        <div class="hero-slide" data-hero-slide data-collection="cem">
+          <div class="hero-layer cc-layer-1" data-layer="1"><img class="hero-layer-img cc-tilt-1" alt=""></div>
+          <div class="hero-layer cc-layer-2" data-layer="2"><img class="hero-layer-img cc-tilt-2" alt=""></div>
+          <div class="hero-layer cc-layer-3" data-layer="3"><img class="hero-layer-img cc-tilt-3" alt=""></div>
+          <div class="hero-layer cc-layer-4" data-layer="4"><img class="hero-layer-img cc-tilt-4" alt=""></div>
+          <div class="hero-layer cc-layer-5" data-layer="5"><img class="hero-layer-img cc-tilt-5" alt=""></div>
+        </div>
+
+        <div class="hero-slide" data-hero-slide data-collection="ceb">
+          <div class="hero-layer cc-layer-1" data-layer="1"><img class="hero-layer-img cc-tilt-1" alt=""></div>
+          <div class="hero-layer cc-layer-2" data-layer="2"><img class="hero-layer-img cc-tilt-2" alt=""></div>
+          <div class="hero-layer cc-layer-3" data-layer="3"><img class="hero-layer-img cc-tilt-3" alt=""></div>
+          <div class="hero-layer cc-layer-4" data-layer="4"><img class="hero-layer-img cc-tilt-4" alt=""></div>
+          <div class="hero-layer cc-layer-5" data-layer="5"><img class="hero-layer-img cc-tilt-5" alt=""></div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<script src="hero-year-grid.js"></script>
+<script src="hero-countup.js"></script>
+<script src="hero-gallery-loop.js"></script>
+
+<script>
+/* Demo driver only — exercises growing the list past the 4-item window.
+   None of this ships to Webflow. */
+(function () {
+  var list = document.querySelector("[data-hero-list]");
+  var gallery = document.querySelector("[data-hero-gallery]");
+  var note = document.getElementById("count-note");
+  var extra = 0;
+
+  function report() {
+    note.textContent = list.children.length + " collections";
+  }
+
+  document.getElementById("add").addEventListener("click", function () {
+    extra++;
+    var key = "demo" + extra;
+
+    var li = list.children[0].cloneNode(true);
+    var link = li.querySelector("[data-hero-item]");
+    link.setAttribute("data-collection", key);
+    link.classList.remove("is-active");
+    li.querySelector(".hero-collection-label").textContent = "示範刊物 " + extra;
+    list.appendChild(li);
+
+    var slide = gallery.querySelector('[data-collection="tvw"]').cloneNode(true);
+    slide.setAttribute("data-collection", key);
+    slide.classList.remove("is-active", "is-leaving");
+    gallery.appendChild(slide);
+
+    window.filmtvHero.init();
+    report();
+  });
+
+  document.getElementById("remove").addEventListener("click", function () {
+    if (list.children.length <= 1) return;
+    var li = list.children[list.children.length - 1];
+    var key = li.querySelector("[data-hero-item]").getAttribute("data-collection");
+    li.parentNode.removeChild(li);
+    var slide = gallery.querySelector('[data-collection="' + key + '"]');
+    if (slide) slide.parentNode.removeChild(slide);
+    window.filmtvHero.init();
+    report();
+  });
+
+  report();
+})();
+</script>
+</body>
+</html>
