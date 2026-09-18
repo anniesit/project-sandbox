@@ -106,11 +106,10 @@
  * The active collection is shown by a colour change, and the dot inside
  * the pill changes with it. That needs a selector reaching from the pill
  * to its own child, which no single Webflow class can express — but the
- * COLOUR still can: set it on .hero-collection-link in the Designer's
- * Custom properties as --hero-dot-active, and this rule just wires the
- * two together. The fallback is the design's 電影雙周刊 red. */
+ * COLOUR still can: set it in designer's variable, and this rule just wires the
+ * two together. */
 .hero-collection-link.is-active .hero-collection-dot {
-  background-color: var(--hero-dot-active, #b62602);
+  background-color: var(--primary--hero-dot-active), #FF8A39);
 }
 
 /* --- the up/down arrows ---
