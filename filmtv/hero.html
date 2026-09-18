@@ -56,16 +56,20 @@
 
   .hero-layout {
     display: flex;
-    gap: 40px;
+    flex-wrap: wrap;
+    gap: 24px;
     align-items: flex-start;
-    padding: 24px;
+    padding: 0 24px;
+    /* The collage runs off the right edge in the design, so it is clipped
+       here the way the Figma frame clips it. */
+    overflow: hidden;
   }
 
-  .hero-content { width: 456px; flex: none; }
-  .hero-stats   { width: 456px; flex: none; }
-  .hero-visual  { flex: 1 1 auto; min-width: 0; }
+  .hero-content { flex: 0 1 456px;  min-width: 0; }
+  .hero-stats   { flex: 0 1 456px;  min-width: 0; position: relative; align-self: flex-end; }
+  .hero-visual  { flex: 1 1 0;      min-width: 0; }
 
-  .hero-eyebrow { font-weight: 700; margin: 0 0 4px; }
+  .hero-eyebrow { font-size: 28px; font-weight: 700; margin: 0 0 4px; }
   .hero-title   { font-size: 44px; line-height: 1.1; margin: 0 0 16px; }
   .hero-intro   { font-size: 15px; line-height: 1.7; margin: 0 0 24px; }
 
@@ -110,7 +114,7 @@
      This is the Webflow-side override knob it reads. */
   .hero-collection-link { --hero-dot-active: var(--watermelon-400); }
 
-  .hero-collection-label { font-size: 34px; font-weight: 700; line-height: 1.1; }
+  .hero-collection-label { font-size: 50px; font-weight: 700; line-height: 1.1; }
 
   .hero-collection-nav {
     display: flex;
@@ -119,18 +123,22 @@
     padding-top: 12px;
   }
   .hero-nav-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 48px;
     height: 48px;
-    border: 2px solid var(--sky-700);
-    border-radius: 50%;
-    background: var(--neutral-025);
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--sky-700);
     cursor: pointer;
-    font-size: 20px;
+    font-size: 48px;
     line-height: 1;
   }
 
   /* --- stats --- */
-  .hero-stats-label { font-size: 22px; font-weight: 700; margin: 0 0 12px; }
+  .hero-stats-label { font-size: 28px; font-weight: 700; margin: 0 0 12px; }
   .stats-wrap { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
   .stat {
     display: inline-flex;
@@ -144,16 +152,19 @@
   .stat.cc-1 { transform: rotate(-11.16deg); }
   .stat.cc-2 { transform: rotate(5.07deg); align-self: center; }
   .stat.cc-3 { transform: rotate(-1.51deg); align-self: flex-end; }
-  .stat-num  { font-size: 32px; color: var(--watermelon-400); font-weight: 700; }
-  .stat-unit { font-size: 18px; }
+  .stat-num  { font-size: 38px; color: var(--watermelon-400); font-weight: 700; }
+  .stat-unit { font-size: 22px; }
 
   .hero-arrow-btn {
+    position: absolute;
+    left: 70%;
+    top: 48px;
+    z-index: 2;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 96px;
     height: 96px;
-    margin: 24px 0;
     border: 2px solid var(--sky-700);
     border-radius: 50%;
     background: var(--neutral-025);
@@ -163,7 +174,8 @@
     font-size: 38px;
   }
 
-  .hero-year-label { font-size: 18px; font-weight: 700; margin: 0 0 8px; }
+  .hero-year { position: relative; width: 100%; }
+  .hero-year-label { font-size: 22px; font-weight: 700; margin: 0 0 8px; }
   .hero-year-grid {
     display: grid;
     grid-template-columns: repeat(10, 24px);
@@ -178,18 +190,31 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    margin: 8px 0;
+    margin: 0;
     padding: 2px 12px;
     background: var(--grass-200);
     border: 2px solid var(--sky-700);
   }
-  .hero-year-num  { font-size: 32px; color: var(--watermelon-400); font-weight: 700; }
-  .hero-year-unit { font-size: 18px; }
+  .hero-year-num  { font-size: 38px; color: var(--watermelon-400); font-weight: 700; }
+  .hero-year-unit { font-size: 22px; }
+  .hero-year-chip.cc-start { position: absolute; right: 0; top: 0;    z-index: 2; }
+  .hero-year-chip.cc-end   { position: absolute; right: 0; bottom: 0; z-index: 2; }
+  .hero-year-line {
+    position: absolute;
+    right: 112px;
+    top: 104px;
+    width: 2px;
+    height: 212px;
+    background: var(--neutral-025);
+    transform: rotate(13.74deg);
+    z-index: 1;
+  }
 
   /* --- gallery --- */
   .hero-gallery {
     position: relative;
-    width: 100%;
+    /* Wider than its column on purpose — this is the right-edge bleed. */
+    width: 110%;
     aspect-ratio: 1004 / 1017;
   }
   .hero-slide { position: absolute; inset: 0; }
@@ -204,17 +229,28 @@
   }
 
   /* placeholder geometry, traced from the Figma hero image box */
-  .hero-layer.cc-layer-1 { left: 0;     top: 64.6%; width: 36.7%; aspect-ratio: 368/442; }
-  .hero-layer.cc-layer-2 { left: 33.8%; top: 40.3%; width: 37.5%; aspect-ratio: 376/552; }
-  .hero-layer.cc-layer-3 { left: 8.0%;  top: 19.8%; width: 35.3%; aspect-ratio: 355/494; }
-  .hero-layer.cc-layer-4 { left: 2.6%;  top: 9.3%;  width: 31.9%; aspect-ratio: 320/102; }
-  .hero-layer.cc-layer-5 { right: 2.6%; top: 6.7%;  width: 34.7%; aspect-ratio: 349/505; }
+  /* z-index restores the Figma stacking. It is deliberately NOT the source
+     order: source order carries the ANIMATION order (data-layer 1 animates
+     first), and the two are different sequences. */
+  .hero-layer.cc-layer-1 { left: 0;     top: 64.6%; width: 36.7%; aspect-ratio: 368/442; z-index: 5; }
+  .hero-layer.cc-layer-2 { left: 33.8%; top: 40.3%; width: 37.5%; aspect-ratio: 376/552; z-index: 4; }
+  .hero-layer.cc-layer-3 { left: 8.0%;  top: 19.8%; width: 35.3%; aspect-ratio: 355/494; z-index: 2; }
+  .hero-layer.cc-layer-4 { left: 2.6%;  top: 9.3%;  width: 31.9%; aspect-ratio: 320/102; z-index: 3; }
+  .hero-layer.cc-layer-5 { right: 2.6%; top: 6.7%;  width: 34.7%; aspect-ratio: 349/505; z-index: 1; }
 
   .hero-layer-img.cc-tilt-1 { transform: rotate(-19.05deg); }
-  .hero-layer-img.cc-tilt-2 { transform: rotate(-3.97deg); }
+  .hero-layer-img.cc-tilt-2 { transform: rotate(-3.97deg); box-shadow: 12px 12px 0 0 #2ca9cc; }
   .hero-layer-img.cc-tilt-3 { transform: rotate(13.73deg); }
-  .hero-layer-img.cc-tilt-4 { transform: rotate(-13.82deg); }
+  .hero-layer-img.cc-tilt-4 { transform: rotate(-13.82deg); object-fit: contain; box-shadow: 15px 7px 0 0 #2ca9cc; }
   .hero-layer-img.cc-tilt-5 { transform: rotate(5.48deg); }
+
+  /* Distinct placeholder fills, so a screenshot shows the stacking order.
+     Local only — the real covers replace these in Webflow. */
+  .cc-layer-1 .hero-layer-img { background: #1a1a1a; }   /* 董夫人      — front */
+  .cc-layer-2 .hero-layer-img { background: #f06ba8; }   /* 香港電視 */
+  .cc-layer-3 .hero-layer-img { background: #f3ded2; }   /* 電影 */
+  .cc-layer-4 .hero-layer-img { background: #ffffff; }   /* 雙周刊題頭 */
+  .cc-layer-5 .hero-layer-img { background: #c9a8d4; }   /* 南北喜相逢 — back */
 </style>
 </head>
 <body>
@@ -270,7 +306,7 @@
       </ul>
 
       <div class="hero-collection-nav" data-hero-nav>
-        <button class="hero-nav-btn" type="button" data-hero-prev aria-label="上一個刊物">↑</button>
+        <button class="hero-nav-btn" type="button" data-hero-prev aria-label="上一個刊物">&#8593;</button>
         <button class="hero-nav-btn" type="button" data-hero-next aria-label="下一個刊物">↓</button>
       </div>
     </div>
@@ -297,17 +333,18 @@
 
       <div class="hero-year">
         <p class="hero-year-label">涵蓋年份：</p>
-        <p class="hero-year-chip">
+        <p class="hero-year-chip cc-start">
           <span class="hero-year-num" data-year-start-label>1926</span>
           <span class="hero-year-unit">年</span>
         </p>
         <div class="hero-year-grid" data-hero-year-grid data-year-start="1926" data-year-end="1997">
           <div class="hero-year-cell" data-year-cell-template></div>
         </div>
-        <p class="hero-year-chip">
+        <p class="hero-year-chip cc-end">
           <span class="hero-year-num" data-year-end-label>1997</span>
           <span class="hero-year-unit">年</span>
         </p>
+        <div class="hero-year-line" aria-hidden="true"></div>
       </div>
     </div>
 
