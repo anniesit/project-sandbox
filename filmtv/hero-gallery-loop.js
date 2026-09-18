@@ -40,9 +40,14 @@
  *                                    that animates FIRST (bottom left)
  *
  * State classes this file toggles (styled in hero.css / Webflow):
- *   slide  .is-active   currently shown      .is-leaving  animating out
- *   item   .is-active   the highlighted collection
- *   nav    .is-hidden   list fits, arrows not needed
+ *   gallery .is-ready   the script has taken over; BEFORE this is set,
+ *                       hero.css leaves the first slide visible so the
+ *                       Webflow Designer canvas and a no-JS page both
+ *                       show the covers instead of an empty box
+ *   slide   .is-active  currently shown     .is-leaving  animating out
+ *           .is-retired the page-load default, once spent
+ *   item    .is-active  the highlighted collection
+ *   nav     .is-hidden  list fits, arrows not needed
  *
  * ------------------------------------------------------------
  * TUNING (data attributes on [data-hero], all optional)
@@ -135,7 +140,24 @@
     this.collect();
     this.wire();
     this.applyVisibleWindow();
-    this.showDefault();
+
+    /* Tell the stylesheet the script has taken over. Until this lands,
+     * hero.css leaves the first slide visible so the Webflow Designer
+     * canvas — which never runs page JavaScript — has something to lay
+     * out against, and so a no-JS visitor still sees the covers. */
+    if (this.gallery) this.gallery.classList.add("is-ready");
+
+    /* Let one frame paint at the resting state before the first slide
+     * is made active, otherwise the browser goes straight to the final
+     * value and the opening animation is skipped. */
+    var self = this;
+    if (window.requestAnimationFrame) {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () { self.showDefault(); });
+      });
+    } else {
+      this.showDefault();
+    }
   }
 
   /* --- read the authored markup --------------------------- */

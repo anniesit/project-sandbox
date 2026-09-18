@@ -29,12 +29,43 @@
     --peach: #ffd1b1;
   }
 
+  /* Stand-in for the Webflow page-wrapper: the dot pattern variables the
+     shipped hero.css reads, plus the paper stock the hero sits on. */
   body {
     margin: 0;
-    background: #ff9352;
+    --dot-image:
+      radial-gradient(circle, #edeae8 1.3px, transparent 1.3px),
+      radial-gradient(circle, #edeae8 1.3px, transparent 1.3px);
+    --dot-size: 6px 6px;
+    --dot-offset: 0 0, 3px 3px;
+    background-color: #fdfefb;
+    background-image: var(--dot-image);
+    background-size: var(--dot-size);
+    background-position: var(--dot-offset);
+    background-blend-mode: overlay, overlay;
     font-family: system-ui, "PingFang TC", "Noto Sans TC", sans-serif;
     color: var(--sky-700);
   }
+
+  /* --- the two colour-paper shapes behind the hero --- */
+  .hero { position: relative; overflow: hidden; }
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .hero-paper { position: absolute; transform-origin: 50% 50%; }
+  .hero-paper.cc-green {
+    width: 1444px; height: 1444px; left: 30.7%; top: 186px;
+    background-color: #8eb27d; transform: rotate(25.41deg);
+  }
+  .hero-paper.cc-orange {
+    width: 1656px; height: 1656px; left: 26.5%; top: 252px;
+    background-color: #ff9352; transform: rotate(45deg);
+  }
+  .hero-layout { position: relative; z-index: 1; }
 
   .demo-bar {
     background: var(--sky-700);
@@ -111,8 +142,9 @@
   }
   /* The active dot colour is NOT set here on purpose — hero.css owns that
      rule, and duplicating it would hide a regression in the shipped file.
-     This is the Webflow-side override knob it reads. */
-  .hero-collection-link { --hero-dot-active: var(--watermelon-400); }
+     This stands in for the Webflow theme variable it reads
+     (Primary/Hero Dot Active), which the real site defines on :root. */
+  :root { --primary--hero-dot-active: #ff8a39; }
 
   .hero-collection-label { font-size: 50px; font-weight: 700; line-height: 1.1; }
 
@@ -260,6 +292,7 @@
   <span id="count-note"></span>
   <button type="button" id="add">＋ add a collection</button>
   <button type="button" id="remove">－ remove one</button>
+  <button type="button" id="heat">toggle heat map</button>
   <span>(4 or fewer hides the arrows; 5+ makes the list scroll)</span>
 </div>
 
@@ -270,6 +303,11 @@
          data-hero-interval="5000"
          data-hero-first-delay="2500"
          data-hero-visible="4">
+  <div class="hero-bg" aria-hidden="true">
+    <div class="hero-paper cc-green"></div>
+    <div class="hero-paper cc-orange"></div>
+  </div>
+
   <div class="hero-layout">
 
     <!-- COLUMN 1 — hero-content -->
@@ -447,6 +485,34 @@
   });
 
   report();
+
+  /* Heat-map demo. Stands in for the per-year book counts the backend
+     will supply; the shape is what render() expects. */
+  var heatOn = false;
+  var sample = (function () {
+    var counts = {};
+    for (var y = 1926; y <= 1997; y++) {
+      var n;
+      if (y < 1946)      n = Math.round(1 + 4 * Math.random());          // thin
+      else if (y < 1967) n = Math.round(4 + 14 * Math.random());
+      else               n = Math.round(30 + 40 * Math.random());        // weeklies
+      if (y === 1941 || y === 1942 || y === 1944) n = 0;                 // gaps
+      counts[y] = n;
+    }
+    return counts;
+  })();
+
+  document.getElementById('heat').addEventListener('click', function () {
+    heatOn = !heatOn;
+    window.filmtvHeroYearGrid.render(heatOn ? sample : null);
+    if (!heatOn) {
+      // render(null) falls back to the attribute, which this demo does not
+      // set, so clear the shading the previous pass wrote.
+      document.querySelectorAll('.hero-year-cell').forEach(function (c) {
+        c.style.opacity = ''; c.classList.remove('is-empty');
+      });
+    }
+  });
 })();
 </script>
 </body>
