@@ -19,9 +19,9 @@
 
 .hero-gallery {
   /* Timing */
-  --hero-fade: 900ms;        /* opacity crossfade */
-  --hero-move: 1100ms;       /* drift + rotation */
-  --hero-stagger: 90ms;      /* gap between consecutive images */
+  --hero-fade: 900ms; /* opacity crossfade */
+  --hero-move: 1100ms; /* drift + rotation */
+  --hero-stagger: 90ms; /* gap between consecutive images */
   --hero-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
 
   /* Enter — from the TOP RIGHT, rotating CLOCKWISE into place.
@@ -85,9 +85,7 @@
  * animates it in without any extra setup. */
 .hero-gallery.is-ready .hero-layer {
   opacity: 0;
-  transform:
-    translate3d(var(--hero-in-x), var(--hero-in-y), 0)
-    rotate(var(--hero-in-rot));
+  transform: translate3d(var(--hero-in-x), var(--hero-in-y), 0) rotate(var(--hero-in-rot));
 }
 
 .hero-gallery.is-ready .hero-slide.is-active .hero-layer {
@@ -97,9 +95,7 @@
 
 .hero-gallery.is-ready .hero-slide.is-leaving .hero-layer {
   opacity: 0;
-  transform:
-    translate3d(var(--hero-out-x), var(--hero-out-y), 0)
-    rotate(var(--hero-out-rot));
+  transform: translate3d(var(--hero-out-x), var(--hero-out-y), 0) rotate(var(--hero-out-rot));
 }
 
 /* --- the stagger ---
@@ -107,12 +103,24 @@
  * "5" is nearest the top right and moves last. Reordering the animation
  * is a matter of changing the attribute in Webflow — no CSS edit, and
  * no dependency on the source order of the markup. */
-.hero-layer[data-layer="1"] { transition-delay: 0ms; }
-.hero-layer[data-layer="2"] { transition-delay: calc(var(--hero-stagger) * 1); }
-.hero-layer[data-layer="3"] { transition-delay: calc(var(--hero-stagger) * 2); }
-.hero-layer[data-layer="4"] { transition-delay: calc(var(--hero-stagger) * 3); }
-.hero-layer[data-layer="5"] { transition-delay: calc(var(--hero-stagger) * 4); }
-.hero-layer[data-layer="6"] { transition-delay: calc(var(--hero-stagger) * 5); }
+.hero-layer[data-layer="1"] {
+  transition-delay: 0ms;
+}
+.hero-layer[data-layer="2"] {
+  transition-delay: calc(var(--hero-stagger) * 1);
+}
+.hero-layer[data-layer="3"] {
+  transition-delay: calc(var(--hero-stagger) * 2);
+}
+.hero-layer[data-layer="4"] {
+  transition-delay: calc(var(--hero-stagger) * 3);
+}
+.hero-layer[data-layer="5"] {
+  transition-delay: calc(var(--hero-stagger) * 4);
+}
+.hero-layer[data-layer="6"] {
+  transition-delay: calc(var(--hero-stagger) * 5);
+}
 
 /* The tilt each cover sits at is a Webflow class on the inner image, so
  * it composes with the wrapper's animation instead of fighting it. This
@@ -129,22 +137,6 @@
  * two together. */
 .hero-collection-link.is-active .hero-collection-dot {
   background-color: var(--primary--hero-dot-active, #ff8a39);
-}
-
-/* --- the two colour-paper shapes behind the hero ---
- * Only the dot pattern is wired here, and only because it is three
- * properties that have to move together and already exist as a rule on
- * .page-wrapper — this keeps the two in step. The COLOUR, size, angle
- * and position of each shape live on the .hero-paper Webflow classes,
- * where the Designer's own controls reach them.
- *
- * --dot-image / --dot-size / --dot-offset are declared on .page-wrapper
- * by the Page CSS embed and inherit down to here. */
-.hero-paper {
-  background-image: var(--dot-image);
-  background-size: var(--dot-size);
-  background-position: var(--dot-offset);
-  background-blend-mode: overlay, overlay;
 }
 
 /* --- the up/down arrows ---
