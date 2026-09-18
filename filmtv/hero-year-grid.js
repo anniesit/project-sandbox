@@ -183,8 +183,16 @@
       return 0;
     }
 
+    /* The template is the previous render's first cell, so it arrives
+     * carrying that render's state. Strip it, or every clone starts life
+     * wearing one particular year's shading. */
     var proto = template.cloneNode(true);
     proto.removeAttribute("data-year-cell-template");
+    proto.removeAttribute("data-count");
+    proto.removeAttribute("title");
+    proto.classList.remove("is-empty");
+    proto.style.opacity = "";
+    proto.style.gridColumnStart = "";
 
     var counts = readCounts(grid, supplied);
     var scale = grid.getAttribute("data-year-scale") || "sqrt";
@@ -223,6 +231,16 @@
       }
 
       frag.appendChild(cell);
+    }
+
+    /* One row per DECADE. The columns are the last digit of the year, so
+     * 1926 sits in column 7 and every row starts on a year ending in 0.
+     * Only the FIRST cell needs saying: it is indented into its column
+     * and the rest flow along behind it. Reading down a column then
+     * compares the same point in each decade. */
+    var firstCell = frag.firstElementChild;
+    if (firstCell) {
+      firstCell.style.gridColumnStart = String((start % 10) + 1);
     }
 
     grid.innerHTML = "";

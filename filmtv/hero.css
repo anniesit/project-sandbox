@@ -180,20 +180,40 @@ html.w-editor .hero-layer {
 /* ============================================================
  * PART 4 — THE COVERAGE-YEAR HEAT MAP
  *
- * hero-year-grid.js shades each square by how many issues that year
- * holds. The intensity is a per-cell value — 72 different numbers —
- * so it cannot live on a class; the script writes it as an inline
- * opacity and nothing here competes with it. The square's COLOUR,
- * size and spacing stay on the .hero-year-cell Webflow class, so the
- * hue is still yours to pick in the Designer.
+ * YES — the shading is opacity, and only opacity. One channel, by
+ * choice, and it is worth being clear about what that means:
+ *
+ *   • The square's COLOUR is whatever you set on .hero-year-cell in
+ *     the Designer (currently Sky/400). The script never touches it.
+ *   • hero-year-grid.js writes an inline `opacity` per square, from
+ *     0.18 for the thinnest year up to 1 for the fullest.
+ *   • Against the grid's near-white panel a lower opacity reads as a
+ *     lighter tint of that same colour, so the result is a single-hue
+ *     light-to-dark ramp — the standard way to encode "how much", and
+ *     it stays readable for colour-blind readers.
+ *
+ * Why opacity rather than stepping through Sky/100 … Sky/700: it keeps
+ * the hue a design decision instead of a hard-coded palette in this
+ * file, so changing the square colour in Webflow restyles the whole
+ * ramp. The cost is that the tint is only correct over a pale panel —
+ * put the grid on a dark ground and the ramp inverts. If you would
+ * rather it stepped through real tokens, say so; that is a change here,
+ * not in the script.
+ *
+ * It has to be inline because it is 72 different values, one per
+ * square, which no class can express — so nothing in this file claims
+ * `opacity` for .hero-year-cell and competes with it.
  *
  * With no count data supplied, no opacity is written at all and the
- * grid looks exactly as it does now.
+ * grid renders flat.
+ *
+ * Rows are decades: the script indents the first square so every row
+ * begins at a year ending in 0 and the columns line up by last digit.
  * ============================================================ */
 
-/* A year the archive holds nothing for. Kept visible but clearly
- * empty, rather than an invisible gap that reads as a layout bug. */
+/* A year the archive holds nothing for: no square at all, just the
+ * panel showing through, so a gap in the collection reads as a gap. */
 .hero-year-cell.is-empty {
   opacity: 1;
-  background-color: var(--hero-year-empty, #d1e8ee);
+  background-color: var(--hero-year-empty, transparent);
 }
