@@ -292,12 +292,13 @@
   }
   .hero-slide { position: absolute; inset: 0; }
   .hero-layer { position: absolute; }
-  /* The IMAGE's own ratio sets the width; the layer only fixes the
-     height. Each cover then keeps its true proportions whatever it is. */
+  /* Covers are pinned by WIDTH and let their height follow the image, so
+     the collage's left-right rhythm stays put whatever shape a cover is.
+     The masthead (layer 4) is the other way round — see cc-tilt-4. */
   .hero-layer-img {
     display: block;
-    width: auto;
-    height: 100%;
+    width: 100%;
+    height: auto;
     max-width: none;
     object-fit: contain;
   }
@@ -306,16 +307,17 @@
   /* z-index restores the Figma stacking. It is deliberately NOT the source
      order: source order carries the ANIMATION order (data-layer 1 animates
      first), and the two are different sequences. */
-  .hero-layer.cc-layer-1 { left: 0;     top: 64.6%; height: 43.5%;  width: max-content; z-index: 5; }
-  .hero-layer.cc-layer-2 { left: 33.8%; top: 40.3%; height: 54.35%; width: max-content; z-index: 4; }
-  .hero-layer.cc-layer-3 { left: 8.0%;  top: 19.8%; height: 48.5%;  width: max-content; z-index: 2; }
+  .hero-layer.cc-layer-1 { left: 0;     top: 64.6%; width: 36.7%; height: auto; z-index: 5; }
+  .hero-layer.cc-layer-2 { left: 33.8%; top: 40.3%; width: 37.5%; height: auto; z-index: 4; }
+  .hero-layer.cc-layer-3 { left: 8.0%;  top: 19.8%; width: 35.3%; height: auto; z-index: 2; }
   .hero-layer.cc-layer-4 { left: 2.6%;  top: 9.3%;  height: 10.05%; width: max-content; z-index: 3; }
-  .hero-layer.cc-layer-5 { right: 2.6%; top: 6.7%;  height: 49.55%; width: max-content; z-index: 1; }
+  .hero-layer.cc-layer-5 { right: 2.6%; top: 6.7%;  width: 34.7%; height: auto; z-index: 1; }
 
   .hero-layer-img.cc-tilt-1 { transform: rotate(-19.05deg); }
   .hero-layer-img.cc-tilt-2 { transform: rotate(-3.97deg); filter: drop-shadow(10px 10px 0 #2ca9cc); }
   .hero-layer-img.cc-tilt-3 { transform: rotate(13.73deg); }
-  .hero-layer-img.cc-tilt-4 { transform: rotate(-13.82deg); filter: drop-shadow(8px 8px 0 #2ca9cc); }
+  /* the masthead is the one layer sized by height, so its image is too */
+  .hero-layer-img.cc-tilt-4 { transform: rotate(-13.82deg); filter: drop-shadow(8px 8px 0 #2ca9cc); width: auto; height: 100%; }
   .hero-layer-img.cc-tilt-5 { transform: rotate(5.48deg); }
 
   /* Distinct placeholder fills, so a screenshot shows the stacking order.
