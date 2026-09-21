@@ -136,6 +136,7 @@
     this.startTimer = null;
     this.clearTimer = null;
     this.resumeTimer = null;
+    this.retireTimer = null;
 
     this.collect();
     this.wire();
@@ -382,10 +383,27 @@
     this.startTimer = setTimeout(function () {
       self.startTimer = null;
       self.started = true;
-      if (self.defaultSlide) self.defaultSlide.classList.add("is-retired");
       self.go(0);
+      self.retireDefault();
       self.start();
     }, this.defaultSlide ? this.cfg.firstDelay : 0);
+  };
+
+  /* The page-load default is spent once the loop takes over — but the
+   * marking has to WAIT for its exit animation. `.is-retired` sets
+   * visibility:hidden, and setting it in the same breath as the handover
+   * cut the slide's drift-out off before it could play: the covers just
+   * vanished. Call this AFTER go(), never before. */
+  Hero.prototype.retireDefault = function () {
+    var self = this;
+    var slide = this.defaultSlide;
+    if (!slide) return;
+
+    if (this.retireTimer) clearTimeout(this.retireTimer);
+    this.retireTimer = setTimeout(function () {
+      slide.classList.add("is-retired");
+      self.retireTimer = null;
+    }, this.cfg.clear);
   };
 
   /* --- highlighting ---------------------------------------- */
@@ -421,8 +439,8 @@
       if (this.startTimer) clearTimeout(this.startTimer);
       this.startTimer = null;
       this.started = true;
-      if (this.defaultSlide) this.defaultSlide.classList.add("is-retired");
       this.go(delta > 0 ? 0 : this.items.length - 1);
+      this.retireDefault();
     } else {
       this.go(this.index + delta);
     }
@@ -472,6 +490,7 @@
     if (this.startTimer) clearTimeout(this.startTimer);
     if (this.clearTimer) clearTimeout(this.clearTimer);
     if (this.resumeTimer) clearTimeout(this.resumeTimer);
+    if (this.retireTimer) clearTimeout(this.retireTimer);
   };
 
   /* ============================================================

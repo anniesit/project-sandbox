@@ -90,18 +90,17 @@
  * `wf-design-mode` on <html> (and `w-editor` in the Editor), so this
  * fallback is scoped to those and can never reach a visitor.
  *
- * The first slide shows at rest and the rest are out of the way; reorder
- * in the Navigator to work on a different one. Transitions are off so
- * the covers follow the cursor instantly while you drag, rather than
- * easing into place after every nudge.
+ * EVERY slide shows, not just the first, so each one's covers can be
+ * placed and checked on the canvas. They stack in the same box, so the
+ * topmost is the one you see — use Webflow's own eye toggle in the
+ * Navigator to hide the slides you are not working on.
+ *
+ * Transitions are off so the covers follow the cursor instantly while
+ * you drag, rather than easing into place after every nudge.
  *
  * Trade-off worth knowing: a real visitor with JavaScript disabled now
  * sees no covers. The covers are decorative and the rest of the hero is
  * static markup, so the section still reads. */
-html.wf-design-mode .hero-slide:not(:first-child),
-html.w-editor .hero-slide:not(:first-child) {
-  display: none;
-}
 
 html.wf-design-mode .hero-layer,
 html.w-editor .hero-layer {
