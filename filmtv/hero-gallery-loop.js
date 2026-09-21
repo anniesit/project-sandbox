@@ -17,8 +17,9 @@
  *      bottom left (rotating anti-clockwise), staggered bottom-left first.
  *      All of that motion lives in hero.css; this file only toggles classes.
  *   4. The page first shows a "page load default" slide standing for the
- *      whole archive, with NO collection highlighted. Once the auto loop
- *      starts, that slide is retired and never shown again.
+ *      whole archive, with NO collection highlighted. It is retired for
+ *      good the moment anything takes over — the timer running out, or a
+ *      hover, focus or arrow press, whichever comes first.
  *
  * Dependency-free. No build step. Served from the project-sandbox Vercel
  * deployment and linked from the Webflow page's "Page JS" embed.
@@ -53,7 +54,8 @@
  * TUNING (data attributes on [data-hero], all optional)
  * ------------------------------------------------------------
  *   data-hero-interval="5000"     ms each collection stays on screen
- *   data-hero-first-delay="2500"  ms the default slide stays before the loop
+ *   data-hero-first-delay="2500"  LONGEST the default slide stays; a hover,
+ *                                 focus or arrow ends it sooner
  *   data-hero-visible="4"         max list items visible before it scrolls
  *   data-hero-clear="1200"        ms to keep the outgoing slide animating;
  *                                 must be >= the longest transition in
@@ -220,14 +222,18 @@
       this.list.addEventListener("focusout", function () { self.hold(false); });
     }
 
-    // Pointing at a collection previews it straight away.
+    /* Pointing at a collection previews it straight away — including
+     * while the page-load default is still up. Someone who reaches for
+     * the list has chosen; making them wait out the default's timer
+     * first would read as the hover being broken. */
     this.items.forEach(function (item, i) {
-      item.addEventListener("mouseenter", function () {
-        if (self.started) self.go(i);
-      });
-      item.addEventListener("focus", function () {
-        if (self.started) self.go(i);
-      });
+      var preview = function () {
+        var first = self.takeOver();
+        self.go(i);
+        if (first) self.retireDefault();
+      };
+      item.addEventListener("mouseenter", preview);
+      item.addEventListener("focus", preview);
     });
 
     // A backgrounded tab would otherwise queue up transitions.
@@ -382,11 +388,24 @@
     // Hand over to the auto loop; the default slide is retired for good.
     this.startTimer = setTimeout(function () {
       self.startTimer = null;
-      self.started = true;
+      self.takeOver();
       self.go(0);
       self.retireDefault();
       self.start();
     }, this.defaultSlide ? this.cfg.firstDelay : 0);
+  };
+
+  /* Cut the page-load default short. It only stands for "no collection
+   * chosen yet", so any deliberate interaction — a hover, a focus, an
+   * arrow — ends it rather than waiting out data-hero-first-delay.
+   * Returns true only for the interaction that actually did it, so the
+   * caller knows whether to start the default slide retiring. */
+  Hero.prototype.takeOver = function () {
+    if (this.started) return false;
+    if (this.startTimer) clearTimeout(this.startTimer);
+    this.startTimer = null;
+    this.started = true;
+    return true;
   };
 
   /* The page-load default is spent once the loop takes over — but the
@@ -435,10 +454,7 @@
     if (!this.items.length) return;
 
     // An arrow press before the loop has started skips the default slide.
-    if (!this.started) {
-      if (this.startTimer) clearTimeout(this.startTimer);
-      this.startTimer = null;
-      this.started = true;
+    if (this.takeOver()) {
       this.go(delta > 0 ? 0 : this.items.length - 1);
       this.retireDefault();
     } else {
