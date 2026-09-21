@@ -292,29 +292,30 @@
   }
   .hero-slide { position: absolute; inset: 0; }
   .hero-layer { position: absolute; }
+  /* The IMAGE's own ratio sets the width; the layer only fixes the
+     height. Each cover then keeps its true proportions whatever it is. */
   .hero-layer-img {
     display: block;
-    width: 100%;
+    width: auto;
     height: 100%;
-    object-fit: cover;
-    background: #d9d9d9;
-    border: 1px dashed rgba(0, 50, 64, .5);
+    max-width: none;
+    object-fit: contain;
   }
 
   /* placeholder geometry, traced from the Figma hero image box */
   /* z-index restores the Figma stacking. It is deliberately NOT the source
      order: source order carries the ANIMATION order (data-layer 1 animates
      first), and the two are different sequences. */
-  .hero-layer.cc-layer-1 { left: 0;     top: 64.6%; width: 36.7%; aspect-ratio: 368/442; z-index: 5; }
-  .hero-layer.cc-layer-2 { left: 33.8%; top: 40.3%; width: 37.5%; aspect-ratio: 376/552; z-index: 4; }
-  .hero-layer.cc-layer-3 { left: 8.0%;  top: 19.8%; width: 35.3%; aspect-ratio: 355/494; z-index: 2; }
-  .hero-layer.cc-layer-4 { left: 2.6%;  top: 9.3%;  width: 31.9%; aspect-ratio: 320/102; z-index: 3; }
-  .hero-layer.cc-layer-5 { right: 2.6%; top: 6.7%;  width: 34.7%; aspect-ratio: 349/505; z-index: 1; }
+  .hero-layer.cc-layer-1 { left: 0;     top: 64.6%; height: 43.5%;  width: max-content; z-index: 5; }
+  .hero-layer.cc-layer-2 { left: 33.8%; top: 40.3%; height: 54.35%; width: max-content; z-index: 4; }
+  .hero-layer.cc-layer-3 { left: 8.0%;  top: 19.8%; height: 48.5%;  width: max-content; z-index: 2; }
+  .hero-layer.cc-layer-4 { left: 2.6%;  top: 9.3%;  height: 10.05%; width: max-content; z-index: 3; }
+  .hero-layer.cc-layer-5 { right: 2.6%; top: 6.7%;  height: 49.55%; width: max-content; z-index: 1; }
 
   .hero-layer-img.cc-tilt-1 { transform: rotate(-19.05deg); }
-  .hero-layer-img.cc-tilt-2 { transform: rotate(-3.97deg); box-shadow: 12px 12px 0 0 #2ca9cc; }
+  .hero-layer-img.cc-tilt-2 { transform: rotate(-3.97deg); filter: drop-shadow(10px 10px 0 #2ca9cc); }
   .hero-layer-img.cc-tilt-3 { transform: rotate(13.73deg); }
-  .hero-layer-img.cc-tilt-4 { transform: rotate(-13.82deg); object-fit: contain; box-shadow: 15px 7px 0 0 #2ca9cc; }
+  .hero-layer-img.cc-tilt-4 { transform: rotate(-13.82deg); filter: drop-shadow(8px 8px 0 #2ca9cc); }
   .hero-layer-img.cc-tilt-5 { transform: rotate(5.48deg); }
 
   /* Distinct placeholder fills, so a screenshot shows the stacking order.
@@ -436,43 +437,43 @@
       <div class="hero-gallery" data-hero-gallery>
 
         <div class="hero-slide" data-hero-slide data-collection="__default__">
-          <div class="hero-layer cc-layer-1" data-layer="1"><img class="hero-layer-img cc-tilt-1" alt=""></div>
-          <div class="hero-layer cc-layer-2" data-layer="2"><img class="hero-layer-img cc-tilt-2" alt=""></div>
-          <div class="hero-layer cc-layer-3" data-layer="3"><img class="hero-layer-img cc-tilt-3" alt=""></div>
-          <div class="hero-layer cc-layer-4" data-layer="4"><img class="hero-layer-img cc-tilt-4" alt=""></div>
-          <div class="hero-layer cc-layer-5" data-layer="5"><img class="hero-layer-img cc-tilt-5" alt=""></div>
+          <div class="hero-layer cc-layer-1" data-layer="1"><img class="hero-layer-img cc-tilt-1" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27368%27%20height%3D%27442%27%3E%3Crect%20width%3D%27368%27%20height%3D%27442%27%20rx%3D%276%27%20fill%3D%27%231a1a1a%27%2F%3E%3C%2Fsvg%3E"></div>
+          <div class="hero-layer cc-layer-2" data-layer="2"><img class="hero-layer-img cc-tilt-2" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27376%27%20height%3D%27552%27%3E%3Crect%20width%3D%27376%27%20height%3D%27552%27%20rx%3D%276%27%20fill%3D%27%23f06ba8%27%2F%3E%3C%2Fsvg%3E"></div>
+          <div class="hero-layer cc-layer-3" data-layer="3"><img class="hero-layer-img cc-tilt-3" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27355%27%20height%3D%27494%27%3E%3Crect%20width%3D%27355%27%20height%3D%27494%27%20rx%3D%276%27%20fill%3D%27%23f3ded2%27%2F%3E%3C%2Fsvg%3E"></div>
+          <div class="hero-layer cc-layer-4" data-layer="4"><img class="hero-layer-img cc-tilt-4" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27320%27%20height%3D%27102%27%3E%3Crect%20width%3D%27320%27%20height%3D%27102%27%20rx%3D%276%27%20fill%3D%27%23ffffff%27%2F%3E%3C%2Fsvg%3E"></div>
+          <div class="hero-layer cc-layer-5" data-layer="5"><img class="hero-layer-img cc-tilt-5" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27349%27%20height%3D%27505%27%3E%3Crect%20width%3D%27349%27%20height%3D%27505%27%20rx%3D%276%27%20fill%3D%27%23c9a8d4%27%2F%3E%3C%2Fsvg%3E"></div>
         </div>
 
         <div class="hero-slide" data-hero-slide data-collection="tvw">
-          <div class="hero-layer cc-layer-1" data-layer="1"><img class="hero-layer-img cc-tilt-1" alt=""></div>
-          <div class="hero-layer cc-layer-2" data-layer="2"><img class="hero-layer-img cc-tilt-2" alt=""></div>
-          <div class="hero-layer cc-layer-3" data-layer="3"><img class="hero-layer-img cc-tilt-3" alt=""></div>
-          <div class="hero-layer cc-layer-4" data-layer="4"><img class="hero-layer-img cc-tilt-4" alt=""></div>
-          <div class="hero-layer cc-layer-5" data-layer="5"><img class="hero-layer-img cc-tilt-5" alt=""></div>
+          <div class="hero-layer cc-layer-1" data-layer="1"><img class="hero-layer-img cc-tilt-1" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27320%27%20height%3D%27470%27%3E%3Crect%20width%3D%27320%27%20height%3D%27470%27%20rx%3D%276%27%20fill%3D%27%231a1a1a%27%2F%3E%3C%2Fsvg%3E"></div>
+          <div class="hero-layer cc-layer-2" data-layer="2"><img class="hero-layer-img cc-tilt-2" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27410%27%20height%3D%27520%27%3E%3Crect%20width%3D%27410%27%20height%3D%27520%27%20rx%3D%276%27%20fill%3D%27%23f06ba8%27%2F%3E%3C%2Fsvg%3E"></div>
+          <div class="hero-layer cc-layer-3" data-layer="3"><img class="hero-layer-img cc-tilt-3" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27300%27%20height%3D%27520%27%3E%3Crect%20width%3D%27300%27%20height%3D%27520%27%20rx%3D%276%27%20fill%3D%27%23f3ded2%27%2F%3E%3C%2Fsvg%3E"></div>
+          <div class="hero-layer cc-layer-4" data-layer="4"><img class="hero-layer-img cc-tilt-4" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27260%27%20height%3D%27150%27%3E%3Crect%20width%3D%27260%27%20height%3D%27150%27%20rx%3D%276%27%20fill%3D%27%23ffffff%27%2F%3E%3C%2Fsvg%3E"></div>
+          <div class="hero-layer cc-layer-5" data-layer="5"><img class="hero-layer-img cc-tilt-5" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27380%27%20height%3D%27480%27%3E%3Crect%20width%3D%27380%27%20height%3D%27480%27%20rx%3D%276%27%20fill%3D%27%23c9a8d4%27%2F%3E%3C%2Fsvg%3E"></div>
         </div>
 
         <div class="hero-slide" data-hero-slide data-collection="fmp">
-          <div class="hero-layer cc-layer-1" data-layer="1"><img class="hero-layer-img cc-tilt-1" alt=""></div>
-          <div class="hero-layer cc-layer-2" data-layer="2"><img class="hero-layer-img cc-tilt-2" alt=""></div>
-          <div class="hero-layer cc-layer-3" data-layer="3"><img class="hero-layer-img cc-tilt-3" alt=""></div>
-          <div class="hero-layer cc-layer-4" data-layer="4"><img class="hero-layer-img cc-tilt-4" alt=""></div>
-          <div class="hero-layer cc-layer-5" data-layer="5"><img class="hero-layer-img cc-tilt-5" alt=""></div>
+          <div class="hero-layer cc-layer-1" data-layer="1"><img class="hero-layer-img cc-tilt-1" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27400%27%20height%3D%27410%27%3E%3Crect%20width%3D%27400%27%20height%3D%27410%27%20rx%3D%276%27%20fill%3D%27%231a1a1a%27%2F%3E%3C%2Fsvg%3E"></div>
+          <div class="hero-layer cc-layer-2" data-layer="2"><img class="hero-layer-img cc-tilt-2" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27340%27%20height%3D%27580%27%3E%3Crect%20width%3D%27340%27%20height%3D%27580%27%20rx%3D%276%27%20fill%3D%27%23f06ba8%27%2F%3E%3C%2Fsvg%3E"></div>
+          <div class="hero-layer cc-layer-3" data-layer="3"><img class="hero-layer-img cc-tilt-3" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27395%27%20height%3D%27470%27%3E%3Crect%20width%3D%27395%27%20height%3D%27470%27%20rx%3D%276%27%20fill%3D%27%23f3ded2%27%2F%3E%3C%2Fsvg%3E"></div>
+          <div class="hero-layer cc-layer-4" data-layer="4"><img class="hero-layer-img cc-tilt-4" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27300%27%20height%3D%2780%27%3E%3Crect%20width%3D%27300%27%20height%3D%2780%27%20rx%3D%276%27%20fill%3D%27%23ffffff%27%2F%3E%3C%2Fsvg%3E"></div>
+          <div class="hero-layer cc-layer-5" data-layer="5"><img class="hero-layer-img cc-tilt-5" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27320%27%20height%3D%27530%27%3E%3Crect%20width%3D%27320%27%20height%3D%27530%27%20rx%3D%276%27%20fill%3D%27%23c9a8d4%27%2F%3E%3C%2Fsvg%3E"></div>
         </div>
 
         <div class="hero-slide" data-hero-slide data-collection="cem">
-          <div class="hero-layer cc-layer-1" data-layer="1"><img class="hero-layer-img cc-tilt-1" alt=""></div>
-          <div class="hero-layer cc-layer-2" data-layer="2"><img class="hero-layer-img cc-tilt-2" alt=""></div>
-          <div class="hero-layer cc-layer-3" data-layer="3"><img class="hero-layer-img cc-tilt-3" alt=""></div>
-          <div class="hero-layer cc-layer-4" data-layer="4"><img class="hero-layer-img cc-tilt-4" alt=""></div>
-          <div class="hero-layer cc-layer-5" data-layer="5"><img class="hero-layer-img cc-tilt-5" alt=""></div>
+          <div class="hero-layer cc-layer-1" data-layer="1"><img class="hero-layer-img cc-tilt-1" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27352%27%20height%3D%27455%27%3E%3Crect%20width%3D%27352%27%20height%3D%27455%27%20rx%3D%276%27%20fill%3D%27%231a1a1a%27%2F%3E%3C%2Fsvg%3E"></div>
+          <div class="hero-layer cc-layer-2" data-layer="2"><img class="hero-layer-img cc-tilt-2" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27390%27%20height%3D%27540%27%3E%3Crect%20width%3D%27390%27%20height%3D%27540%27%20rx%3D%276%27%20fill%3D%27%23f06ba8%27%2F%3E%3C%2Fsvg%3E"></div>
+          <div class="hero-layer cc-layer-3" data-layer="3"><img class="hero-layer-img cc-tilt-3" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27330%27%20height%3D%27505%27%3E%3Crect%20width%3D%27330%27%20height%3D%27505%27%20rx%3D%276%27%20fill%3D%27%23f3ded2%27%2F%3E%3C%2Fsvg%3E"></div>
+          <div class="hero-layer cc-layer-4" data-layer="4"><img class="hero-layer-img cc-tilt-4" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27220%27%20height%3D%27170%27%3E%3Crect%20width%3D%27220%27%20height%3D%27170%27%20rx%3D%276%27%20fill%3D%27%23ffffff%27%2F%3E%3C%2Fsvg%3E"></div>
+          <div class="hero-layer cc-layer-5" data-layer="5"><img class="hero-layer-img cc-tilt-5" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27360%27%20height%3D%27495%27%3E%3Crect%20width%3D%27360%27%20height%3D%27495%27%20rx%3D%276%27%20fill%3D%27%23c9a8d4%27%2F%3E%3C%2Fsvg%3E"></div>
         </div>
 
         <div class="hero-slide" data-hero-slide data-collection="ceb">
-          <div class="hero-layer cc-layer-1" data-layer="1"><img class="hero-layer-img cc-tilt-1" alt=""></div>
-          <div class="hero-layer cc-layer-2" data-layer="2"><img class="hero-layer-img cc-tilt-2" alt=""></div>
-          <div class="hero-layer cc-layer-3" data-layer="3"><img class="hero-layer-img cc-tilt-3" alt=""></div>
-          <div class="hero-layer cc-layer-4" data-layer="4"><img class="hero-layer-img cc-tilt-4" alt=""></div>
-          <div class="hero-layer cc-layer-5" data-layer="5"><img class="hero-layer-img cc-tilt-5" alt=""></div>
+          <div class="hero-layer cc-layer-1" data-layer="1"><img class="hero-layer-img cc-tilt-1" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27380%27%20height%3D%27430%27%3E%3Crect%20width%3D%27380%27%20height%3D%27430%27%20rx%3D%276%27%20fill%3D%27%231a1a1a%27%2F%3E%3C%2Fsvg%3E"></div>
+          <div class="hero-layer cc-layer-2" data-layer="2"><img class="hero-layer-img cc-tilt-2" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27360%27%20height%3D%27560%27%3E%3Crect%20width%3D%27360%27%20height%3D%27560%27%20rx%3D%276%27%20fill%3D%27%23f06ba8%27%2F%3E%3C%2Fsvg%3E"></div>
+          <div class="hero-layer cc-layer-3" data-layer="3"><img class="hero-layer-img cc-tilt-3" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27370%27%20height%3D%27480%27%3E%3Crect%20width%3D%27370%27%20height%3D%27480%27%20rx%3D%276%27%20fill%3D%27%23f3ded2%27%2F%3E%3C%2Fsvg%3E"></div>
+          <div class="hero-layer cc-layer-4" data-layer="4"><img class="hero-layer-img cc-tilt-4" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27340%27%20height%3D%27110%27%3E%3Crect%20width%3D%27340%27%20height%3D%27110%27%20rx%3D%276%27%20fill%3D%27%23ffffff%27%2F%3E%3C%2Fsvg%3E"></div>
+          <div class="hero-layer cc-layer-5" data-layer="5"><img class="hero-layer-img cc-tilt-5" alt="" src="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27335%27%20height%3D%27515%27%3E%3Crect%20width%3D%27335%27%20height%3D%27515%27%20rx%3D%276%27%20fill%3D%27%23c9a8d4%27%2F%3E%3C%2Fsvg%3E"></div>
         </div>
 
       </div>
