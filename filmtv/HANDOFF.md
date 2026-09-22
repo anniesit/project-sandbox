@@ -704,4 +704,5 @@ All events **bubble to `document`**.
 - [ ] `book.js`: delete `book.mock.js`; fetch one book's family server-side per route and call `filmtvBook.render()` directly (no family switcher).
 - [ ] `viewer.js`: delete `viewer.mock.js`; call `filmtvViewer.init({ root, dataBaseUrl })` once and let it read `?book=&page=&article=` from the URL (no dev switcher). Decide the `articleBody` inline-vs-lazy tradeoff (breaks client-side search if lazy — see the `viewer.js` section).
 - [ ] Home page: repoint `[data-keyword-src]` at the CSV's path on the live server and upload `home-keywords.csv` beside it; confirm the tag links and the home search form both land on the search page with the search already run.
+- [ ] Home page 相關資料庫 section: replace the two cards' placeholder `#` hrefs (on the `.u-link-cover` link inside each `.project-card`, NOT on the title) and the 查看更多資料庫 button's `#`, once the related-databases page exists. Each card's cover link also carries an `aria-label` holding the project name — keep it in step with the visible title.
 - [ ] Push to the repo — Vercel auto-deploys from `project-sandbox` (see "Deploy" above); no CDN purge or manual export step needed.
