@@ -554,6 +554,94 @@ document.addEventListener("filmtv:addKeyword", (e) => addTermAndSearch(e.detail.
 
 ---
 
+## `home-keywords.js` — Home page 條目檢索 section
+
+Two halves of one section on the Home page, and **neither needs a backend
+endpoint**. Both talk to the search page through the URL only.
+
+### Left column — the search form
+
+A plain `<form class="search-bar cc-home" action="search-page.html"
+method="get" target="_blank">` wrapping the shared **Keyword Fields**
+Webflow component (the same component the search page header uses).
+
+Nothing scripts this submit. The design system's `initKeywordFields()`
+already rewrites each `[data-name]` to an indexed submitting name, so a
+native GET produces:
+
+```
+search-page.html?field_1=author&keyword_1=余慕雲&operator_2=AND&field_2=all&keyword_2=新浪潮
+```
+
+which is exactly what `search.js`'s `normalizeUrlKeywordParams()` reads on
+load (`keyword_1` … `keyword_5`, plus `field_i` / `operator_i`). It fills the
+search form and runs the search.
+
+**Do not load `search.js` on the Home page.** It binds `form.search-bar`
+submit with `preventDefault()` and would swallow the navigation.
+
+### Right column — suggested keyword tags, driven by a CSV
+
+`home-keywords.js` renders the tags from a CSV so the curated list can be
+updated by replacing one text file, with no Webflow re-export. Each tag is a
+plain `<a target="_blank">` carrying the same indexed params.
+
+**CSV columns** (header row required, UTF-8):
+
+| column      | meaning                                                                 |
+| ----------- | ----------------------------------------------------------------------- |
+| `group`     | section heading. Groups render in the order they first appear.           |
+| `label`     | the text printed on the tag.                                            |
+| `field`     | `all` \| `article-title` \| `book-title` \| `author` \| `column`. Blank = `all`. |
+| `query`     | optional — the text actually searched, when it differs from the label.   |
+| `highlight` | optional — a style flag; its value becomes a combo class (see below).    |
+
+**`highlight` → combo class.** The value is slugged and prefixed with `cc-`:
+`highlight` → `.home-keyword-tag.cc-highlight`. To add a second highlight
+colour, type a different word in the CSV (say `new`) and create a matching
+`.home-keyword-tag.cc-new` combo class in the Webflow Designer. **No code
+change is needed** — `home-keywords.js` never names a colour or a class.
+
+**DOM contract**, all authored in Webflow:
+
+```
+[data-keyword-groups]            root; data-keyword-src + data-search-url
+  [data-keyword-group-template]    the ONE authored group = the prototype
+    [data-keyword-group-title]     group heading
+    [data-keyword-list]            <ul> for the tags
+      [data-keyword-tag]           FIRST one = the prototype, must be plain
+      [data-keyword-tag]           further ones are design-time swatches only
+```
+
+Everything inside the root is replaced at render time, so the prototype group
+and the `cc-highlight` swatch never reach the published page. They exist so
+those classes can be selected and styled by eye on the Designer canvas.
+
+**ON EXPORT — the one thing to change.** The panel's `data-keyword-src`
+currently points at the sandbox copy:
+
+```
+https://hkbuproject-sandbox.vercel.app/filmtv/sample-data/home-keywords.csv
+```
+
+Repoint it at the CSV's path on the live server (e.g. `data/home-keywords.csv`)
+and upload the CSV there. The file is fetched with `cache: "no-store"`, so a
+replacement takes effect on the next page load with no version bump.
+
+If the CSV is missing or unreadable the panel hides itself (`hidden` +
+`.is-empty` on the root) and logs to the console, rather than leaving dead
+prototype tags on the page.
+
+**Open question for the backend.** The search page's field dropdown offers only
+`all / article-title / book-title / author / column`. So 作者 tags search
+`field_1=author` exactly, but 關鍵字 and 人物 tags fall back to `field_1=all`,
+which also searches OCR full text — clicking 張國榮 returns every article that
+merely *mentions* him, not the ones tagged with him. If `exportSearch.php` has a
+field for the tagged keyword/person values, expose it as a dropdown value and
+the CSV's `field` column can use it per row, with no code change.
+
+---
+
 ## Event summary
 
 | Event               | Fired by   | Detail                                   | Backend does                             |
@@ -583,4 +671,5 @@ All events **bubble to `document`**.
 - [ ] Listen for the two `filmtv:*` events (`filmtv:filter`, `filmtv:addKeyword`) and round-trip them.
 - [ ] `book.js`: delete `book.mock.js`; fetch one book's family server-side per route and call `filmtvBook.render()` directly (no family switcher).
 - [ ] `viewer.js`: delete `viewer.mock.js`; call `filmtvViewer.init({ root, dataBaseUrl })` once and let it read `?book=&page=&article=` from the URL (no dev switcher). Decide the `articleBody` inline-vs-lazy tradeoff (breaks client-side search if lazy — see the `viewer.js` section).
+- [ ] Home page: repoint `[data-keyword-src]` at the CSV's path on the live server and upload `home-keywords.csv` beside it; confirm the tag links and the home search form both land on the search page with the search already run.
 - [ ] Push to the repo — Vercel auto-deploys from `project-sandbox` (see "Deploy" above); no CDN purge or manual export step needed.

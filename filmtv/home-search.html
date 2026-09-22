@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>home-search — local preview</title>
+
+<!--
+  Local preview harness for the Home page's 條目檢索 section.
+
+  It mirrors the DOM the Webflow build uses so two things can be exercised
+  without the Designer:
+
+    1. the LEFT column — a plain GET form whose fields are named by the design
+       system's own keyword-field component (field_1 / keyword_1 / operator_2
+       …). Submitting it navigates to the search page with the search already
+       in the URL. No JavaScript of ours is involved.
+    2. the RIGHT column — home-keywords.js turning a CSV into tag links.
+
+  The design system bundle is loaded from its live URL, so the dropdowns, the
+  +/- row buttons and the clear buttons behave exactly as they do on the site.
+  The <style> block below is only a STAND-IN for the Webflow project classes
+  (.search-bar, .keyword-fields, .home-keyword-tag …) — it is deliberately
+  rough and is NOT the source of truth for anything visual.
+
+  Serve it with:  python3 serve.py 8753   ->  /home-search.html
+-->
+
+<link rel="stylesheet" href="https://design-system.anniesit.link/bundles/design-system.css">
+<script src="https://design-system.anniesit.link/bundles/design-system.js" defer></script>
+<link rel="stylesheet" href="font/genryumin-tc/genryumin-tc.css">
+<link rel="stylesheet" href="font/zihunbiantaoti/zihunbiantaoti.css">
+
+<style>
+  :root {
+    --sky-100: #d1e8ee;
+    --sky-300: #7fbdcb;
+    --sky-400: #007c9e;
+    --sky-700: #003240;
+    --grass-100: #d1ecb4;
+    --neutral-025: #fdfefb;
+    --white: #fff;
+  }
+
+  body {
+    margin: 0;
+    padding: 3rem 1.5rem;
+    background: var(--neutral-025);
+    color: var(--sky-700);
+    font-family: "GenRyuMin2 TC", "PingFang TC", "Noto Serif TC", serif;
+  }
+
+  .container { max-width: 90rem; margin: 0 auto; }
+
+  /* --- intro --- */
+  .home-search-intro { display: flex; flex-direction: column; gap: 1.5rem; margin-bottom: 3rem; }
+  .home-section-title-row { display: flex; flex-direction: row; align-items: center; gap: 2rem; }
+  .home-section-title { margin: 0; padding: 0.125rem 0.5rem; background: var(--sky-100); font-size: 2.5rem; font-weight: 500; line-height: 1.4; }
+  .home-section-rule { height: 0.75rem; flex: 1 1 0%; border-top: 6px solid var(--sky-700); border-bottom: 2px solid var(--sky-700); box-sizing: border-box; }
+  .home-search-intro-text { max-width: 50rem; margin-bottom: 0; }
+
+  /* --- two columns --- */
+  .home-search-row { display: flex; flex-direction: row; flex-wrap: wrap; align-items: flex-start; column-gap: 2rem; row-gap: 3rem; }
+  .home-search-col { display: flex; flex-direction: column; min-width: 0; flex: 1 1 28rem; gap: 1.5rem; }
+  .home-search-col-title { margin: 0; font-size: 2.5rem; font-weight: 500; line-height: 1.4; }
+
+  /* --- left column: the search panel --- */
+  .search-bar { padding: 1.5rem 2rem 2rem; border-radius: 0.25rem; background: #fdfefb; }
+  .search-bar.cc-home { display: flex; flex-direction: column; gap: 1.5rem; background: var(--sky-300); }
+  .keyword-fields { display: flex; flex-direction: column; gap: 0.5rem; min-width: 0; flex: 2 1 30rem; }
+  .keyword-row { display: flex; gap: 0.5rem; align-items: center; }
+  .input-clear-wrapper { position: relative; flex: 1 1 auto; }
+  .input { width: 100%; box-sizing: border-box; padding: 0.7rem 2rem 0.7rem 0.75rem; border: 0; border-radius: 0.5rem; background: var(--white); font: inherit; }
+  .input-clear-btn { position: absolute; right: 0.35rem; top: 50%; transform: translateY(-50%); width: 1.2rem; border: 0; background: none; cursor: pointer; color: inherit; }
+  .input-clear-icon { width: 100%; display: block; }
+
+  /* The project sizes these icons on its own Webflow classes; the DS bundle
+     only ships the dropdown's behaviour, so size them here or the chevrons
+     fill the panel. */
+  .dropdown { position: relative; }
+  .dropdown-trigger { display: flex; align-items: center; gap: 0.4rem; padding: 0.7rem 0.75rem; border: 0; border-radius: 0.5rem; background: var(--white); font: inherit; color: inherit; cursor: pointer; white-space: nowrap; }
+  .dropdown-trigger-icon { width: 0.7rem; flex: 0 0 auto; }
+  .dropdown-list { display: none; position: absolute; z-index: 5; margin: 0; padding: 0.25rem 0; min-width: 100%; list-style: none; background: var(--white); border: 1px solid var(--sky-100); }
+  .dropdown-option { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.75rem; cursor: pointer; white-space: nowrap; }
+  .dropdown-option-check { width: 0.85rem; flex: 0 0 auto; opacity: 0; }
+  .dropdown-option[aria-selected="true"] .dropdown-option-check { opacity: 1; }
+  .dropdown.is-open .dropdown-list { display: block; } /* forms.js toggles .is-open */
+
+  .keyword-addbtn { width: 2rem; height: 2rem; flex: 0 0 auto; border-radius: 50%; border: 2px solid var(--sky-700); background: var(--white); cursor: pointer; font: inherit; }
+  .keyword-addbtn[disabled] { opacity: 0.35; cursor: not-allowed; }
+  .home-search-actions { display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: flex-end; column-gap: 1.5rem; row-gap: 0.5rem; }
+  .home-search-actions .text-link { color: inherit; }
+  .button { padding: 0.75rem 2rem; border: 0; background: #638f34; color: #fff; font: inherit; cursor: pointer; }
+
+  /* --- right column: the keyword panel --- */
+  .home-keyword-panel { display: flex; flex-direction: column; gap: 1.5rem; padding: 1.5rem 2rem 2rem; border-radius: 0.25rem; background: var(--sky-300); }
+  .home-keyword-groups { display: flex; flex-direction: column; gap: 1.5rem; }
+  .home-keyword-group { display: flex; flex-direction: column; gap: 0.75rem; }
+  .home-keyword-group-title { margin: 0; font-size: 1.8rem; font-weight: 500; line-height: 1.6; }
+  .home-keyword-list { display: flex; flex-direction: row; flex-wrap: wrap; column-gap: 0.75rem; row-gap: 0.75rem; margin: 0; padding-left: 0; list-style-type: none; }
+  .home-keyword-tag {
+    display: inline-block;
+    padding: 0.5em 0.75em;
+    background: var(--white);
+    border: 2px solid var(--sky-100);
+    color: var(--sky-700);
+    text-decoration: none;
+    font-size: 1.5rem;
+    line-height: 1.6;
+  }
+  .home-keyword-tag:hover { border-color: var(--sky-400); }
+  .home-keyword-tag.cc-highlight { background: var(--grass-100); border-color: var(--grass-100); }
+  [data-keyword-groups][hidden] { display: none; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="home-search-intro">
+    <div class="home-section-title-row">
+      <h2 class="home-section-title">條目檢索</h2>
+      <div class="home-section-rule" aria-hidden="true"></div>
+    </div>
+    <p class="home-search-intro-text">本資料庫為每篇文章標註刊物類型、文章類別及關鍵字（如人物、主題等），讓使用者可作更精準的組合搜尋。右方所列為精選關鍵字，歡迎點擊探索相關文章！</p>
+  </div>
+
+  <div class="home-search-row">
+
+    <!-- ============================ LEFT COLUMN ============================
+         A plain GET form. The design system's initKeywordFields() rewrites
+         each [data-name] into an indexed submitting name, so this posts
+         ?field_1=…&keyword_1=…&operator_2=…&field_2=…&keyword_2=… — exactly
+         the shape search.js parses out of the URL on the search page.
+         target="_blank" is what opens the results in a new tab.
+    -->
+    <div class="home-search-col">
+      <h3 class="home-search-col-title">搜尋關鍵字</h3>
+      <form class="search-bar cc-home" action="search-page.html" method="get" target="_blank" role="search" aria-label="條目檢索">
+        <div data-max-fields="5" data-keyword-fields="" data-min-fields="2" class="keyword-fields">
+                <div data-keyword-row="" class="keyword-row">
+                  <div data-dropdown="" class="dropdown dropdown-field">
+                    <input type="hidden" data-name="field" class="w-condition-invisible" value="" /><button
+                      type="button"
+                      aria-haspopup="listbox"
+                      aria-expanded="false"
+                      aria-label="Search area"
+                      data-dropdown-trigger=""
+                      class="dropdown-trigger">
+                      <span data-dropdown-value="" class="dropdown-trigger-label">所有搜尋範圍</span
+                      ><svg xmlns="http://www.w3.org/2000/svg" width="100%" fill="currentColor" viewbox="0 0 256 256" aria-hidden="true" class="dropdown-trigger-icon">
+                        <path d="M216.49,104.49l-80,80a12,12,0,0,1-17,0l-80-80a12,12,0,0,1,17-17L128,159l71.51-71.52a12,12,0,0,1,17,17Z"></path>
+                      </svg>
+                    </button>
+                    <ul role="listbox" data-dropdown-list="" class="dropdown-list">
+                      <li role="option" aria-selected="true" tabindex="-1" data-value="all" data-dropdown-option="" class="dropdown-option">
+                        <span data-dropdown-option-label="" class="dropdown-option-label">所有搜尋範圍</span
+                        ><svg xmlns="http://www.w3.org/2000/svg" width="100%" fill="currentColor" viewbox="0 0 256 256" aria-hidden="true" class="dropdown-option-check">
+                          <path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"></path>
+                        </svg>
+                      </li>
+                      <li role="option" aria-selected="false" tabindex="-1" data-value="article-title" data-dropdown-option="" class="dropdown-option">
+                        <span data-dropdown-option-label="" class="dropdown-option-label">文章標題</span
+                        ><svg xmlns="http://www.w3.org/2000/svg" width="100%" fill="currentColor" viewbox="0 0 256 256" aria-hidden="true" class="dropdown-option-check">
+                          <path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"></path>
+                        </svg>
+                      </li>
+                      <li role="option" aria-selected="false" tabindex="-1" data-value="book-title" data-dropdown-option="" class="dropdown-option">
+                        <span data-dropdown-option-label="" class="dropdown-option-label">書名</span
+                        ><svg xmlns="http://www.w3.org/2000/svg" width="100%" fill="currentColor" viewbox="0 0 256 256" aria-hidden="true" class="dropdown-option-check">
+                          <path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"></path>
+                        </svg>
+                      </li>
+                      <li role="option" aria-selected="false" tabindex="-1" data-value="author" data-dropdown-option="" class="dropdown-option">
+                        <span data-dropdown-option-label="" class="dropdown-option-label">作者</span
+                        ><svg xmlns="http://www.w3.org/2000/svg" width="100%" fill="currentColor" viewbox="0 0 256 256" aria-hidden="true" class="dropdown-option-check">
+                          <path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"></path>
+                        </svg>
+                      </li>
+                      <li role="option" aria-selected="false" tabindex="-1" data-value="column" data-dropdown-option="" class="dropdown-option">
+                        <span data-dropdown-option-label="" class="dropdown-option-label">專欄名稱</span
+                        ><svg xmlns="http://www.w3.org/2000/svg" width="100%" fill="currentColor" viewbox="0 0 256 256" aria-hidden="true" class="dropdown-option-check">
+                          <path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"></path>
+                        </svg>
+                      </li>
+                    </ul>
+                  </div>
+                  <div class="input-clear-wrapper">
+                    <input type="search" aria-label="搜尋關鍵字" data-name="keyword" class="input" /><button type="button" data-input-clear="" aria-label="Clear" class="input-clear-btn">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="100%" fill="currentColor" viewbox="0 0 256 256" class="input-clear-icon">
+                        <path
+                          d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"></path>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                <template data-keyword-row-template="" id="">
+                  <div data-keyword-row="" class="keyword-row">
+                    <div data-dropdown="" class="dropdown dropdown-operator">
+                      <input type="hidden" data-name="operator" class="w-condition-invisible" value="" /><button
+                        type="button"
+                        aria-haspopup="listbox"
+                        aria-expanded="false"
+                        aria-label="Search operator"
+                        data-dropdown-trigger=""
+                        class="dropdown-trigger">
+                        <span data-dropdown-value="" class="dropdown-trigger-label">和</span
+                        ><svg xmlns="http://www.w3.org/2000/svg" width="100%" fill="currentColor" viewbox="0 0 256 256" aria-hidden="true" class="dropdown-trigger-icon">
+                          <path d="M216.49,104.49l-80,80a12,12,0,0,1-17,0l-80-80a12,12,0,0,1,17-17L128,159l71.51-71.52a12,12,0,0,1,17,17Z"></path>
+                        </svg>
+                      </button>
+                      <ul role="listbox" data-dropdown-list="" class="dropdown-list">
+                        <li role="option" aria-selected="true" tabindex="-1" data-value="AND" data-dropdown-option="" class="dropdown-option">
+                          <span data-dropdown-option-label="" class="dropdown-option-label">和</span
+                          ><svg xmlns="http://www.w3.org/2000/svg" width="100%" fill="currentColor" viewbox="0 0 256 256" aria-hidden="true" class="dropdown-option-check">
+                            <path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"></path>
+                          </svg>
+                        </li>
+                        <li role="option" aria-selected="false" tabindex="-1" data-value="OR" data-dropdown-option="" class="dropdown-option">
+                          <span data-dropdown-option-label="" class="dropdown-option-label">或</span
+                          ><svg xmlns="http://www.w3.org/2000/svg" width="100%" fill="currentColor" viewbox="0 0 256 256" aria-hidden="true" class="dropdown-option-check">
+                            <path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"></path>
+                          </svg>
+                        </li>
+                        <li role="option" aria-selected="false" tabindex="-1" data-value="NOT" data-dropdown-option="" class="dropdown-option">
+                          <span data-dropdown-option-label="" class="dropdown-option-label">非</span
+                          ><svg xmlns="http://www.w3.org/2000/svg" width="100%" fill="currentColor" viewbox="0 0 256 256" aria-hidden="true" class="dropdown-option-check">
+                            <path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"></path>
+                          </svg>
+                        </li>
+                      </ul>
+                    </div>
+                    <div data-dropdown="" class="dropdown dropdown-field">
+                      <input type="hidden" data-name="field" class="w-condition-invisible" value="" /><button
+                        type="button"
+                        aria-haspopup="listbox"
+                        aria-expanded="false"
+                        aria-label="Search area"
+                        data-dropdown-trigger=""
+                        class="dropdown-trigger">
+                        <span data-dropdown-value="" class="dropdown-trigger-label">所有搜尋範圍</span
+                        ><svg xmlns="http://www.w3.org/2000/svg" width="100%" fill="currentColor" viewbox="0 0 256 256" aria-hidden="true" class="dropdown-trigger-icon">
+                          <path d="M216.49,104.49l-80,80a12,12,0,0,1-17,0l-80-80a12,12,0,0,1,17-17L128,159l71.51-71.52a12,12,0,0,1,17,17Z"></path>
+                        </svg>
+                      </button>
+                      <ul role="listbox" data-dropdown-list="" class="dropdown-list">
+                        <li role="option" aria-selected="true" tabindex="-1" data-value="all" data-dropdown-option="" class="dropdown-option">
+                          <span data-dropdown-option-label="" class="dropdown-option-label">所有搜尋範圍</span
+                          ><svg xmlns="http://www.w3.org/2000/svg" width="100%" fill="currentColor" viewbox="0 0 256 256" aria-hidden="true" class="dropdown-option-check">
+                            <path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"></path>
+                          </svg>
+                        </li>
+                        <li role="option" aria-selected="false" tabindex="-1" data-value="article-title" data-dropdown-option="" class="dropdown-option">
+                          <span data-dropdown-option-label="" class="dropdown-option-label">文章標題</span
+                          ><svg xmlns="http://www.w3.org/2000/svg" width="100%" fill="currentColor" viewbox="0 0 256 256" aria-hidden="true" class="dropdown-option-check">
+                            <path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"></path>
+                          </svg>
+                        </li>
+                        <li role="option" aria-selected="false" tabindex="-1" data-value="book-title" data-dropdown-option="" class="dropdown-option">
+                          <span data-dropdown-option-label="" class="dropdown-option-label">書名</span
+                          ><svg xmlns="http://www.w3.org/2000/svg" width="100%" fill="currentColor" viewbox="0 0 256 256" aria-hidden="true" class="dropdown-option-check">
+                            <path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"></path>
+                          </svg>
+                        </li>
+                        <li role="option" aria-selected="false" tabindex="-1" data-value="author" data-dropdown-option="" class="dropdown-option">
+                          <span data-dropdown-option-label="" class="dropdown-option-label">作者</span
+                          ><svg xmlns="http://www.w3.org/2000/svg" width="100%" fill="currentColor" viewbox="0 0 256 256" aria-hidden="true" class="dropdown-option-check">
+                            <path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"></path>
+                          </svg>
+                        </li>
+                        <li role="option" aria-selected="false" tabindex="-1" data-value="column" data-dropdown-option="" class="dropdown-option">
+                          <span data-dropdown-option-label="" class="dropdown-option-label">專欄名稱</span
+                          ><svg xmlns="http://www.w3.org/2000/svg" width="100%" fill="currentColor" viewbox="0 0 256 256" aria-hidden="true" class="dropdown-option-check">
+                            <path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"></path>
+                          </svg>
+                        </li>
+                      </ul>
+                    </div>
+                    <div u-flex-wrap="" u-flex="row-left-center" u-gap="sm-sm" u-flex-grow="1" class="u-minw-0">
+                      <div class="input-clear-wrapper">
+                        <input type="search" aria-label="搜尋關鍵字" data-name="keyword" class="input" /><button type="button" data-input-clear="" aria-label="Clear" class="input-clear-btn">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="100%" fill="currentColor" viewbox="0 0 256 256" class="input-clear-icon">
+                            <path
+                              d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"></path>
+                          </svg>
+                        </button>
+                      </div>
+                      <button type="button" data-keyword-remove="" aria-label="刪除欄位" class="keyword-addbtn">
+                        <div data-wf--icon--settings-color="inherit" id="" style="" class="icon-color">
+                          <span data-wf--icon-size--variant="sm" class="icon w-variant-cdea1590-5e30-cc7c-cd65-a8b7cf1f5b9e ph ph-minus">​</span>
+                        </div></button
+                      ><button type="button" data-keyword-add="" aria-label="新增欄位" class="keyword-addbtn">
+                        <div data-wf--icon--settings-color="inherit" id="" style="" class="icon-color">
+                          <span data-wf--icon-size--variant="sm" class="icon w-variant-cdea1590-5e30-cc7c-cd65-a8b7cf1f5b9e ph ph-plus">​</span>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+                </template>
+              </div>
+        <div class="home-search-actions">
+          <a class="text-link" href="search-page.html" target="_blank">進階搜尋 ↗</a>
+          <button type="submit" class="button">搜 尋</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- =========================== RIGHT COLUMN ===========================
+         home-keywords.js reads the CSV named below, clones the group and tag
+         prototypes, and replaces everything inside [data-keyword-groups].
+         The authored contents are prototypes + design-time swatches only —
+         none of them reach the rendered page.
+    -->
+    <div class="home-search-col">
+      <h3 class="home-search-col-title">資料庫關鍵字</h3>
+      <div class="home-keyword-panel">
+        <div
+          class="home-keyword-groups"
+          data-keyword-groups
+          data-keyword-src="sample-data/home-keywords.csv"
+          data-search-url="search-page.html">
+
+          <div data-keyword-group-template class="home-keyword-group">
+            <h4 data-keyword-group-title class="home-keyword-group-title">作者</h4>
+            <ul role="list" data-keyword-list class="home-keyword-list">
+              <!-- prototype: must be the PLAIN tag, and must come first -->
+              <li><a data-keyword-tag class="home-keyword-tag" href="#">關鍵字</a></li>
+              <!-- design-time swatch: exists only so the highlight combo can
+                   be styled by eye on the canvas. Never rendered. -->
+              <li><a data-keyword-tag class="home-keyword-tag cc-highlight" href="#">精選關鍵字</a></li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script defer src="home-keywords.js"></script>
+</body>
+</html>
