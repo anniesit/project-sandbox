@@ -594,7 +594,31 @@ plain `<a target="_blank">` carrying the same indexed params.
 | `label`     | the text printed on the tag.                                            |
 | `field`     | `all` \| `article-title` \| `book-title` \| `author` \| `column`. Blank = `all`. |
 | `query`     | optional — the text actually searched, when it differs from the label.   |
+| `operator`  | optional — `AND` \| `OR` \| `NOT`, for multi-keyword rows. Blank = `AND`. |
 | `highlight` | optional — a style flag; its value becomes a combo class (see below).    |
+
+**Multi-keyword tags.** One tag can run a combined search of up to **5**
+keywords — the same search the form on the left can build by hand. Separate the
+terms in `query` with a pipe (`|`; the full-width `｜` works too). `field` and
+`operator` take either ONE value, reused for every term, or a matching
+pipe-separated list. An operator list lines up with terms 2…n, because the
+first term never carries an operator:
+
+```csv
+group,label,field,query,operator,highlight
+關鍵字,香港新浪潮 × 影評,all,香港新浪潮|批評專輯,AND,
+人物,張國榮（非訪問）,all,張國榮|訪問,NOT,
+作者,舒琪談楚原,author|all,舒琪|楚原,AND,
+```
+
+The last row becomes:
+
+```
+search-page.html?field_1=author&keyword_1=舒琪&field_2=all&operator_2=AND&keyword_2=楚原
+```
+
+A row with more than 5 terms is truncated to 5 and logs a console warning —
+5 is the search page's own cap (`search.js` reads `keyword_1` … `keyword_5`).
 
 **`highlight` → combo class.** The value is slugged and prefixed with `cc-`:
 `highlight` → `.home-keyword-tag.cc-highlight`. To add a second highlight
@@ -607,11 +631,19 @@ change is needed** — `home-keywords.js` never names a colour or a class.
 ```
 [data-keyword-groups]            root; data-keyword-src + data-search-url
   [data-keyword-group-template]    the ONE authored group = the prototype
-    [data-keyword-group-title]     group heading
+    .home-keyword-group-head
+      [data-keyword-group-title]   group heading
+      .home-keyword-squiggle       decorative wave, aria-hidden
     [data-keyword-list]            <ul> for the tags
       [data-keyword-tag]           FIRST one = the prototype, must be plain
       [data-keyword-tag]           further ones are design-time swatches only
 ```
+
+The squiggle is a repeating CSS **mask** over a plain `background-color`, so
+its colour stays an ordinary Designer control (currently Sky/400). Webflow's
+style API rejects vendor-prefixed property names, so the class carries the
+unprefixed `mask-*` properties only — Safari 15.4+. Where masks aren't
+supported the div degrades to a flat 7px rule, not a broken wave.
 
 Everything inside the root is replaced at render time, so the prototype group
 and the `cc-highlight` swatch never reach the published page. They exist so

@@ -23,11 +23,28 @@
  *              author | column. Blank means "all".
  *   query      optional. The text actually searched, when it differs from the
  *              label (e.g. label "電影保育、電影資料館", query "電影保育").
+ *   operator   optional. How a multi-keyword row joins its terms:
+ *              AND | OR | NOT. Blank means AND.
  *   highlight  optional. A style flag. Its value becomes a combo class on the
  *              tag: "highlight" -> .home-keyword-tag.cc-highlight. To add a
  *              second colour later, type a different word here (e.g. "new")
  *              and create a matching .home-keyword-tag.cc-new combo in the
  *              Webflow Designer. No change to this file is needed.
+ *
+ * MULTI-KEYWORD ROWS. One tag can run a combined search of up to 5 keywords —
+ * the same search the form on the left of the section can build by hand.
+ * Separate the terms in `query` with a pipe. `field` and `operator` take
+ * either ONE value (reused for every term) or a matching pipe-separated list;
+ * an operator list lines up with terms 2…n, because the first term never
+ * carries one:
+ *
+ *   group,label,field,query,operator,highlight
+ *   人物,張國榮 × 新浪潮,all,張國榮|香港新浪潮,AND,
+ *   人物,張國榮（非訪問）,all,張國榮|訪問,NOT,
+ *   作者,舒琪 談 楚原,author|all,舒琪|楚原,AND,
+ *
+ * -> search-page.html?field_1=author&keyword_1=舒琪
+ *                    &field_2=all&operator_2=AND&keyword_2=楚原
  *
  * ---------------------------------------------------------------------------
  * DOM CONTRACT — all of it authored in Webflow; this file creates no styling:
@@ -53,6 +70,8 @@
   "use strict";
 
   var DEFAULT_SEARCH_URL = "search-page.html";
+  // The search page's own cap: search.js reads keyword_1 … keyword_5.
+  var MAX_TERMS = 5;
 
   var state = {
     root: null,
@@ -192,11 +211,20 @@
    * Indexed params, not the JSON `keywords` param: they are what the design
    * system's own keyword-field component submits, so one contract covers both
    * the home form and these links.
+   *
+   * Row 1 carries no operator — that is the search page's own rule, and it is
+   * why indexed names beat parallel arrays here.
    */
   function buildSearchHref(searchUrl, row) {
     var params = [];
-    params.push("field_1=" + encodeURIComponent(row.field || "all"));
-    params.push("keyword_1=" + encodeURIComponent(row.query));
+    for (var i = 0; i < row.terms.length; i++) {
+      var n = i + 1;
+      params.push("field_" + n + "=" + encodeURIComponent(row.terms[i].field));
+      if (i > 0) {
+        params.push("operator_" + n + "=" + encodeURIComponent(row.terms[i].operator));
+      }
+      params.push("keyword_" + n + "=" + encodeURIComponent(row.terms[i].value));
+    }
     return searchUrl + (searchUrl.indexOf("?") === -1 ? "?" : "&") + params.join("&");
   }
 
@@ -279,17 +307,73 @@
     return rows
       .map(function (row) {
         var label = row.label || "";
-        var query = row.query || label;
-        if (!label || !query) return null;
+        var terms = buildTerms(row, label);
+        if (!label || !terms.length) return null;
         return {
           group: row.group || "",
           label: label,
-          query: query,
-          field: row.field || "all",
+          terms: terms,
           highlightClass: highlightClass(row.highlight),
         };
       })
       .filter(Boolean);
+  }
+
+  /**
+   * One row can carry up to MAX_TERMS keywords, separated by a pipe — the same
+   * multi-keyword search the form on the left of the section can build by hand:
+   *
+   *     label   人物與作者
+   *     query   張國榮|余慕雲
+   *     field   all|author        (or one value, applied to every term)
+   *     operator AND              (or a list; the first term never has one)
+   *
+   * `field` and `operator` may be a single value or a pipe-separated list; a
+   * single value is reused for every term, which keeps the common case short.
+   * The cap is the search page's own: search.js reads keyword_1 … keyword_5.
+   */
+  function buildTerms(row, label) {
+    var values = splitList(row.query || label);
+    if (!values.length) return [];
+
+    if (values.length > MAX_TERMS) {
+      warn(
+        'row "' + label + '" has ' + values.length + " keywords; the search page " +
+          "takes at most " + MAX_TERMS + ", so the extra ones are dropped"
+      );
+      values = values.slice(0, MAX_TERMS);
+    }
+
+    var fields = splitList(row.field);
+    var operators = splitList(row.operator);
+
+    return values.map(function (value, i) {
+      return {
+        value: value,
+        field: pick(fields, i) || "all",
+        // The first term never carries an operator, so an operator LIST lines
+        // up with terms 2…n — "AND|OR" means term 2 AND, term 3 OR.
+        operator: i === 0 ? "AND" : (pick(operators, i - 1) || "AND").toUpperCase(),
+      };
+    });
+  }
+
+  function splitList(value) {
+    return String(value == null ? "" : value)
+      // full-width ｜ too: a Chinese keyboard produces it without warning
+      .split(/[|｜]/)
+      .map(function (part) {
+        return part.trim();
+      })
+      .filter(function (part) {
+        return part !== "";
+      });
+  }
+
+  /** One value applies to every term; a list applies per term. */
+  function pick(list, index) {
+    if (!list.length) return "";
+    return list.length === 1 ? list[0] : list[index] || "";
   }
 
   /**
