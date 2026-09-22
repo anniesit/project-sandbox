@@ -98,8 +98,29 @@
   .home-keyword-group { display: flex; flex-direction: column; gap: 0.75rem; }
   .home-keyword-group-head { display: flex; flex-direction: row; align-items: center; gap: 0.75rem; }
   /* The wave is a repeating MASK, not a background image, so its colour stays
-     an ordinary background-color the Designer can edit. Traced off the Figma
-     frame: 20px period, ~5px peak-to-peak, Sky/400.
+     an ordinary background-color the Designer can edit. Measured off the Figma
+     frame: 20px period, 5.03px peak-to-peak on the centreline, 2.1px stroke,
+     Sky/400 — hence the 20 x 7 tile with the line running y=1 to y=6.
+
+     TWO THINGS THE PATH HAS TO GET RIGHT, both of which a naive quadratic got
+     wrong:
+
+     1. AMPLITUDE. A quadratic Bezier only reaches a QUARTER of the way past
+        its control point ((start + 2*ctrl + end) / 4), so control points at
+        the intended peaks drew a wave of half the amplitude. Cubic segments
+        that END on the peaks hit them exactly.
+     2. THE TILE SEAM. A butt cap is cut perpendicular to the path direction,
+        so a tile whose path crosses x=0 / x=20 on a SLANT gets two slanted
+        ends that don't meet — a visible notch every 20px. Starting and ending
+        the tile on a crest, where the tangent is horizontal, makes both caps
+        vertical, and they abut exactly. That is why each cubic's first and
+        last control points share their endpoint's y.
+
+     SIZE IS ONE KNOB. mask-size is `auto 100%`, so the tile scales from the
+     element's height and the aspect ratio cannot be pulled apart. Want a
+     bigger wave? Change `height` alone; period, amplitude and stroke all
+     follow. Setting an explicit mask-size in px stretches the two axes
+     independently and distorts it.
 
      The -webkit- duplicates below are NOT on the Webflow class — the style API
      rejects vendor-prefixed property names. The live page carries the
@@ -110,12 +131,14 @@
     flex: 1 1 0%;
     height: 0.4375rem;
     background-color: var(--sky-400);
-    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='7' viewBox='0 0 20 7'%3E%3Cpath d='M0 3.5 Q5 1 10 3.5 T20 3.5' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E");
-    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='7' viewBox='0 0 20 7'%3E%3Cpath d='M0 3.5 Q5 1 10 3.5 T20 3.5' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E");
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='7' viewBox='0 0 20 7'%3E%3Cpath d='M0 1C3.333 1 6.667 6 10 6C13.333 6 16.667 1 20 1' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='7' viewBox='0 0 20 7'%3E%3Cpath d='M0 1C3.333 1 6.667 6 10 6C13.333 6 16.667 1 20 1' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E");
     -webkit-mask-repeat: repeat-x;
     mask-repeat: repeat-x;
-    -webkit-mask-size: 1.25rem 0.4375rem;
-    mask-size: 1.25rem 0.4375rem;
+    /* auto width, so the 20:7 tile can only ever scale PROPORTIONALLY —
+       height below is the single knob for the whole wave, period included. */
+    -webkit-mask-size: auto 100%;
+    mask-size: auto 100%;
     -webkit-mask-position: left center;
     mask-position: left center;
   }
