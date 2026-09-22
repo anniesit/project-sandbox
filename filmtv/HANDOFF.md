@@ -6,13 +6,13 @@ exactly what scaffolding to remove. The JS file headers remain the source of
 truth for behaviour — this doc is the quick reference and captures the
 project-specific decisions that aren't obvious from the code.
 
-| File | Owns | Public API |
-|---|---|---|
-| `results.js` | Result list + article/book view toggle | `filmtvResults.render`, `filmtvResults.setView` |
-| `chart.js` | Stacked bar chart (entries or books by year) | `filmtvChart.render`, `filmtvChart.setView` |
-| `cooccur.js` | Keyword co-occurrence bubble chart (in a modal) | `filmtvCooccur.render`, `filmtvCooccur.redraw` |
-| `book.js` | Book page table of contents (one book + attachments) | `filmtvBook.render` |
-| `viewer.js` | Book Viewer (page-by-page reader: layout/zoom/rotate/scroll/OCR + 目錄/搜尋/文章資訊 panels) | `filmtvViewer.init`, `filmtvViewer.load`, `filmtvViewer.render` |
+| File         | Owns                                                                                         | Public API                                                      |
+| ------------ | -------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `results.js` | Result list + article/book view toggle                                                       | `filmtvResults.render`, `filmtvResults.setView`                 |
+| `chart.js`   | Stacked bar chart (entries or books by year)                                                 | `filmtvChart.render`, `filmtvChart.setView`                     |
+| `cooccur.js` | Keyword co-occurrence bubble chart (in a modal)                                              | `filmtvCooccur.render`, `filmtvCooccur.redraw`                  |
+| `book.js`    | Book page table of contents (one book + attachments)                                         | `filmtvBook.render`                                             |
+| `viewer.js`  | Book Viewer (page-by-page reader: layout/zoom/rotate/scroll/OCR + 目錄/搜尋/文章資訊 panels) | `filmtvViewer.init`, `filmtvViewer.load`, `filmtvViewer.render` |
 
 `book.js` renders the separate **Book page**. Unlike the others its mock driver
 is a **separate file, `book.mock.js`** (sample-data loader + dev switcher) —
@@ -45,6 +45,7 @@ Each JS self-fetches a sample file so the `*.html` pages preview standalone.
 That's the **mock driver**; remove it and call `render()` with live data.
 
 **In every JS file** (`results.js`, `chart.js`, `cooccur.js`):
+
 - Delete the `>>> MOCK DATA URL <<<` constant (`DATA_URL`) and the `mockFetch()`
   function, and its call inside `initChart()` / the bootstrap.
 - Keep everything else — the components still self-initialise on
@@ -56,8 +57,9 @@ separate files (`book.mock.js`, `viewer.mock.js`), not an inline fetch. Just
 from your own fetch (see each component's section).
 
 **In the demo HTML** (`chart.html`, `cooccur.html`) the inline `<script>` driver
-is a **backend stand-in** — don't just delete it, *reimplement its calls* against
+is a **backend stand-in** — don't just delete it, _reimplement its calls_ against
 your real fetch:
+
 - `chart.html` (the demo-only driver block): models fetch → filter → `render()`,
   and the `filmtv:filter` round-trip. Your backend does the same with live data.
 - `cooccur.html`: models the modal open + the `filmtv:addKeyword` round-trip.
@@ -83,20 +85,20 @@ filmtvResults.setView(rootEl, "article" | "book");
 
 ```jsonc
 {
-  "id": "FMP-120504",        // first 3 chars = publication key (FMP/TVW/CEM/CEB)
-  "bookNumber": "2922",      // book-view grouping key (one book per bookNumber)
-  "journal": "多情河歌集",     // publication name
-  "journalIssue": null,      // 期 number or null; rendered as "第N期"
+  "id": "FMP-120504", // first 3 chars = publication key (FMP/TVW/CEM/CEB)
+  "bookNumber": "2922", // book-view grouping key (one book per bookNumber)
+  "journal": "多情河歌集", // publication name
+  "journalIssue": null, // 期 number or null; rendered as "第N期"
   "datePublished": "1957-01-01",
-  "year": "1957",            // used by chart.js when items are raw
-  "title": "多情河歌集",       // empty -> "無標題"
-  "section": null,           // multi-value joined by "---"; empty -> row hidden
-  "author": null,            // multi-value joined by "---"; empty -> row hidden
+  "year": "1957", // used by chart.js when items are raw
+  "title": "多情河歌集", // empty -> "無標題"
+  "section": null, // multi-value joined by "---"; empty -> row hidden
+  "author": null, // multi-value joined by "---"; empty -> row hidden
   "page": "1",
-  "type": "14",              // article-type code -> ARTICLE_TYPES[code] in results.js
+  "type": "14", // article-type code -> ARTICLE_TYPES[code] in results.js
   "image": "https://…/2922_001.jpg", // full URL, or filename + imageBase; "---" picks first
-  "special_issue_belongs_to": null,  // attachment records only -> [data-field=attachment]; empty hides that element
-  "href": "#"                // link target for the card
+  "special_issue_belongs_to": null, // attachment records only -> [data-field=attachment]; empty hides that element
+  "href": "#", // link target for the card
 }
 ```
 
@@ -128,8 +130,8 @@ chart is article-only and does not follow this toggle.
 
 ```js
 filmtvBook.render(rootEl, { items, imageBase, counts }, opts);
-filmtvBook.showEmpty(rootEl, { emptyHref });   // bare /book route: no book to draw
-filmtvBook.showLoading(rootEl);                // shimmer skeleton while fetching
+filmtvBook.showEmpty(rootEl, { emptyHref }); // bare /book route: no book to draw
+filmtvBook.showLoading(rootEl); // shimmer skeleton while fetching
 ```
 
 - `rootEl` — the `[data-book]` element (legacy `[data-collection]` also accepted),
@@ -169,10 +171,10 @@ family server-side and call `render()` directly — no switcher, no family selec
 is known. You choose PER ELEMENT what happens while awaiting data, by tagging elements
 inside `[data-book]` with **`data-loading`**:
 
-| `data-loading` | while awaiting data | on real data | when empty |
-|---|---|---|---|
-| `mask` | shimmer sized to the element's own box (its text/children hidden) | revealed | hidden |
-| `hide` | `display:none` | revealed | hidden |
+| `data-loading` | while awaiting data                                               | on real data | when empty |
+| -------------- | ----------------------------------------------------------------- | ------------ | ---------- |
+| `mask`         | shimmer sized to the element's own box (its text/children hidden) | revealed     | hidden     |
+| `hide`         | `display:none`                                                    | revealed     | hidden     |
 
 Untagged elements stay visible during load — tag anything you don't want shown. Gotchas:
 mask a **wrapper, not a bare `<img>`** (an empty `<img>` paints a broken icon over the
@@ -185,11 +187,23 @@ cloned from the template `<li>` only at render).
 - **Method A (zero flash):** link **`book.css`** in the Book page `<head>` — the SAME
   rules apply before first paint:
   ```html
-  <link rel="stylesheet" href="https://hkbuproject-sandbox.vercel.app/filmtv/book.css">
-  <noscript><style>[data-book]:not(.cc-book-ready) [data-loading="hide"]{display:revert!important}
-  [data-book]:not(.cc-book-ready):not(.cc-book-empty) [data-loading="mask"]{background:none!important;
-  animation:none!important;color:inherit!important;min-height:0!important}
-  [data-book]:not(.cc-book-ready):not(.cc-book-empty) [data-loading="mask"]>*{visibility:visible!important}</style></noscript>
+  <link rel="stylesheet" href="https://hkbuproject-sandbox.vercel.app/filmtv/book.css" />
+  <noscript
+    ><style>
+      [data-book]:not(.cc-book-ready) [data-loading="hide"] {
+        display: revert !important;
+      }
+      [data-book]:not(.cc-book-ready):not(.cc-book-empty) [data-loading="mask"] {
+        background: none !important;
+        animation: none !important;
+        color: inherit !important;
+        min-height: 0 !important;
+      }
+      [data-book]:not(.cc-book-ready):not(.cc-book-empty) [data-loading="mask"] > * {
+        visibility: visible !important;
+      }
+    </style></noscript
+  >
   ```
   `book.js` drives the state classes (`cc-book-ready` on real data | `cc-book-empty`); the
   `<noscript>` guard mirrors `book.css`'s selectors (so it wins the cascade) and reveals
@@ -222,9 +236,9 @@ scroll modes, thumbnail, OCR) — AND the three side panels — Book Metadata
 file/state/`render()`.
 
 ```js
-filmtvViewer.init({ root, dataBaseUrl });        // wire once; reads ?book=&page=&article=
+filmtvViewer.init({ root, dataBaseUrl }); // wire once; reads ?book=&page=&article=
 filmtvViewer.load(bookNumber, { page, article }); // (re)load a book
-filmtvViewer.render();                            // re-render current state
+filmtvViewer.render(); // re-render current state
 ```
 
 - `root` — optional `[data-viewer]` element (else `document`).
@@ -260,15 +274,24 @@ link); if absent a minimal fallback is injected whose CTA uses `data-empty-href`
 (沒有選擇書刊 / 找不到書刊 / 找不到文章).
 
 **`book.json` shape** (backend returns this at the path above):
+
 ```json
-{ "bookNumber":"2048", "title":"…", "issue":"", "date":"", "publisher":"",
-  "bookOrientation":"right",                      // left | right | top | bottom (binding edge)
-  "imageBaseUrl":"https://…/2048/",               // full URL = imageBaseUrl + page.file
-  "thumbnailBaseUrl":"https://…/",                // optional; falls back to imageBaseUrl
-  "pages":[ { "label":"封面", "file":"2048_001.jpg", "width":700, "height":1000 } ],
-  "articles":[ { "id":"…","title":"…","author":"","pageStart":3,"pageEnd":8,"articleBody":"…",
-    "type":"9","page":"3","section":"曲詞","keywords":"a---b---c","externalLink":"https://…" } ] }
+{
+  "bookNumber": "2048",
+  "title": "…",
+  "issue": "",
+  "date": "",
+  "publisher": "",
+  "bookOrientation": "right", // left | right | top | bottom (binding edge)
+  "imageBaseUrl": "https://…/2048/", // full URL = imageBaseUrl + page.file
+  "thumbnailBaseUrl": "https://…/", // optional; falls back to imageBaseUrl
+  "pages": [{ "label": "封面", "file": "2048_001.jpg", "width": 700, "height": 1000 }],
+  "articles": [
+    { "id": "…", "title": "…", "author": "", "pageStart": 3, "pageEnd": 8, "articleBody": "…", "type": "9", "page": "3", "section": "曲詞", "keywords": "a---b---c", "externalLink": "https://…" }
+  ]
+}
 ```
+
 The first six article keys drive the reader (OCR + navigation); the last five feed
 the **side panels** and are the same catalogue fields the Book page already shows —
 all OPTIONAL (each degrades gracefully when absent): `type` (ArticleType code ->
@@ -314,8 +337,8 @@ Search note above) — pick one and own the tradeoff.
 ## `chart.js` — stacked bar chart
 
 ```js
-filmtvChart.render(rootEl, { years, series, counts });  // pre-aggregated (preferred)
-filmtvChart.render(rootEl, { items });                   // raw — chart aggregates
+filmtvChart.render(rootEl, { years, series, counts }); // pre-aggregated (preferred)
+filmtvChart.render(rootEl, { items }); // raw — chart aggregates
 ```
 
 **Pre-aggregated shape (send this for the real archive):**
@@ -345,10 +368,10 @@ renders `bookCounts` (本). A chart instance picks which via `data-view` (below)
 The chart draws **exactly the `years` it's given** (raw `items` auto-fit to the
 min/max year present). The agreed behaviour:
 
-| State | `years` to pass |
-|---|---|
+| State                                          | `years` to pass                                                      |
+| ---------------------------------------------- | -------------------------------------------------------------------- |
 | Default, incl. **publication/keyword filters** | the **full archive span** (e.g. 1926–1997) → stable, comparable axis |
-| **Year-range filter** active | every year in the **user's input range**, contiguous + zero-filled |
+| **Year-range filter** active                   | every year in the **user's input range**, contiguous + zero-filled   |
 
 When a year filter is active, the axis spans the **user's requested range, not
 the result span** — so empty years inside the window stay visible (they're
@@ -358,6 +381,7 @@ send pre-aggregated `years` (raw `items` can't represent empty edge years).
 ### Grow animation
 
 Bars grow from 0 (~200ms) on **every `render()`**; resize redraws are static.
+
 - **Pagination:** never call `filmtvChart.render()` on a page turn, or the bars
   re-grow. The chart reflects the whole result set, not a page.
 
@@ -368,8 +392,7 @@ Bars grow from 0 (~200ms) on **every `render()`**; resize redraws are static.
   - click a **legend item** → `{ year:null, publication, label, prefixes }`
 
 ```js
-document.addEventListener("filmtv:filter", e =>
-  applySearchFilters(e.detail).then(data => filmtvChart.render(e.target, data)));
+document.addEventListener("filmtv:filter", (e) => applySearchFilters(e.detail).then((data) => filmtvChart.render(e.target, data)));
 ```
 
 **Count view per instance.** A chart element counts entries (篇) by default, or
@@ -379,15 +402,17 @@ own. The model always carries both `counts` and `bookCounts`, so either view
 renders from one payload.
 
 ```html
-<div data-chart></div>                 <!-- entries (篇), the default -->
-<div data-chart data-view="book"></div><!-- distinct books (本), book chart page -->
+<div data-chart></div>
+<!-- entries (篇), the default -->
+<div data-chart data-view="book"></div>
+<!-- distinct books (本), book chart page -->
 ```
 
 A host that wants its own switcher (e.g. the demo page) can flip a live chart
 without re-fetching — it's a pure redraw from the same model:
 
 ```js
-filmtvChart.setView(rootEl, "book");   // or "article"
+filmtvChart.setView(rootEl, "book"); // or "article"
 ```
 
 ### Book view — differs from article view (backend shapes the payload)
@@ -439,14 +464,14 @@ grouping by `bookNumber` exactly like results.js book rows).
 cc-year">` (design-system MAST modal component, same pattern as `cooccur.js`'s
 modal). On desktop it renders in-flow as a normal panel; ≤991px it's hidden and
 a `.cc-year-trigger` button (hidden on desktop, sitting right after the dialog)
-opens it as a real modal via `all.js`'s standard "dialog + button" wiring. The
+opens it as a real modal via `design-system.js`'s standard "dialog + button" wiring. The
 trigger's label is just another `[data-count="year-label"]` element, so
 whatever renderer fills that hook (today `collection.js`, in production the
 backend's own renderer) keeps the button in sync for free. See
 `collection.html` for the exact markup/CSS to replicate in Webflow.
 
-**Known `all.js` bug + companion script (needed on the live site, not just
-here):** the vendored `all.js` (`design-system/bundles/all.js`, MAST's
+**Known `design-system.js` bug + companion script (needed on the live site, not just
+here):** the vendored `design-system.js` (`design-system/bundles/design-system.js`, MAST's
 `modal.js`) opens a `dialog + button` trigger via `t.closest("dialog +
 button")` but then reads `previousElementSibling` off the **raw click
 target**, not off that matched button — so it only opens the dialog if the
@@ -524,17 +549,17 @@ it in the search input, re-run the search, and enforce the **max-5-keyword rule*
 (show the limit message only when the search already holds 5):
 
 ```js
-document.addEventListener("filmtv:addKeyword", e => addTermAndSearch(e.detail.key));
+document.addEventListener("filmtv:addKeyword", (e) => addTermAndSearch(e.detail.key));
 ```
 
 ---
 
 ## Event summary
 
-| Event | Fired by | Detail | Backend does |
-|---|---|---|---|
-| `filmtv:filter` | chart.js | `{ year, publication, label, prefixes }` | narrow query, re-fetch, re-render chart |
-| `filmtv:addKeyword` | cooccur.js | `{ key, label, total }` | add term, close modal, re-search (max 5) |
+| Event               | Fired by   | Detail                                   | Backend does                             |
+| ------------------- | ---------- | ---------------------------------------- | ---------------------------------------- |
+| `filmtv:filter`     | chart.js   | `{ year, publication, label, prefixes }` | narrow query, re-fetch, re-render chart  |
+| `filmtv:addKeyword` | cooccur.js | `{ key, label, total }`                  | add term, close modal, re-search (max 5) |
 
 The results article/book toggle fires **no event** — it's a pure CSS panel swap
 over one shared payload (see results.js notes).

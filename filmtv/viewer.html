@@ -657,13 +657,28 @@
               <div class="panel-issue h4">第 <span data-field="journal-issue"></span> 期</div>
             </hgroup>
             <dl class="viewer-meta-details">
-              <div u-flex="row-left-center"><dt>出版商　：</dt><dd data-field="publisher"></dd></div>
-              <div><dt>全冊頁數：</dt><dd data-field="page-count">xx 頁</dd></div>
-              <div><dt>出版日期：</dt><dd data-field="book-date"><time datetime=""></time></dd></div>
+              <div u-flex="row-left-center">
+                <dt>出版商　：</dt>
+                <dd data-field="publisher"></dd>
+              </div>
+              <div>
+                <dt>全冊頁數：</dt>
+                <dd data-field="page-count">xx 頁</dd>
+              </div>
+              <div>
+                <dt>出版日期：</dt>
+                <dd data-field="book-date"><time datetime=""></time></dd>
+              </div>
             </dl>
             <ul class="viewer-meta-links">
-              <li class="viewer-meta-extlink"><div>浸大圖書館目錄</div><a href="#" class="u-link-cover"></a></li>
-              <li class="viewer-meta-extlink"><div>電影相關連結</div><a href="#" class="u-link-cover"></a></li>
+              <li class="viewer-meta-extlink">
+                <div>浸大圖書館目錄</div>
+                <a href="#" class="u-link-cover"></a>
+              </li>
+              <li class="viewer-meta-extlink">
+                <div>電影相關連結</div>
+                <a href="#" class="u-link-cover"></a>
+              </li>
             </ul>
             <div class="divider"></div>
             <section aria-labelledby="book-toc-heading">
@@ -717,21 +732,39 @@
               <p class="art-label">文章標題：</p>
               <h3 data-field="title" class="art-title"></h3>
               <dl class="article-info-list">
-                <div class="article-info-row"><dt>作者　　：</dt><dd data-field="author"></dd></div>
-                <div class="article-info-row"><dt>專欄　　：</dt><dd data-field="column"></dd></div>
-                <div class="article-info-row"><dt>頁碼　　：</dt><dd data-field="page"></dd></div>
-                <div class="article-info-row"><dt>文章類別：</dt><dd data-field="article-type"></dd></div>
+                <div class="article-info-row">
+                  <dt>作者　　：</dt>
+                  <dd data-field="author"></dd>
+                </div>
+                <div class="article-info-row">
+                  <dt>專欄　　：</dt>
+                  <dd data-field="column"></dd>
+                </div>
+                <div class="article-info-row">
+                  <dt>頁碼　　：</dt>
+                  <dd data-field="page"></dd>
+                </div>
+                <div class="article-info-row">
+                  <dt>文章類別：</dt>
+                  <dd data-field="article-type"></dd>
+                </div>
                 <!-- whole row hides when the article has no keywords -->
                 <div class="article-info-row cc-keyword" data-viewer-keyword-row>
                   <dt>文章關鍵字：</dt>
                   <dd>
                     <ul class="ul" data-viewer-keyword-list>
-                      <li class="viewer-meta-extlink" data-tpl="keyword-item"><div data-field="keyword"></div><a href="#" class="u-link-cover"></a></li>
+                      <li class="viewer-meta-extlink" data-tpl="keyword-item">
+                        <div data-field="keyword"></div>
+                        <a href="#" class="u-link-cover"></a>
+                      </li>
                     </ul>
                   </dd>
                 </div>
               </dl>
-              <div class="viewer-meta-extlink art-permalink"><div>本文永久連結</div><a href="#" class="u-link-cover"></a></div>
+              <div class="viewer-meta-extlink art-permalink">
+                <div>本文永久連結</div>
+                <a href="#" class="u-link-cover"></a>
+              </div>
             </article>
             <div class="viewer-close-spacer"></div>
           </div>
@@ -763,24 +796,34 @@
             <input type="hidden" name="layout" value="double" />
             <button type="button" data-dropdown-trigger aria-haspopup="listbox" aria-expanded="false">
               <span data-dropdown-value class="dropdown-trigger-label">雙頁</span>
-              <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-trigger-icon"><path d="M216.49,104.49l-80,80a12,12,0,0,1-17,0l-80-80a12,12,0,0,1,17-17L128,159l71.51-71.52a12,12,0,0,1,17,17Z"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-trigger-icon">
+                <path d="M216.49,104.49l-80,80a12,12,0,0,1-17,0l-80-80a12,12,0,0,1,17-17L128,159l71.51-71.52a12,12,0,0,1,17,17Z" />
+              </svg>
             </button>
             <ul role="listbox" class="dropdown-list">
               <li role="option" aria-selected="true" data-value="double" data-dropdown-option class="dropdown-option">
                 <span data-dropdown-option-label class="dropdown-option-label">雙頁</span>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check">
+                  <path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z" />
+                </svg>
               </li>
               <li role="option" aria-selected="false" data-value="single" data-dropdown-option class="dropdown-option">
                 <span data-dropdown-option-label class="dropdown-option-label">單頁</span>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check">
+                  <path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z" />
+                </svg>
               </li>
               <li role="option" aria-selected="false" data-value="ocr" data-dropdown-option class="dropdown-option">
                 <span data-dropdown-option-label class="dropdown-option-label">顯示純文字</span>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check">
+                  <path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z" />
+                </svg>
               </li>
               <li role="option" aria-selected="false" data-value="thumbnail" data-dropdown-option class="dropdown-option">
                 <span data-dropdown-option-label class="dropdown-option-label">縮圖</span>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check">
+                  <path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z" />
+                </svg>
               </li>
             </ul>
           </div>
@@ -795,24 +838,34 @@
             <button type="button" class="icon-btn" id="js-scroll-popover-trigger" aria-label="捲動設定" aria-haspopup="menu" aria-expanded="false">⋯</button>
             <ul class="dropdown-list cc-viewer-bottom" id="js-scroll-popover" role="menu">
               <li class="dropdown-option" role="menuitemradio" tabindex="-1" data-scroll-direction="flip" aria-selected="true">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check">
+                  <path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z" />
+                </svg>
                 <span class="dropdown-option-label">翻頁</span>
               </li>
               <li class="dropdown-option" role="menuitemradio" tabindex="-1" data-scroll-direction="vertical" aria-selected="false">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check">
+                  <path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z" />
+                </svg>
                 <span class="dropdown-option-label">垂直捲動</span>
               </li>
               <li class="dropdown-option" role="menuitemradio" tabindex="-1" data-scroll-direction="horizontal" aria-selected="false">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check">
+                  <path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z" />
+                </svg>
                 <span class="dropdown-option-label">水平捲動</span>
               </li>
               <li class="scroll-popover-divider" role="separator"></li>
               <li class="dropdown-option" role="menuitemradio" tabindex="-1" data-connect-mode="next" aria-selected="true">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check">
+                  <path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z" />
+                </svg>
                 <span class="dropdown-option-label">連接下頁</span>
               </li>
               <li class="dropdown-option" role="menuitemradio" tabindex="-1" data-connect-mode="previous" aria-selected="false">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check">
+                  <path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z" />
+                </svg>
                 <span class="dropdown-option-label">連接上頁</span>
               </li>
             </ul>
@@ -825,24 +878,34 @@
             <input type="hidden" name="zoom" value="fit-page" />
             <button type="button" data-dropdown-trigger aria-haspopup="listbox" aria-expanded="false">
               <span data-dropdown-value class="dropdown-trigger-label">符合頁面</span>
-              <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-trigger-icon"><path d="M216.49,104.49l-80,80a12,12,0,0,1-17,0l-80-80a12,12,0,0,1,17-17L128,159l71.51-71.52a12,12,0,0,1,17,17Z"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-trigger-icon">
+                <path d="M216.49,104.49l-80,80a12,12,0,0,1-17,0l-80-80a12,12,0,0,1,17-17L128,159l71.51-71.52a12,12,0,0,1,17,17Z" />
+              </svg>
             </button>
             <ul role="listbox" class="dropdown-list">
               <li role="option" aria-selected="false" data-value="fit-width" data-dropdown-option class="dropdown-option">
                 <span data-dropdown-option-label class="dropdown-option-label">符合頁寬</span>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check">
+                  <path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z" />
+                </svg>
               </li>
               <li role="option" aria-selected="true" data-value="fit-page" data-dropdown-option class="dropdown-option">
                 <span data-dropdown-option-label class="dropdown-option-label">符合頁面</span>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check">
+                  <path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z" />
+                </svg>
               </li>
               <li role="option" aria-selected="false" data-value="100" data-dropdown-option class="dropdown-option">
                 <span data-dropdown-option-label class="dropdown-option-label">100%</span>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check">
+                  <path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z" />
+                </svg>
               </li>
               <li role="option" aria-selected="false" data-value="150" data-dropdown-option class="dropdown-option">
                 <span data-dropdown-option-label class="dropdown-option-label">150%</span>
-                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256" aria-hidden="true" class="dropdown-option-check">
+                  <path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z" />
+                </svg>
               </li>
             </ul>
           </div>
@@ -924,7 +987,7 @@
     </template>
 
     <!-- Preview-only dropdown behavior: stands in for the design-system forms.js
-       (the real site loads bundles/all.js). Toggles .is-open, and on option
+       (the real site loads bundles/design-system.js). Toggles .is-open, and on option
        click sets aria-selected + the hidden input value, reflects the label from
        .dropdown-option-label, and dispatches 'input' (what viewer.js listens for). -->
     <script>

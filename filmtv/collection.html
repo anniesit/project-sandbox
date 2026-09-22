@@ -1,204 +1,332 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-Hant">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>影視刊物資料庫 · 香港電視 藏品</title>
-  <link rel="stylesheet" href="chart.css" />
-  <link rel="stylesheet" href="https://hkbuproject-sandbox.vercel.app/filmtv/font/genryumin-tc/genryumin-tc.css" />
-  <style>
-    /* ⚠️ PREVIEW CHROME ONLY. On the real site these blocks are authored in
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>影視刊物資料庫 · 香港電視 藏品</title>
+    <link rel="stylesheet" href="chart.css" />
+    <link rel="stylesheet" href="https://hkbuproject-sandbox.vercel.app/filmtv/font/genryumin-tc/genryumin-tc.css" />
+    <style>
+      /* ⚠️ PREVIEW CHROME ONLY. On the real site these blocks are authored in
        Webflow; this file just mirrors the data-* hook structure so collection.js
        (mock) and chart.js (real) can be seen rendering. Not part of the handoff. */
-    :root {
-      --ink: #1c1a18; --muted: #6b6661; --line: rgba(28,26,24,0.12);
-      --accent: #8a1c2b; --paper: #fff; --bg: #f3f1ee;
-    }
-    body {
-      margin: 0; padding: 2.5rem clamp(1rem, 4vw, 3rem);
-      background: var(--bg); color: var(--ink);
-      font-family: 'GenRyuMin2 TC', 'Songti TC', 'Noto Serif TC', 'PMingLiU', serif;
-      -webkit-font-smoothing: antialiased;
-    }
-    .wrap { max-width: 1040px; margin: 0 auto; }
-    .page-head { margin-bottom: 1.5rem; }
-    .page-head h1 { margin: 0 0 0.25rem; font-size: 1.6rem; letter-spacing: 0.01em; }
-    .page-head p { margin: 0; color: var(--muted); font-size: 0.9rem; }
-    .panel {
-      background: var(--paper); border: 1px solid var(--line); border-radius: 12px;
-      padding: 1.5rem clamp(1rem, 3vw, 1.75rem); margin-bottom: 1.25rem;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-    }
-    .panel-label { margin: 0 0 0.9rem; font-size: 0.8rem; letter-spacing: 0.08em;
-      text-transform: uppercase; color: var(--muted); }
+      :root {
+        --ink: #1c1a18;
+        --muted: #6b6661;
+        --line: rgba(28, 26, 24, 0.12);
+        --accent: #8a1c2b;
+        --paper: #fff;
+        --bg: #f3f1ee;
+      }
+      body {
+        margin: 0;
+        padding: 2.5rem clamp(1rem, 4vw, 3rem);
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "GenRyuMin2 TC", "Songti TC", "Noto Serif TC", "PMingLiU", serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap {
+        max-width: 1040px;
+        margin: 0 auto;
+      }
+      .page-head {
+        margin-bottom: 1.5rem;
+      }
+      .page-head h1 {
+        margin: 0 0 0.25rem;
+        font-size: 1.6rem;
+        letter-spacing: 0.01em;
+      }
+      .page-head p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+      .panel {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 1.5rem clamp(1rem, 3vw, 1.75rem);
+        margin-bottom: 1.25rem;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      }
+      .panel-label {
+        margin: 0 0 0.9rem;
+        font-size: 0.8rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
 
-    /* year buttons */
-    .year-list { display: flex; flex-wrap: wrap; gap: 0.4rem; list-style: none; margin: 0; padding: 0; }
-    .year-button {
-      display: inline-flex; align-items: baseline; gap: 0.3rem;
-      padding: 0.35rem 0.7rem; border: 1px solid var(--line); border-radius: 999px;
-      background: var(--paper); font: inherit; font-size: 0.85rem; color: #3a3733;
-      cursor: pointer; transition: all 0.12s ease;
-    }
-    .year-button:hover { border-color: var(--accent); color: var(--accent); }
-    .year-button.cc-active { background: var(--accent); border-color: var(--accent); color: #fff; }
-    .year-count { font-size: 0.72rem; opacity: 0.7; }
+      /* year buttons */
+      .year-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .year-button {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 0.3rem;
+        padding: 0.35rem 0.7rem;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--paper);
+        font: inherit;
+        font-size: 0.85rem;
+        color: #3a3733;
+        cursor: pointer;
+        transition: all 0.12s ease;
+      }
+      .year-button:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .year-button.cc-active {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+      }
+      .year-count {
+        font-size: 0.72rem;
+        opacity: 0.7;
+      }
 
-    /* ---- responsive year panel: inline panel on desktop, modal ≤991px ----
+      /* ---- responsive year panel: inline panel on desktop, modal ≤991px ----
        Same design-system modal component as cooccur.html (<dialog class="modal">
-       + adjacent trigger <button>, wired by all.js's "dialog + button" pattern).
+       + adjacent trigger <button>, wired by design-system.js's "dialog + button" pattern).
        The dialog never gets the [open] attribute on desktop — display:block is
        forced by CSS alone — so the design-system's `body:has(dialog[open])`
        scroll-lock rule never fires while it's just an inline panel. ≤991px hides
        that inline (:not(:modal)) state; the trigger (hidden on desktop) calls
        showModal() to present the same element as a real modal. */
-    dialog.panel.cc-year:not(:modal) {
-      position: static;
-      display: block;
-      width: auto;
-      margin: 0 0 1.25rem;
-    }
-    dialog.panel.cc-year:modal { width: min(420px, 92vw); }
-    dialog.panel.cc-year::backdrop { background: rgba(20, 18, 16, 0.5); }
-    .cc-year .modal-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-    .cc-year .modal-head .panel-label { margin: 0; }
-    .cc-year .modal-close {
-      display: none; /* shown only ≤991px, alongside the trigger */
-      flex: 0 0 auto; width: 1.8rem; height: 1.8rem; border-radius: 50%;
-      border: 1px solid var(--line); background: var(--paper); cursor: pointer;
-      font-size: 1.05rem; line-height: 1; color: var(--ink);
-    }
-    .cc-year-trigger {
-      display: none; /* shown only ≤991px */
-      font: inherit; font-size: 0.9rem; padding: 0.55rem 0.9rem;
-      border: 1px solid var(--line); border-radius: 999px; background: var(--paper);
-      color: var(--ink); cursor: pointer; margin: 0 0 1.25rem;
-    }
-    /* all.js's "dialog + button" opener reads previousElementSibling off the
+      dialog.panel.cc-year:not(:modal) {
+        position: static;
+        display: block;
+        width: auto;
+        margin: 0 0 1.25rem;
+      }
+      dialog.panel.cc-year:modal {
+        width: min(420px, 92vw);
+      }
+      dialog.panel.cc-year::backdrop {
+        background: rgba(20, 18, 16, 0.5);
+      }
+      .cc-year .modal-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+      .cc-year .modal-head .panel-label {
+        margin: 0;
+      }
+      .cc-year .modal-close {
+        display: none; /* shown only ≤991px, alongside the trigger */
+        flex: 0 0 auto;
+        width: 1.8rem;
+        height: 1.8rem;
+        border-radius: 50%;
+        border: 1px solid var(--line);
+        background: var(--paper);
+        cursor: pointer;
+        font-size: 1.05rem;
+        line-height: 1;
+        color: var(--ink);
+      }
+      .cc-year-trigger {
+        display: none; /* shown only ≤991px */
+        font: inherit;
+        font-size: 0.9rem;
+        padding: 0.55rem 0.9rem;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--paper);
+        color: var(--ink);
+        cursor: pointer;
+        margin: 0 0 1.25rem;
+      }
+      /* design-system.js's "dialog + button" opener reads previousElementSibling off the
        RAW click target, not off the matched button — so a click landing on a
        child element (e.g. a wrapping <div>/<span> for the label) resolves to
        nothing and showModal() never fires. Force every click in the trigger
        to resolve to the <button> itself. */
-    .cc-year-trigger * { pointer-events: none; }
-    @media (max-width: 991px) {
-      dialog.panel.cc-year:not(:modal) { display: none; }
-      .cc-year-trigger { display: inline-flex; align-items: baseline; gap: 0.3rem; }
-      .cc-year .modal-close { display: inline-flex; align-items: center; justify-content: center; }
-    }
+      .cc-year-trigger * {
+        pointer-events: none;
+      }
+      @media (max-width: 991px) {
+        dialog.panel.cc-year:not(:modal) {
+          display: none;
+        }
+        .cc-year-trigger {
+          display: inline-flex;
+          align-items: baseline;
+          gap: 0.3rem;
+        }
+        .cc-year .modal-close {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+        }
+      }
 
-    /* book cards */
-    .book-head { display: flex; align-items: baseline; gap: 0.6rem; margin-bottom: 1rem; }
-    .book-head h2 { margin: 0; font-size: 1.15rem; }
-    .book-head .count { color: var(--muted); font-size: 0.85rem; }
-    .book-grid {
-      display: grid; gap: 1.1rem 1rem;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    }
-    .book-card {
-      display: flex; flex-direction: column; text-decoration: none; color: inherit;
-    }
-    .book-cover-wrap { position: relative; aspect-ratio: 160 / 219; overflow: hidden;
-      border: 1px solid var(--line); border-radius: 6px; background: #e6e9ea; }
-    .book-cover { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .book-title { margin-top: 0.5rem; font-size: 0.9rem; }
-    .book-issue { font-size: 0.82rem; color: var(--accent); }
-    .book-date { font-size: 0.76rem; color: var(--muted); margin-top: 0.1rem; }
+      /* book cards */
+      .book-head {
+        display: flex;
+        align-items: baseline;
+        gap: 0.6rem;
+        margin-bottom: 1rem;
+      }
+      .book-head h2 {
+        margin: 0;
+        font-size: 1.15rem;
+      }
+      .book-head .count {
+        color: var(--muted);
+        font-size: 0.85rem;
+      }
+      .book-grid {
+        display: grid;
+        gap: 1.1rem 1rem;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      }
+      .book-card {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+      }
+      .book-cover-wrap {
+        position: relative;
+        aspect-ratio: 160 / 219;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: #e6e9ea;
+      }
+      .book-cover {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+      .book-title {
+        margin-top: 0.5rem;
+        font-size: 0.9rem;
+      }
+      .book-issue {
+        font-size: 0.82rem;
+        color: var(--accent);
+      }
+      .book-date {
+        font-size: 0.76rem;
+        color: var(--muted);
+        margin-top: 0.1rem;
+      }
 
-    .hint { margin-top: 1rem; font-size: 0.78rem; color: #8a847d; }
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <header class="page-head">
-      <h1>香港電視 藏品</h1>
-      <p>單一刊物藏品頁 · 年份選擇、書刊封面、書刊年份統計（西元 1967–1997）</p>
-    </header>
+      .hint {
+        margin-top: 1rem;
+        font-size: 0.78rem;
+        color: #8a847d;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="page-head">
+        <h1>香港電視 藏品</h1>
+        <p>單一刊物藏品頁 · 年份選擇、書刊封面、書刊年份統計（西元 1967–1997）</p>
+      </header>
 
-    <!-- ONE [data-collection] wraps the whole page (year selector + card grid).
+      <!-- ONE [data-collection] wraps the whole page (year selector + card grid).
          [data-count] hooks inside it: book=total, year=this year, year-label=year. -->
-    <div data-collection data-src="sample-data/collection-tvw.json">
+      <div data-collection data-src="sample-data/collection-tvw.json">
+        <p style="margin: 0 0 1.25rem; color: var(--muted); font-size: 0.9rem">全刊 <strong data-count="book">0</strong> 本 · 現正顯示 <strong data-count="year-label">—</strong> 年</p>
 
-      <p style="margin:0 0 1.25rem;color:var(--muted);font-size:0.9rem;">
-        全刊 <strong data-count="book">0</strong> 本 · 現正顯示 <strong data-count="year-label">—</strong> 年</p>
-
-      <!-- MAST modal trigger pattern (same as cooccur.html): the <dialog> must
-           immediately precede its trigger <button> as siblings — all.js looks
+        <!-- MAST modal trigger pattern (same as cooccur.html): the <dialog> must
+           immediately precede its trigger <button> as siblings — design-system.js looks
            at "dialog + button" to know which dialog a trigger opens. -->
-      <dialog class="panel cc-year">
-        <div class="modal-head">
-          <p class="panel-label">年份</p>
-          <button type="button" class="modal-close" data-modal="close" aria-label="關閉">&times;</button>
-        </div>
-        <!-- year list as a semantic <ul>; ONE <li> template (collection.js clones
+        <dialog class="panel cc-year">
+          <div class="modal-head">
+            <p class="panel-label">年份</p>
+            <button type="button" class="modal-close" data-modal="close" aria-label="關閉">&times;</button>
+          </div>
+          <!-- year list as a semantic <ul>; ONE <li> template (collection.js clones
              it per year). data-tpl on the <li>, the styled control is the <button>. -->
-        <ul class="year-list" data-year-list>
-          <li data-tpl="year-button">
-            <button class="year-button" type="button">
-              <span data-field="year">1986</span>
-              <span class="year-count" data-field="year-count"></span>
-            </button>
-          </li>
-        </ul>
-      </dialog>
-      <!-- ≤991px only (see CSS): opens the dialog above as a modal. The label
+          <ul class="year-list" data-year-list>
+            <li data-tpl="year-button">
+              <button class="year-button" type="button">
+                <span data-field="year">1986</span>
+                <span class="year-count" data-field="year-count"></span>
+              </button>
+            </li>
+          </ul>
+        </dialog>
+        <!-- ≤991px only (see CSS): opens the dialog above as a modal. The label
            reuses the SAME [data-count="year-label"] hook already on this page,
            so collection.js keeps it in sync for free — no extra JS. -->
-      <button type="button" class="cc-year-trigger">
-        年份：<span data-count="year-label">—</span>
-      </button>
+        <button type="button" class="cc-year-trigger">年份：<span data-count="year-label">—</span></button>
+
+        <div class="panel">
+          <div class="book-head">
+            <h2>書刊封面</h2>
+            <span class="count"><span data-count="year-label">—</span> 年 · <span data-count="year">0</span> 本</span>
+          </div>
+          <!-- card container + ONE template card (collection.js clones it per book) -->
+          <div class="book-grid" data-book-grid>
+            <a class="book-card" data-tpl="book-card" href="#">
+              <span class="book-cover-wrap">
+                <img class="book-cover" data-field="cover" alt="" />
+              </span>
+              <span class="book-title" data-field="book-title"></span>
+              <span class="book-issue" data-field="book-issue"></span>
+              <span class="book-date" data-field="book-date"></span>
+            </a>
+          </div>
+        </div>
+      </div>
 
       <div class="panel">
-        <div class="book-head">
-          <h2>書刊封面</h2>
-          <span class="count"><span data-count="year-label">—</span> 年 · <span data-count="year">0</span> 本</span>
-        </div>
-        <!-- card container + ONE template card (collection.js clones it per book) -->
-        <div class="book-grid" data-book-grid>
-          <a class="book-card" data-tpl="book-card" href="#">
-            <span class="book-cover-wrap">
-              <img class="book-cover" data-field="cover" alt="" />
-            </span>
-            <span class="book-title" data-field="book-title"></span>
-            <span class="book-issue" data-field="book-issue"></span>
-            <span class="book-date" data-field="book-date"></span>
-          </a>
-        </div>
+        <p class="panel-label">書刊年份統計（本）</p>
+        <!-- The chart is the REAL handoff component: chart.js, book view, single
+           publication, year axis fitted to 1967–1997 by the payload. -->
+        <div data-chart data-view="book" data-height="300" data-src="sample-data/collection-tvw-chart.json"></div>
+        <p class="hint">此圖表為交付元件（chart.js）。年份按鈕與封面卡由 collection.js 模擬渲染，僅供預覽。</p>
       </div>
     </div>
 
-    <div class="panel">
-      <p class="panel-label">書刊年份統計（本）</p>
-      <!-- The chart is the REAL handoff component: chart.js, book view, single
-           publication, year axis fitted to 1967–1997 by the payload. -->
-      <div data-chart data-view="book" data-height="300"
-           data-src="sample-data/collection-tvw-chart.json"></div>
-      <p class="hint">此圖表為交付元件（chart.js）。年份按鈕與封面卡由 collection.js 模擬渲染，僅供預覽。</p>
-    </div>
-  </div>
-
-  <script src="collection.js"></script>
-  <script src="chart.js"></script>
-  <script>
-    /* ---- inline modal shim (Webflow's design-system all.js does this for
+    <script src="collection.js"></script>
+    <script src="chart.js"></script>
+    <script>
+      /* ---- inline modal shim (Webflow's design-system design-system.js does this for
        real — see cooccur.html for the same shim/comment) ---- */
-    (function () {
-      document.addEventListener("click", function (e) {
-        var t = e.target;
-        if (t.closest("dialog + button")) {                 // trigger: open
-          var dlg = t.closest("dialog + button").previousElementSibling;
-          if (dlg && dlg.tagName === "DIALOG") dlg.showModal();
-        } else if (t.closest('dialog button[data-modal="close"]')) {  // close button
-          var d = t.closest("dialog"); if (d) d.close();
-        }
-      });
-      document.querySelectorAll("dialog.cc-year").forEach(function (d) {
-        d.addEventListener("click", function (e) { if (e.target === d) d.close(); }); // click backdrop
-      });
-    })();
-  </script>
-  <script>
-    /* ---- REAL fix, add this on the live Webflow site too (not preview-only) ----
-       The vendored all.js (design-system/bundles/all.js, MAST's modal.js) opens
+      (function () {
+        document.addEventListener("click", function (e) {
+          var t = e.target;
+          if (t.closest("dialog + button")) {
+            // trigger: open
+            var dlg = t.closest("dialog + button").previousElementSibling;
+            if (dlg && dlg.tagName === "DIALOG") dlg.showModal();
+          } else if (t.closest('dialog button[data-modal="close"]')) {
+            // close button
+            var d = t.closest("dialog");
+            if (d) d.close();
+          }
+        });
+        document.querySelectorAll("dialog.cc-year").forEach(function (d) {
+          d.addEventListener("click", function (e) {
+            if (e.target === d) d.close();
+          }); // click backdrop
+        });
+      })();
+    </script>
+    <script>
+      /* ---- REAL fix, add this on the live Webflow site too (not preview-only) ----
+       The vendored design-system.js (design-system/bundles/design-system.js, MAST's modal.js) opens
        a trigger correctly via `t.closest("dialog + button")`, but then grabs
        `previousElementSibling` off the RAW click target instead of off that
        matched button — so it only works if the click lands exactly on the
@@ -209,7 +337,7 @@
        This script is a small, independent companion for two remaining gaps:
        1) a guaranteed-correct close handler for the [data-modal="close"]
           button, in case the vendored close path is unreliable for the same
-          class of reason (redundant/no-op if all.js's own close already ran).
+          class of reason (redundant/no-op if design-system.js's own close already ran).
           Delegated on `document` (not an eager querySelectorAll+forEach) so
           it works no matter where this <script> tag sits relative to the
           dialog markup — an eager per-element attach silently attaches to
@@ -219,23 +347,29 @@
           in :modal state (small, fixed, centered) instead of reverting to the
           normal full-width inline panel, since crossing the breakpoint alone
           never changes the dialog's open/modal state. */
-    (function () {
-      document.addEventListener("click", function (e) {
-        var btn = e.target.closest('dialog.cc-year [data-modal="close"]');
-        if (!btn) return;
-        var dlg = btn.closest("dialog");
-        if (dlg) dlg.close();
-      });
-
-      var mqDesktop = window.matchMedia("(min-width: 992px)");
-      function closeOpenModalsOnDesktop() {
-        document.querySelectorAll("dialog.cc-year[open]").forEach(function (dlg) {
-          if (dlg.matches(":modal")) dlg.close();
+      (function () {
+        document.addEventListener("click", function (e) {
+          var btn = e.target.closest('dialog.cc-year [data-modal="close"]');
+          if (!btn) return;
+          var dlg = btn.closest("dialog");
+          if (dlg) dlg.close();
         });
-      }
-      if (mqDesktop.addEventListener) mqDesktop.addEventListener("change", function (e) { if (e.matches) closeOpenModalsOnDesktop(); });
-      else mqDesktop.addListener(function (e) { if (e.matches) closeOpenModalsOnDesktop(); }); // older Safari
-    })();
-  </script>
-</body>
+
+        var mqDesktop = window.matchMedia("(min-width: 992px)");
+        function closeOpenModalsOnDesktop() {
+          document.querySelectorAll("dialog.cc-year[open]").forEach(function (dlg) {
+            if (dlg.matches(":modal")) dlg.close();
+          });
+        }
+        if (mqDesktop.addEventListener)
+          mqDesktop.addEventListener("change", function (e) {
+            if (e.matches) closeOpenModalsOnDesktop();
+          });
+        else
+          mqDesktop.addListener(function (e) {
+            if (e.matches) closeOpenModalsOnDesktop();
+          }); // older Safari
+      })();
+    </script>
+  </body>
 </html>
