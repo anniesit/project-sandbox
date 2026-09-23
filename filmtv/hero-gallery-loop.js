@@ -19,7 +19,21 @@
  *   4. The page first shows a "page load default" slide standing for the
  *      whole archive, with NO collection highlighted. It is retired for
  *      good the moment anything takes over — the timer running out, or a
- *      hover, focus or arrow press, whichever comes first.
+ *      hover, focus, arrow press or list scroll, whichever comes first.
+ *
+ * ROW MODE (tablet and below) — kept from the Heritage gallery's mobile
+ * behaviour. When Webflow lays the list out as a horizontal row (its
+ * flex-direction starts with "row"), two things link the list's scroll
+ * position to the slide, in both directions:
+ *   • Changing slide scrolls the highlighted item to the FRONT (left edge)
+ *     of the list.
+ *   • Scrolling the list by hand highlights whichever item is nearest the
+ *     front, and shows its slide. The auto loop pauses while the reader
+ *     scrolls and resumes data-hero-resume ms after they stop.
+ * The mode is read from the list's computed style, not from a hard-coded
+ * width, so moving the breakpoint in Webflow moves this behaviour with it.
+ * The "front" is the list's left padding edge, or its scroll-padding-left
+ * if one is set on the class — that is the knob to inset it.
  *
  * Dependency-free. No build step. Served from the project-sandbox Vercel
  * deployment and linked from the Webflow page's "Page JS" embed.
@@ -44,7 +58,9 @@
  *   slide   .is-active  currently shown     .is-leaving  animating out
  *           .is-retired the page-load default, once spent
  *   item    .is-active  the highlighted collection
- *   nav     .is-hidden  list fits, arrows not needed
+ *   nav     .is-hidden  list fits, arrows not needed (column mode: fewer
+ *                       items than data-hero-visible; row mode: the row
+ *                       does not overflow its width)
  *
  * The covers start hidden, so nothing is visible until this script makes
  * a slide active. hero.css carves out the Webflow Designer canvas
@@ -60,6 +76,8 @@
  *   data-hero-clear="1200"        ms to keep the outgoing slide animating;
  *                                 must be >= the longest transition in
  *                                 hero.css (duration + stagger)
+ *   data-hero-resume="5000"       row mode: ms after the reader stops
+ *                                 scrolling the list before the loop resumes
  *
  * ------------------------------------------------------------
  * BACKEND / INTEGRATION NOTES
@@ -87,8 +105,14 @@
     interval: 5000,
     firstDelay: 2500,
     visible: 4,
-    clear: 1200
+    clear: 1200,
+    resume: 5000
   };
+
+  // How long the list must be still before a script-driven scroll counts
+  // as finished. Scroll events from our own scrollTo() are ignored until
+  // then, so they are never mistaken for the reader scrolling.
+  var SCROLL_SETTLE = 150;
 
   var instances = [];
 
@@ -104,7 +128,8 @@
       interval: num(root.getAttribute("data-hero-interval"), CONFIG.interval),
       firstDelay: num(root.getAttribute("data-hero-first-delay"), CONFIG.firstDelay),
       visible: num(root.getAttribute("data-hero-visible"), CONFIG.visible),
-      clear: num(root.getAttribute("data-hero-clear"), CONFIG.clear)
+      clear: num(root.getAttribute("data-hero-clear"), CONFIG.clear),
+      resume: num(root.getAttribute("data-hero-resume"), CONFIG.resume)
     };
   }
 
@@ -139,6 +164,10 @@
     this.clearTimer = null;
     this.resumeTimer = null;
     this.retireTimer = null;
+    this.scrollResumeTimer = null;
+
+    this.autoScrolling = false;  // our own scrollTo() is still moving the list
+    this.settleTimer = null;
 
     this.collect();
     this.wire();
@@ -220,6 +249,16 @@
       this.list.addEventListener("mouseleave", function () { self.hold(false); });
       this.list.addEventListener("focusin", function () { self.hold(true); });
       this.list.addEventListener("focusout", function () { self.hold(false); });
+
+      /* Row mode: the reader scrolling the list picks the collection.
+       * Any sign of a hand on the list cancels a script scroll still in
+       * flight, so the reader's own scroll is never ignored as ours. */
+      var userIntent = function () { self.endAutoScroll(); };
+      this.list.addEventListener("touchstart", userIntent, { passive: true });
+      this.list.addEventListener("wheel", userIntent, { passive: true });
+      this.list.addEventListener("pointerdown", userIntent);
+      this.list.addEventListener("scroll", function () { self.onListScroll(); },
+        { passive: true });
     }
 
     /* Pointing at a collection previews it straight away — including
@@ -244,8 +283,19 @@
 
     window.addEventListener("resize", function () {
       self.applyVisibleWindow();
-      if (self.index >= 0) self.scrollIntoWindow(self.index);
+      if (self.index >= 0) self.scrollIntoWindow(self.index, true);
     });
+  };
+
+  /* --- layout mode ----------------------------------------- */
+
+  /* "row" when Webflow lays the list out horizontally (tablet and below),
+   * "column" otherwise. Read from the live style on every call, so a
+   * resize across the breakpoint switches behaviour with no bookkeeping. */
+  Hero.prototype.isRow = function () {
+    if (!this.list) return false;
+    var dir = window.getComputedStyle(this.list).flexDirection || "";
+    return dir.indexOf("row") === 0;
   };
 
   /* --- the visible window on the list ---------------------- */
@@ -269,7 +319,11 @@
     var listRect = this.list.getBoundingClientRect();
     var rowRect = row.getBoundingClientRect();
     var top = rowRect.top - listRect.top - this.list.clientTop + this.list.scrollTop;
-    return { top: top, bottom: top + rowRect.height };
+    var left = rowRect.left - listRect.left - this.list.clientLeft + this.list.scrollLeft;
+    return {
+      top: top, bottom: top + rowRect.height,
+      left: left, right: left + rowRect.width
+    };
   };
 
   /* The list shows at most cfg.visible items and scrolls past that. The
@@ -277,6 +331,17 @@
    * restyling the pills in Webflow keeps "exactly N visible" true. */
   Hero.prototype.applyVisibleWindow = function () {
     if (!this.list) return;
+
+    // Row mode has no item cap — the row simply scrolls sideways — so the
+    // arrows are needed only when the row is wider than the list.
+    if (this.isRow()) {
+      this.list.style.maxHeight = "";
+      if (this.nav) {
+        this.nav.classList.toggle("is-hidden",
+          this.list.scrollWidth <= this.list.clientWidth + 1);
+      }
+      return;
+    }
 
     var overflowing = this.items.length > this.cfg.visible;
 
@@ -310,11 +375,17 @@
     this.list.scrollTop = saved;
   };
 
-  /* Scroll by ONE step: only move far enough to bring the target into the
-   * visible window. Wrapping from the last item to the first therefore
-   * scrolls the list back to the top on its own. */
-  Hero.prototype.scrollIntoWindow = function (i) {
+  /* Column mode: scroll by ONE step — only far enough to bring the target
+   * into the visible window. Wrapping from the last item to the first
+   * therefore scrolls the list back to the top on its own.
+   * Row mode: bring the target to the FRONT of the row instead.
+   * `instant` skips the smooth scroll (used on resize). */
+  Hero.prototype.scrollIntoWindow = function (i, instant) {
     if (!this.list) return;
+    if (this.isRow()) {
+      this.scrollListTo({ left: this.frontTarget(i) }, instant);
+      return;
+    }
     if (this.list.scrollHeight <= this.list.clientHeight) return;
 
     var row = this.rowFor(i);
@@ -332,14 +403,113 @@
 
     if (target === null) return;
 
-    if (this.list.scrollTo) {
-      this.list.scrollTo({
-        top: target,
-        behavior: reducedMotion() ? "auto" : "smooth"
-      });
+    this.scrollListTo({ top: target }, instant);
+  };
+
+  /* Every script-driven scroll of the list goes through here, flagged so
+   * onListScroll() can tell it apart from the reader's own scrolling. */
+  Hero.prototype.scrollListTo = function (pos, instant) {
+    var list = this.list;
+    var axis = pos.left !== undefined ? "scrollLeft" : "scrollTop";
+    var value = pos.left !== undefined ? pos.left : pos.top;
+
+    if (Math.abs(list[axis] - value) < 1) return;   // already there
+
+    this.autoScrolling = true;
+    this.armSettle();
+
+    if (list.scrollTo) {
+      pos.behavior = instant || reducedMotion() ? "auto" : "smooth";
+      list.scrollTo(pos);
     } else {
-      this.list.scrollTop = target;
+      list[axis] = value;
     }
+  };
+
+  /* The script scroll counts as finished once the list has been still for
+   * SCROLL_SETTLE ms. Each scroll event re-arms this, so a long smooth
+   * scroll stays flagged for its whole run. Armed up front too, in case
+   * no scroll event fires at all. */
+  Hero.prototype.armSettle = function () {
+    var self = this;
+    if (this.settleTimer) clearTimeout(this.settleTimer);
+    this.settleTimer = setTimeout(function () {
+      self.settleTimer = null;
+      self.autoScrolling = false;
+    }, SCROLL_SETTLE);
+  };
+
+  Hero.prototype.endAutoScroll = function () {
+    if (this.settleTimer) clearTimeout(this.settleTimer);
+    this.settleTimer = null;
+    this.autoScrolling = false;
+  };
+
+  /* --- row mode: scroll position <-> highlighted item ------ */
+
+  /* Where the row's "front" sits, measured in from the list's left edge:
+   * scroll-padding-left when the class sets one, else the list's own
+   * left padding (so item 1 at rest already counts as "at the front"). */
+  Hero.prototype.frontOffset = function () {
+    var cs = window.getComputedStyle(this.list);
+    var sp = parseFloat(cs.scrollPaddingLeft);
+    return isNaN(sp) || sp === 0 ? parseFloat(cs.paddingLeft) || 0 : sp;
+  };
+
+  /* The scrollLeft that puts item i at the front — clamped, because the
+   * last few items can never travel all the way to the left edge. */
+  Hero.prototype.frontTarget = function (i) {
+    var row = this.rowFor(i);
+    if (!row) return 0;
+    var max = this.list.scrollWidth - this.list.clientWidth;
+    var target = this.rowBounds(row).left - this.frontOffset();
+    return Math.max(0, Math.min(max, Math.round(target)));
+  };
+
+  /* The item the reader has scrolled to: the one whose front position is
+   * nearest the current scroll. Comparing CLAMPED targets (not raw left
+   * edges) keeps this in agreement with frontTarget(), so an item the
+   * script scrolled to is always the item read back. Where several items
+   * share the end position, the current highlight wins if it is one of
+   * them; otherwise the first does. */
+  Hero.prototype.nearestToFront = function () {
+    var scroll = this.list.scrollLeft;
+    var best = -1;
+    var bestDist = Infinity;
+    for (var i = 0; i < this.items.length; i++) {
+      var dist = Math.abs(this.frontTarget(i) - scroll);
+      if (dist < bestDist - 0.5 ||
+          (Math.abs(dist - bestDist) <= 0.5 && i === this.index)) {
+        best = i;
+        bestDist = dist;
+      }
+    }
+    return best;
+  };
+
+  /* The reader scrolled the list by hand (row mode only). Highlight what
+   * is at the front, pause the loop, and resume once they have stopped. */
+  Hero.prototype.onListScroll = function () {
+    var self = this;
+
+    if (this.autoScrolling) {
+      this.armSettle();
+      return;
+    }
+    if (!this.isRow() || !this.items.length) return;
+
+    var first = this.takeOver();
+    this.stop();
+
+    var i = this.nearestToFront();
+    if (i >= 0) this.go(i, true);
+    if (first) this.retireDefault();
+
+    if (this.scrollResumeTimer) clearTimeout(this.scrollResumeTimer);
+    this.scrollResumeTimer = setTimeout(function () {
+      self.scrollResumeTimer = null;
+      if (!self.paused) self.start();
+    }, this.cfg.resume);
   };
 
   /* --- slide swapping -------------------------------------- */
@@ -427,7 +597,10 @@
 
   /* --- highlighting ---------------------------------------- */
 
-  Hero.prototype.go = function (i) {
+  /* Highlight item i and show its slide. `noScroll` leaves the list where
+   * it is — used when the reader's own scroll picked the item, so the
+   * script never drags the list out from under their finger. */
+  Hero.prototype.go = function (i, noScroll) {
     if (!this.items.length) return;
 
     var n = this.items.length;
@@ -445,7 +618,7 @@
 
     var key = this.items[i].getAttribute("data-collection");
     this.showSlide(this.slides[key] || null);
-    this.scrollIntoWindow(i);
+    if (!noScroll) this.scrollIntoWindow(i);
   };
 
   /* An arrow press. Steps the highlight and restarts the countdown, so the
@@ -507,6 +680,8 @@
     if (this.clearTimer) clearTimeout(this.clearTimer);
     if (this.resumeTimer) clearTimeout(this.resumeTimer);
     if (this.retireTimer) clearTimeout(this.retireTimer);
+    if (this.scrollResumeTimer) clearTimeout(this.scrollResumeTimer);
+    if (this.settleTimer) clearTimeout(this.settleTimer);
   };
 
   /* ============================================================
