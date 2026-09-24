@@ -13,6 +13,10 @@ project-specific decisions that aren't obvious from the code.
 | `cooccur.js` | Keyword co-occurrence bubble chart (in a modal)                                              | `filmtvCooccur.render`, `filmtvCooccur.redraw`                  |
 | `book.js`    | Book page table of contents (one book + attachments)                                         | `filmtvBook.render`                                             |
 | `viewer.js`  | Book Viewer (page-by-page reader: layout/zoom/rotate/scroll/OCR + 目錄/搜尋/文章資訊 panels) | `filmtvViewer.init`, `filmtvViewer.load`, `filmtvViewer.render` |
+| `hero-gallery-loop.js` + `hero.css` | Home hero: collection list + cover carousel | `filmtvHero.init` |
+| `hero-countup.js` | Home hero: the two animated totals | `filmtvHeroCountup.refresh` |
+| `hero-year-grid.js` | Home hero: the 涵蓋年份 year grid + heat map | `filmtvHeroYearGrid.render` |
+| `home-keywords.js` | Home 條目檢索: keyword tags from a CSV | none (self-initialising) |
 
 `book.js` renders the separate **Book page**. Unlike the others its mock driver
 is a **separate file, `book.mock.js`** (sample-data loader + dev switcher) —
@@ -554,6 +558,90 @@ document.addEventListener("filmtv:addKeyword", (e) => addTermAndSearch(e.detail.
 
 ---
 
+## Home page hero — `hero-gallery-loop.js`, `hero-countup.js`, `hero-year-grid.js`
+
+Three small scripts plus `hero.css` (motion only). All three read their data
+from markup or one inline object, so **none needs an endpoint**. The backend's
+job is to write the right values into the page. Each script's header has the
+full DOM contract; this is the part you act on.
+
+### What you fill in
+
+| Where | What goes there | What breaks if it's wrong |
+| --- | --- | --- |
+| `href` on the two live collection links (`a.hero-collection-link`, 香港電視 `TVW`, 電影小冊子 `FMP`) | The collection page URL. Currently `#`. | `#` jumps to the top of the page. The script does not intercept clicks, so the href is all that's needed. |
+| The 資料庫共有 totals: `span.hero-stat-num.countup` (本刊物, 篇文章) | The number, written to **both** the text (with commas) **and** `data-purecounter-end` (digits only). | The counter animates to the attribute; the text is what shows before the script runs and if it never runs (and what search engines index). Update only one and the two disagree. **They disagree right now**: see "Open items". If you inject the numbers after load, call `window.filmtvHeroCountup.refresh()`, because PureCounter reads its target once. |
+| `window.FILMTV_YEAR_COUNTS` in the Home **Page JS** embed | `{ "1926": 1, "1927": 0, … }`: items per year, one key per year in the span. | Years with no holdings must be explicit `0`s. A missing year reads as "no data" and is drawn at full strength instead of being marked empty. The object must be declared **before** the deferred `<script src>` tags (it is, today). |
+| `data-year-start` / `data-year-end` on `[data-hero-year-grid]` | The archive's first and last year (now 1926 / 1997). | The script draws one square per year and syncs the two year chips from these. Change the span here, not by editing squares: the squares are generated. |
+| The 25 cover `<img>`s (5 slides × 5 layers, `.hero-layer-img`) | Cover artwork. Keep **transparent PNGs**. | The drop shadow is `filter: drop-shadow()`, which traces the image's transparency. On an opaque JPEG it becomes a hard rectangle. |
+
+### Coming-soon collections (電影雙周刊 `CEM`, 電影雙周刊出版書籍 `CEB`)
+
+These two are deliberately a `<div>`, not a link, with `.is-disabled` and a
+「即將推出」 tag. They still take part in the carousel as a teaser: hover,
+the auto loop and the arrows show their covers. A `<div>` can't be clicked or
+tabbed to, which is the point. **No ARIA is needed**; the text already reads
+"電影雙周刊 即將推出".
+
+**When one launches:** replace the `<div>` with an `<a href="…">` carrying the
+same classes minus `is-disabled`, and the same two attributes
+(`data-hero-item`, `data-collection="CEM"`). Delete the tag. No script change.
+
+### Rules that aren't obvious from the markup
+
+- **The list is read from the DOM.** An item needs `data-hero-item` +
+  `data-collection="KEY"`, and a `[data-hero-slide]` with the same KEY must
+  exist. An item with no matching slide is skipped with a console warning,
+  not an error, so a typo'd key silently drops a collection from the
+  loop. To add a collection, add one item and one slide; nothing else.
+- **`data-layer="1"…"5"` is the animation order, not the stacking order.**
+  1 is the bottom-left cover and moves first. Which cover sits on top is set
+  by each `.hero-layer.cc-layer-N` class's z-index. Reordering the markup
+  changes neither; renumbering `data-layer` changes the animation.
+- **The covers are hidden until the script runs.** With JavaScript off, the
+  hero shows no covers. They're decorative, and the rest of the hero is static
+  markup, so the section still reads.
+- **Tablet and below (list in a row):** the highlighted item scrolls to the
+  front of the row, and scrolling the row by hand picks the item at the front.
+  The switch comes from the list's CSS `flex-direction`, not from a width in
+  the script.
+- **Tuning** lives on the `<section data-hero>` as `data-hero-interval`,
+  `-first-delay`, `-visible`, `-clear`, `-resume` (all ms, except
+  `-visible` = rows). Defaults are in the header of `hero-gallery-loop.js`.
+
+### Open items (as of 2026-09-23)
+
+- **The two totals' text and targets disagree.** 本刊物 shows `3,599` as text
+  but counts to `302317`; 篇文章 shows `302,317` but counts to `13529280`.
+  The page displays the attribute values once the count finishes. The correct
+  figures need confirming, then both places need updating.
+- **The year grid and the 本刊物 total come from different counts.** The grid
+  sums the TV + film timelines of the legacy homepage (3,050 dated items), which
+  covers less than the 本刊物 total. That's fine if intended, but the database
+  should decide which count each one shows.
+- **The ↗ button beside the totals (`.hero-arrow-btn`) is a `<div>`** with no
+  destination yet. If it should go somewhere, make it an `<a href>` with an
+  `aria-label` naming the destination; the arrow alone is not an accessible
+  name.
+
+### Nav background on Home (design-system add-on)
+
+On Home only, the nav's background band is hidden at the top of the page and
+fades in after 80px of scroll. That's what keeps the dotted band off the hero
+title. It uses the design system's `addons/nav-scroll.js` + `.css`, loaded from
+`design-system.anniesit.link` in the Home Page JS / Page CSS embeds.
+
+- **ON EXPORT:** de-CDN those two files with the rest of the design-system
+  assets. If `nav-scroll.js` fails to load, the band just stays hidden, so
+  content scrolls under a see-through nav. It is not an error, so it's easy
+  to miss.
+- The Nav component's `.nav-bg` carries `data-nav-scroll`. The script finds
+  the band by that attribute; remove it and the band never appears on Home.
+- `.nav-bg { opacity: 0 }` lives in the **Home** Page CSS on purpose. Other
+  pages don't load the add-on, so their band must stay visible.
+
+---
+
 ## `home-keywords.js` — Home page 條目檢索 section
 
 Two halves of one section on the Home page, and **neither needs a backend
@@ -703,6 +791,11 @@ All events **bubble to `document`**.
 - [ ] Listen for the two `filmtv:*` events (`filmtv:filter`, `filmtv:addKeyword`) and round-trip them.
 - [ ] `book.js`: delete `book.mock.js`; fetch one book's family server-side per route and call `filmtvBook.render()` directly (no family switcher).
 - [ ] `viewer.js`: delete `viewer.mock.js`; call `filmtvViewer.init({ root, dataBaseUrl })` once and let it read `?book=&page=&article=` from the URL (no dev switcher). Decide the `articleBody` inline-vs-lazy tradeoff (breaks client-side search if lazy — see the `viewer.js` section).
+- [ ] Home hero: set the two live collection links' hrefs (香港電視 `TVW`, 電影小冊子 `FMP`; both `#` now).
+- [ ] Home hero: write the 本刊物 / 篇文章 totals to **both** the text and `data-purecounter-end` (they currently disagree; see the hero section).
+- [ ] Home hero: emit `window.FILMTV_YEAR_COUNTS` from the database (explicit `0` for empty years), and keep `data-year-start` / `data-year-end` in step with the archive's span.
+- [ ] Home hero: when 電影雙周刊 / 電影雙周刊出版書籍 launch, swap each coming-soon `<div>` for an `<a href>` with the same attributes, minus `is-disabled` and the tag.
+- [ ] Home: de-CDN `addons/nav-scroll.{js,css}` on export along with the other design-system assets.
 - [ ] Home page: repoint `[data-keyword-src]` at the CSV's path on the live server and upload `home-keywords.csv` beside it; confirm the tag links and the home search form both land on the search page with the search already run.
 - [ ] Home page 相關資料庫 section: replace the two cards' placeholder `#` hrefs (on the `.u-link-cover` link inside each `.project-card`, NOT on the title) and the 查看更多資料庫 button's `#`, once the related-databases page exists. Each card's cover link also carries an `aria-label` holding the project name — keep it in step with the visible title.
 - [ ] Push to the repo — Vercel auto-deploys from `project-sandbox` (see "Deploy" above); no CDN purge or manual export step needed.
