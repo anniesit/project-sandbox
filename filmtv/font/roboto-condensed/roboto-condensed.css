@@ -1,0 +1,51 @@
+/* FTV Heading Latin — Latin letters for the heading font stack
+   File: Roboto Condensed Bold Italic (700 italic), latin + latin-ext subsets
+   Source: Google Fonts (fonts.gstatic.com, v31), self-hosted
+   License: SIL Open Font License 1.1 — https://fonts.google.com/specimen/Roboto+Condensed/license
+
+   Why an alias instead of "Roboto Condensed":
+   The heading token puts this family FIRST, ahead of zihunbiantaoti:
+     'FTV Heading Latin', 'zihunbiantaoti', 'Songti TC', ...
+   Browsers pick a font per character, so Latin letters and digits come from
+   this file and Chinese falls through to zihunbiantaoti (which has no Latin
+   we want). Each face is registered for every weight (1–1000) and both
+   styles, so whatever weight/style a heading class asks for, it gets exactly
+   this 700 italic file — no weight swapping, no faux bold or faux italic.
+
+   unicode-range: Google's latin / latin-ext ranges, minus punctuation that
+   also appears inside Chinese text (· — ― … ‧ and U+2014–2015 dashes), so a
+   Chinese title's dashes and ellipses stay in the Chinese font.
+*/
+
+@font-face {
+  font-family: "FTV Heading Latin";
+  src: url("./roboto-condensed-700-italic-latin.woff2") format("woff2");
+  font-weight: 1 1000;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00B6, U+00B8-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-2013, U+2016-2025, U+2028-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "FTV Heading Latin";
+  src: url("./roboto-condensed-700-italic-latin.woff2") format("woff2");
+  font-weight: 1 1000;
+  font-style: italic;
+  font-display: swap;
+  unicode-range: U+0000-00B6, U+00B8-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-2013, U+2016-2025, U+2028-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "FTV Heading Latin";
+  src: url("./roboto-condensed-700-italic-latin-ext.woff2") format("woff2");
+  font-weight: 1 1000;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "FTV Heading Latin";
+  src: url("./roboto-condensed-700-italic-latin-ext.woff2") format("woff2");
+  font-weight: 1 1000;
+  font-style: italic;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
