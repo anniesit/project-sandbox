@@ -150,6 +150,68 @@ html.w-editor .hero-layer {
   background-color: var(--primary--hero-dot-active, #ff8a39);
 }
 
+/* ============================================================
+ * THE BIG ARROW BUTTON + ITS TOOLTIP
+ *
+ * Both of these need selectors Webflow cannot author — a hover state
+ * reaching into a child, and a hover state reaching a sibling — so the
+ * MECHANISM lives here. Everything about how they LOOK stays on classes:
+ * the tooltip is `.hero-stat.cc-tip`, so it inherits the stat chips'
+ * appearance and `cc-tip` is yours to tweak.
+ * ============================================================ */
+
+/* The arrow art points straight up; a utility class turns it 45° so it
+ * reads as "up and out". On hover it swings to point DOWN, at the search
+ * section. Targeted as `svg` rather than by that utility class, so
+ * swapping the class does not silently break the turn. */
+.hero-arrow-btn {
+  --hero-arrow-turn: 180deg;
+  --hero-arrow-speed: 320ms;
+  anchor-name: --hero-arrow;
+}
+
+.hero-arrow-btn svg {
+  transition: transform var(--hero-arrow-speed) cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.hero-arrow-btn:hover svg,
+.hero-arrow-btn:focus-within svg {
+  transform: rotate(var(--hero-arrow-turn));
+}
+
+/* The tooltip is pinned under the button with CSS anchor positioning —
+ * the same mechanism the search page's popovers use — so it follows the
+ * button wherever the button is moved, with nothing to keep in sync.
+ * It must stay the button's immediate next sibling for `+` to reach it. */
+.hero-stat.cc-tip {
+  position: absolute;
+  position-anchor: --hero-arrow;
+  top: anchor(bottom);
+  left: anchor(center);
+  translate: -50% 0;
+  margin-top: 0.75rem;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 200ms ease,
+    visibility 200ms;
+}
+
+.hero-arrow-btn:hover + .hero-stat.cc-tip,
+.hero-arrow-btn:focus-within + .hero-stat.cc-tip {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* On the Designer canvas there is no cursor to hover with, so show it —
+ * otherwise it is an invisible element you cannot style by eye. */
+html.wf-design-mode .hero-stat.cc-tip,
+html.w-editor .hero-stat.cc-tip {
+  opacity: 1;
+  visibility: visible;
+}
+
 /* --- the up/down arrows ---
  * hero-gallery-loop.js adds .is-hidden when the collection list fits
  * without scrolling. Two class names, so it outranks a single-class

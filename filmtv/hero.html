@@ -190,7 +190,7 @@
   /* --- stats --- */
   .hero-stats-label { font-size: 28px; font-weight: 700; margin: 0 0 12px; }
   .stats-wrap { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
-  .stat {
+  .hero-stat {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -198,13 +198,15 @@
     padding: 2px 12px;
     background: var(--neutral-025);
     border: 2px solid var(--sky-700);
+    white-space: nowrap;
   }
-  .stat.cc-1 { transform: rotate(-11.16deg); }
-  .stat.cc-2 { transform: rotate(5.07deg); align-self: center; }
-  .stat.cc-3 { transform: rotate(-1.51deg); align-self: flex-end; }
-  .stat-num  { font-size: 38px; color: var(--watermelon-400); font-weight: 700; }
-  .stat-unit { font-size: 22px; }
+  .hero-stat.cc-1 { transform: rotate(-11.16deg); }
+  .hero-stat.cc-2 { transform: rotate(5.07deg); align-self: center; }
+  .hero-stat.cc-3 { transform: rotate(-1.51deg); align-self: flex-end; }
+  .hero-stat-num  { font-size: 38px; color: var(--watermelon-400); font-weight: 700; }
+  .hero-stat-unit { font-size: 22px; }
 
+  .rotate-45 { transform: rotate(45deg); }
   .hero-arrow-btn {
     position: absolute;
     left: 70%;
@@ -223,6 +225,8 @@
     text-decoration: none;
     font-size: 38px;
   }
+
+  .hero-stat.cc-tip { z-index: 3; }
 
   .hero-year { position: relative; width: 100%; }
   .hero-year-label { font-size: 22px; font-weight: 700; margin: 0 0 8px; }
@@ -397,21 +401,26 @@
     <div class="hero-stats">
       <p class="hero-stats-label">資料庫共有：</p>
       <div class="stats-wrap">
-        <p class="stat cc-1">
-          <span class="stat-num countup" data-purecounter-end="3599">3,599</span>
-          <span class="stat-unit">本刊物</span>
+        <p class="hero-stat cc-1">
+          <span class="hero-stat-num countup" data-purecounter-end="3599">3,599</span>
+          <span class="hero-stat-unit">本刊物</span>
         </p>
-        <p class="stat cc-2">
-          <span class="stat-num countup" data-purecounter-end="302317">302,317</span>
-          <span class="stat-unit">頁掃描影像</span>
+        <p class="hero-stat cc-2">
+          <span class="hero-stat-num countup" data-purecounter-end="302317">302,317</span>
+          <span class="hero-stat-unit">頁掃描影像</span>
         </p>
-        <p class="stat cc-3">
-          <span class="stat-num countup" data-purecounter-end="13529280">13,529,280</span>
-          <span class="stat-unit">字全文內容</span>
+        <p class="hero-stat cc-3">
+          <span class="hero-stat-num countup" data-purecounter-end="13529280">13,529,280</span>
+          <span class="hero-stat-unit">字全文內容</span>
         </p>
       </div>
 
-      <a class="hero-arrow-btn" href="#" aria-label="進入資料庫">↗</a>
+      <div class="hero-arrow-btn" aria-label="進入資料庫">
+        <svg class="rotate-45" xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 48 48" fill="none">
+          <path d="M10.1716 22.1274C11.6556 22.1274 13.8716 20.6614 15.7316 19.1774C18.1316 17.2694 20.2256 14.9894 21.8236 12.3754C23.0216 10.4154 24.1716 8.03941 24.1716 6.12741M24.1716 6.12741C24.1716 8.03941 25.3216 10.4174 26.5196 12.3754C28.1196 14.9894 30.2136 17.2694 32.6096 19.1774C34.4716 20.6614 36.6916 22.1274 38.1716 22.1274M24.1716 6.12741L24.1716 42.1274" stroke="currentColor" stroke-width="3.5"/>
+        </svg>
+      </div>
+      <p class="hero-stat cc-tip">試試在下方搜尋！</p>
 
       <div class="hero-year">
         <p class="hero-year-label">涵蓋年份：</p>
