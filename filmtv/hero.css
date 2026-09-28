@@ -186,10 +186,10 @@ html.w-editor .hero-layer {
 .hero-stat.cc-tip {
   position: absolute;
   position-anchor: --hero-arrow;
-  top: anchor(bottom);
+  top: anchor(top);
   left: anchor(center);
-  translate: -50% 0;
-  margin-top: 0.75rem;
+  translate: -18% 0;
+  margin-top: -2.5rem;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
