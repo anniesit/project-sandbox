@@ -189,7 +189,7 @@ html.w-editor .hero-layer {
   top: anchor(top);
   left: anchor(center);
   translate: -18% 0;
-  margin-top: -2.5rem;
+  margin-top: -3.125rem;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
