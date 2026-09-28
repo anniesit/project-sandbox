@@ -17,6 +17,7 @@ project-specific decisions that aren't obvious from the code.
 | `hero-countup.js` | Home hero: the two animated totals | `filmtvHeroCountup.refresh` |
 | `hero-year-grid.js` | Home hero: the 涵蓋年份 year grid + heat map | `filmtvHeroYearGrid.render` |
 | `home-keywords.js` | Home 條目檢索: keyword tags from a CSV | none (self-initialising) |
+| `home-announcement.js` | Home news banner above the Nav, from a CSV | none (self-initialising) |
 
 `book.js` renders the separate **Book page**. Unlike the others its mock driver
 is a **separate file, `book.mock.js`** (sample-data loader + dev switcher) —
@@ -762,6 +763,96 @@ the CSV's `field` column can use it per row, with no code change.
 
 ---
 
+## `home-announcement.js` — Home page news banner
+
+The green banner above the Nav on the Home page (`.nav-banner`). It shows **one**
+message from a CSV, so news can be posted and retired by editing one small
+text file on the server. No Webflow re-export, no code change, no backend
+endpoint. Old rows can stay in the file, which then doubles as the record of
+past messages.
+
+**CSV columns** (header row required, UTF-8):
+
+| column    | meaning                                                                                  |
+| --------- | ---------------------------------------------------------------------------------------- |
+| `start`   | first day the message shows, `YYYY-MM-DD`. Required. Also printed in the banner's brackets as `YYYY/MM/DD`. |
+| `end`     | last day it shows, **inclusive**, `YYYY-MM-DD`. Blank = no end yet.                        |
+| `message` | the banner text.                                                                         |
+| `link`    | optional. Blank = banner not clickable. `https://…` opens in a new tab; a path on this site (`collection.html`) opens in the same tab. |
+| `show_date` | optional. Blank = the start date shows after the message, in brackets. `no` = no date and no brackets — use it when the message names a date of its own (an event day), where the posting date would be misread as that date. |
+
+```csv
+start,end,message,link,show_date
+2026-09-01,,資料庫新增 126 本刊物,collection.html,
+2026-09-28,2026-10-29,本館 10 月 29 日舉辦網上研討會，設本資料庫專題分享，歡迎公眾報名,https://digital.lib.hkbu.edu.hk/event/symposium2026/#Talk-2,no
+```
+
+**Which message shows.**
+
+1. A row is active from the start of its `start` day to the end of its `end` day.
+2. "Today" is the **Hong Kong** date, not the visitor's clock, so a message
+   switches on and off at the same moment for everyone.
+3. Of the active rows, the **latest `start`** wins; on a tie, the lower row.
+4. No active row → **no banner**. The banner is hidden by a rule in the Home
+   Page CSS until the script marks it `.is-active`, so a missing file, a broken
+   file or a script that fails to load all leave no banner — never the
+   placeholder text authored in Webflow.
+
+**Dates and Excel — the one trap.** Excel rewrites dates it recognises into the
+computer's regional format when it saves: `2026-10-01` can come back as
+`1/10/2026`. That is ambiguous (1 October or January 10?), so the script
+**skips** such a row rather than guess, and says why in the browser console.
+Edit the file in a plain text editor, or format the `start`/`end` columns as
+Text in Excel before typing. If the banner doesn't appear when expected, the
+console (`[home-announcement] row 3 skipped — …`) names the row and the reason.
+
+**Previewing a message** before or after its dates: add
+`?announcement-date=2026-12-25` to the Home page URL and the banner is chosen
+as if that were today.
+
+**DOM contract**, all authored in Webflow:
+
+```
+.nav-banner [data-announcement]     data-announcement-src="…/home-announcements.csv"
+  .container
+    .h6
+      span [data-announcement-text]         ← the message
+      span [data-announcement-date-wrap]    ← removed when show_date = no
+        （
+        span [data-announcement-date]       ← the start date, YYYY/MM/DD
+        ）
+  a.u-link-cover [data-announcement-link]   last child; removed when the row has no link
+```
+
+The brackets are plain text in Webflow, not written by the script — restyle or
+remove them there. They sit inside `[data-announcement-date-wrap]` so that a
+`show_date = no` row removes the date and its brackets together. Delete the
+wrapper in Webflow and no message ever shows a date.
+
+The script adds **`.is-active`** when there is a message and **`.is-linked`**
+when that message has a link. The hover darkening lives on the Webflow combo
+`.nav-banner.is-linked`, so an unlinked banner doesn't look clickable. The
+cover link also gets an `aria-label` holding the message, because it has no
+text of its own.
+
+**ON EXPORT.** `data-announcement-src` on `.nav-banner` points at the sandbox
+copy:
+
+```
+https://hkbuproject-sandbox.vercel.app/filmtv/sample-data/home-announcements.csv
+```
+
+Repoint it at the CSV's path on the live server (e.g.
+`data/home-announcements.csv`) and upload the file there. It is fetched with
+`cache: "no-store"`, so a replacement takes effect on the next page load.
+
+If the backend later prefers to print the banner server-side (a database table
+and an admin screen instead of a file), keep the same four columns and the same
+four rules above, and render only the active row into the same markup with
+`.is-active` already on it.
+
+---
+
 ## Event summary
 
 | Event               | Fired by   | Detail                                   | Backend does                             |
@@ -797,5 +888,6 @@ All events **bubble to `document`**.
 - [ ] Home hero: when 電影雙周刊 / 電影雙周刊出版書籍 launch, swap each coming-soon `<div>` for an `<a href>` with the same attributes, minus `is-disabled` and the tag.
 - [ ] Home: de-CDN `addons/nav-scroll.{js,css}` on export along with the other design-system assets.
 - [ ] Home page: repoint `[data-keyword-src]` at the CSV's path on the live server and upload `home-keywords.csv` beside it; confirm the tag links and the home search form both land on the search page with the search already run.
+- [ ] Home page news banner: repoint `data-announcement-src` on `.nav-banner` at the CSV's path on the live server and upload `home-announcements.csv` beside it; check with `?announcement-date=` that a past date hides the banner and a date inside a row's range shows it.
 - [ ] Home page 相關資料庫 section: replace the two cards' placeholder `#` hrefs (on the `.u-link-cover` link inside each `.project-card`, NOT on the title) and the 查看更多資料庫 button's `#`, once the related-databases page exists. Each card's cover link also carries an `aria-label` holding the project name — keep it in step with the visible title.
 - [ ] Push to the repo — Vercel auto-deploys from `project-sandbox` (see "Deploy" above); no CDN purge or manual export step needed.

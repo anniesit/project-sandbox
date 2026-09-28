@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>home-announcement — local preview</title>
+
+<!--
+  Local preview harness for the Home page's news banner.
+
+  It mirrors the DOM the Webflow build uses, so the banner's choice of message
+  can be checked without the Designer. Try the date override to see each row:
+
+    /home-announcement.html                              today (Hong Kong)
+    /home-announcement.html?announcement-date=2026-08-15  the August row, no link
+    /home-announcement.html?announcement-date=2026-12-25  the holiday row
+    /home-announcement.html?announcement-date=2026-07-01  nothing active: hidden
+    /home-announcement.html?announcement-date=2026-10-01  symposium row: show_date=no, no brackets
+
+  The <style> block is only a STAND-IN for the Webflow classes. The one rule
+  that matters is the hide-until-active rule, which is copied from the Home
+  Page CSS embed.
+
+  Serve it with:  python3 serve.py 8753   ->  /home-announcement.html
+-->
+
+<style>
+  /* Copied from the Home Page CSS embed — keep the two in step. */
+  html:not(.wf-design-mode) [data-announcement]:not(.is-active) {
+    display: none;
+  }
+
+  /* Stand-ins for the Webflow classes. */
+  body { margin: 0; font-family: sans-serif; }
+  .nav-banner { position: relative; display: block; padding: 0.75rem 0;
+    background: #8ebd5a; text-align: center; }
+  .nav-banner.is-linked:hover { box-shadow: inset 0 0 0 100px rgba(0, 0, 0, 0.15); }
+  .u-link-cover { position: absolute; inset: 0; z-index: 3; }
+</style>
+</head>
+<body>
+
+<div class="nav-banner" data-announcement
+     data-announcement-src="sample-data/home-announcements.csv">
+  <div class="container">
+    <div class="h6"><span data-announcement-text>資料庫新增 126 本刊物</span><span data-announcement-date-wrap>（<span data-announcement-date>2026/12/31</span>）</span></div>
+  </div>
+  <a class="u-link-cover" href="#" data-announcement-link></a>
+</div>
+
+<p>Page content below the banner.</p>
+
+<script defer src="home-announcement.js"></script>
+</body>
+</html>
