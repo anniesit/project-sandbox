@@ -719,10 +719,14 @@
     }
   }
 
+  // "auto" = the loaded image's own ratio wins; the declared ratio only reserves
+  // space before load (and sizes a failed image). Without it, missing or wrong
+  // width/height (e.g. a landscape scan) distorts fit-width / 100 / 150, which
+  // have no object-fit to protect the shape.
   function applyAspect(el, page) {
     if (!el) return;
-    if (page && page.width && page.height) el.style.aspectRatio = page.width + " / " + page.height;
-    else el.style.aspectRatio = "3 / 4";
+    if (page && page.width && page.height) el.style.aspectRatio = "auto " + page.width + " / " + page.height;
+    else el.style.aspectRatio = "auto 3 / 4";
   }
 
   function preloadAdjacent(center) {
