@@ -665,8 +665,10 @@ endpoint**. Both talk to the search page through the URL only.
 ### Left column — the search form
 
 A plain `<form class="search-bar cc-home" action="search-page.html"
-method="get" target="_blank">` wrapping the shared **Keyword Fields**
+method="get">` wrapping the shared **Keyword Fields**
 Webflow component (the same component the search page header uses).
+Results open in the **same tab**, on purpose: a new tab that isn't announced
+leaves keyboard and screen-reader users with no Back button to return to Home.
 
 Nothing scripts this submit. The design system's `initKeywordFields()`
 already rewrites each `[data-name]` to an indexed submitting name, so a
@@ -687,7 +689,8 @@ submit with `preventDefault()` and would swallow the navigation.
 
 `home-keywords.js` renders the tags from a CSV so the curated list can be
 updated by replacing one text file, with no Webflow re-export. Each tag is a
-plain `<a target="_blank">` carrying the same indexed params.
+plain `<a>` carrying the same indexed params, opening in the same tab like
+the form.
 
 **CSV columns** (header row required, UTF-8):
 

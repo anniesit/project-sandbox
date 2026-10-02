@@ -200,9 +200,11 @@
       ? (baseClass + " " + row.highlightClass).trim()
       : baseClass;
 
+    // Same tab, like the search form above it: an unannounced new tab
+    // strands screen-reader and keyboard users (no Back to return to Home).
     anchor.setAttribute("href", buildSearchHref(searchUrl, row));
-    anchor.setAttribute("target", "_blank");
-    anchor.setAttribute("rel", "noopener");
+    anchor.removeAttribute("target");
+    anchor.removeAttribute("rel");
     setText(anchor, row.label);
     return node;
   }
