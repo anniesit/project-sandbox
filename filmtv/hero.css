@@ -167,7 +167,6 @@ html.w-editor .hero-layer {
 .hero-arrow-btn {
   --hero-arrow-turn: 180deg;
   --hero-arrow-speed: 320ms;
-  anchor-name: --hero-arrow;
 }
 
 .hero-arrow-btn svg {
@@ -179,17 +178,20 @@ html.w-editor .hero-layer {
   transform: rotate(var(--hero-arrow-turn));
 }
 
-/* The tooltip is pinned under the button with CSS anchor positioning —
- * the same mechanism the search page's popovers use — so it follows the
- * button wherever the button is moved, with nothing to keep in sync.
- * It must stay the button's immediate next sibling for `+` to reach it. */
+/* WHERE the tooltip sits is set in WEBFLOW, not here, so it can change
+ * per breakpoint: `.hero-arrow-btn` carries `anchor-name: --hero-arrow`,
+ * and `.hero-stat.hero-stat-unit.cc-tip` carries `position-anchor`,
+ * `top`/`left`/`right: anchor(…)`, `translate` and `margin-top` (both in
+ * the style panel's Custom properties). Desktop starts the tip at the
+ * button's centre; tablet and below right-align it to the button, because
+ * there the button sits at the screen's right edge and a centre-started
+ * tip runs off it. Don't re-add position here: this file loads after
+ * Webflow's CSS and would fight the Designer.
+ *
+ * This file keeps only the show/hide, which needs a sibling selector.
+ * The tip must stay the button's immediate next sibling for `+` to
+ * reach it. */
 .hero-stat.cc-tip {
-  position: absolute;
-  position-anchor: --hero-arrow;
-  top: anchor(top);
-  left: anchor(center);
-  translate: -18% 0;
-  margin-top: -3.125rem;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -217,6 +219,14 @@ html.w-editor .hero-stat.cc-tip {
  * without scrolling. Two class names, so it outranks a single-class
  * display rule set in the Designer. */
 .hero-collection-nav.is-hidden {
+  display: none;
+}
+
+/* When the pause button sits inside the nav, the nav stays and only the
+ * arrows are hidden, with the `hidden` attribute. A Webflow display rule
+ * on .hero-nav-btn would otherwise override `hidden`. The play/pause icon
+ * swap uses `hidden` too. */
+.hero-collection-nav [hidden] {
   display: none;
 }
 

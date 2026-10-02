@@ -45,9 +45,15 @@
  *     [data-hero-list]               the scrolling list (a <ul>)
  *       [data-hero-item]             one per collection (an <a> inside <li>)
  *            data-collection="KEY"   must match a slide's data-collection
- *     [data-hero-nav]                wrapper for the two arrow buttons
+ *     [data-hero-nav]                wrapper for the arrow + pause buttons
  *       [data-hero-prev]             step the highlight up
  *       [data-hero-next]             step the highlight down
+ *       [data-hero-pause]            pause / resume the auto loop (a
+ *                                    <button>). Optional, but WCAG 2.2.2
+ *                                    needs it: the loop runs > 5 s.
+ *         [data-hero-pause-icon]     shown while the loop is playing
+ *         [data-hero-play-icon]      shown while it is paused
+ *                                    (the script swaps them with `hidden`)
  *     [data-hero-gallery]            the image stage
  *       [data-hero-slide]            one per collection + one default
  *            data-collection="KEY"   or data-collection="__default__"
@@ -60,7 +66,17 @@
  *   item    .is-active  the highlighted collection
  *   nav     .is-hidden  list fits, arrows not needed (column mode: fewer
  *                       items than data-hero-visible; row mode: the row
- *                       does not overflow its width)
+ *                       does not overflow its width). When the pause
+ *                       button sits INSIDE the nav, the nav stays and
+ *                       only the two arrows get `hidden` instead.
+ *   pause   .is-paused  the loop is paused; aria-label swaps between
+ *                       PAUSE_LABEL and PLAY_LABEL
+ *
+ * PAUSING. Pressing pause stops the loop until it is pressed again:
+ * hover, focus, arrows and list scrolling no longer restart it. Readers
+ * who ask the OS for reduced motion start PAUSED on the page-load slide,
+ * and can press play. Previewing a collection by hover/focus and the
+ * arrows still work while paused — those are the reader's own actions.
  *
  * The covers start hidden, so nothing is visible until this script makes
  * a slide active. hero.css carves out the Webflow Designer canvas
@@ -101,6 +117,11 @@
 
   var DEFAULT_KEY = "__default__";
 
+  // The pause button's accessible name in each state. It names the ACTION
+  // the button will take, so it swaps; no aria-pressed alongside it.
+  var PAUSE_LABEL = "暫停輪播";
+  var PLAY_LABEL = "播放輪播";
+
   var CONFIG = {
     interval: 5000,
     firstDelay: 2500,
@@ -133,6 +154,15 @@
     };
   }
 
+  /* The `hidden` ATTRIBUTE, not the .hidden property: the icons are
+   * inline <svg>s, and SVG elements have no .hidden property. hero.css
+   * turns the attribute into display:none inside the nav. */
+  function setHidden(el, on) {
+    if (!el) return;
+    if (on) el.setAttribute("hidden", "");
+    else el.removeAttribute("hidden");
+  }
+
   function reducedMotion() {
     return window.matchMedia &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -148,6 +178,9 @@
 
     this.list = root.querySelector("[data-hero-list]");
     this.nav = root.querySelector("[data-hero-nav]");
+    this.prevBtn = root.querySelector("[data-hero-prev]");
+    this.nextBtn = root.querySelector("[data-hero-next]");
+    this.pauseBtn = root.querySelector("[data-hero-pause]");
     this.gallery = root.querySelector("[data-hero-gallery]");
 
     this.slides = {};
@@ -157,7 +190,8 @@
     this.index = -1;          // -1 = nothing highlighted (default slide showing)
     this.current = null;      // the slide element on screen
     this.started = false;     // has the auto loop taken over from the default?
-    this.paused = false;
+    this.paused = false;      // held for a moment by hover/focus
+    this.userPaused = false;  // stopped by the pause button (or reduced motion)
 
     this.timer = null;
     this.startTimer = null;
@@ -166,11 +200,13 @@
     this.retireTimer = null;
     this.scrollResumeTimer = null;
 
+    this.listeners = [];         // see on() / destroy()
     this.autoScrolling = false;  // our own scrollTo() is still moving the list
     this.settleTimer = null;
 
     this.collect();
     this.wire();
+    this.setPaused(reducedMotion(), true);
     this.applyVisibleWindow();
 
     /* Let one frame paint at the resting state before the first slide
@@ -223,20 +259,36 @@
 
   /* --- events --------------------------------------------- */
 
+  /* addEventListener, remembered so destroy() can take it off again.
+   * Without this, init() re-scanning the page left the old instance's
+   * listeners on the shared buttons: one click then reached BOTH
+   * instances, and the dead one restarted its own timer. */
+  Hero.prototype.on = function (el, type, fn, opts) {
+    el.addEventListener(type, fn, opts);
+    this.listeners.push([el, type, fn, opts]);
+  };
+
   Hero.prototype.wire = function () {
     var self = this;
 
-    var prev = this.root.querySelector("[data-hero-prev]");
-    var next = this.root.querySelector("[data-hero-next]");
+    var prev = this.prevBtn;
+    var next = this.nextBtn;
+
+    if (this.pauseBtn) {
+      self.on(this.pauseBtn, "click", function (e) {
+        e.preventDefault();
+        self.setPaused(!self.userPaused);
+      });
+    }
 
     if (prev) {
-      prev.addEventListener("click", function (e) {
+      self.on(prev, "click", function (e) {
         e.preventDefault();
         self.step(-1);
       });
     }
     if (next) {
-      next.addEventListener("click", function (e) {
+      self.on(next, "click", function (e) {
         e.preventDefault();
         self.step(1);
       });
@@ -245,19 +297,19 @@
     // Hovering or keyboard-focusing the list holds the current collection,
     // so a reader is never interrupted mid-glance.
     if (this.list) {
-      this.list.addEventListener("mouseenter", function () { self.hold(true); });
-      this.list.addEventListener("mouseleave", function () { self.hold(false); });
-      this.list.addEventListener("focusin", function () { self.hold(true); });
-      this.list.addEventListener("focusout", function () { self.hold(false); });
+      self.on(this.list, "mouseenter", function () { self.hold(true); });
+      self.on(this.list, "mouseleave", function () { self.hold(false); });
+      self.on(this.list, "focusin", function () { self.hold(true); });
+      self.on(this.list, "focusout", function () { self.hold(false); });
 
       /* Row mode: the reader scrolling the list picks the collection.
        * Any sign of a hand on the list cancels a script scroll still in
        * flight, so the reader's own scroll is never ignored as ours. */
       var userIntent = function () { self.endAutoScroll(); };
-      this.list.addEventListener("touchstart", userIntent, { passive: true });
-      this.list.addEventListener("wheel", userIntent, { passive: true });
-      this.list.addEventListener("pointerdown", userIntent);
-      this.list.addEventListener("scroll", function () { self.onListScroll(); },
+      self.on(this.list, "touchstart", userIntent, { passive: true });
+      self.on(this.list, "wheel", userIntent, { passive: true });
+      self.on(this.list, "pointerdown", userIntent);
+      self.on(this.list, "scroll", function () { self.onListScroll(); },
         { passive: true });
     }
 
@@ -271,17 +323,17 @@
         self.go(i);
         if (first) self.retireDefault();
       };
-      item.addEventListener("mouseenter", preview);
-      item.addEventListener("focus", preview);
+      self.on(item, "mouseenter", preview);
+      self.on(item, "focus", preview);
     });
 
     // A backgrounded tab would otherwise queue up transitions.
-    document.addEventListener("visibilitychange", function () {
+    self.on(document, "visibilitychange", function () {
       if (document.hidden) self.stop();
       else if (self.started && !self.paused) self.start();
     });
 
-    window.addEventListener("resize", function () {
+    self.on(window, "resize", function () {
       self.applyVisibleWindow();
       if (self.index >= 0) self.scrollIntoWindow(self.index, true);
     });
@@ -329,6 +381,20 @@
   /* The list shows at most cfg.visible items and scrolls past that. The
    * height is MEASURED from the authored items rather than hard-coded, so
    * restyling the pills in Webflow keeps "exactly N visible" true. */
+  /* Show or hide the arrows. If the pause button lives inside the nav,
+   * hiding the whole nav would take it away too — and the loop must stay
+   * pausable — so only the two arrows are hidden then. */
+  Hero.prototype.showArrows = function (on) {
+    var pauseInNav = this.nav && this.pauseBtn && this.nav.contains(this.pauseBtn);
+    if (pauseInNav) {
+      this.nav.classList.remove("is-hidden");
+      setHidden(this.prevBtn, !on);
+      setHidden(this.nextBtn, !on);
+    } else if (this.nav) {
+      this.nav.classList.toggle("is-hidden", !on);
+    }
+  };
+
   Hero.prototype.applyVisibleWindow = function () {
     if (!this.list) return;
 
@@ -336,16 +402,13 @@
     // arrows are needed only when the row is wider than the list.
     if (this.isRow()) {
       this.list.style.maxHeight = "";
-      if (this.nav) {
-        this.nav.classList.toggle("is-hidden",
-          this.list.scrollWidth <= this.list.clientWidth + 1);
-      }
+      this.showArrows(this.list.scrollWidth > this.list.clientWidth + 1);
       return;
     }
 
     var overflowing = this.items.length > this.cfg.visible;
 
-    if (this.nav) this.nav.classList.toggle("is-hidden", !overflowing);
+    this.showArrows(overflowing);
 
     if (!overflowing) {
       this.list.style.maxHeight = "";
@@ -555,6 +618,10 @@
 
     if (!this.items.length) return;
 
+    // Paused from the start (reduced motion): the default slide stays put
+    // until the reader presses play. setPaused(false) does the handover.
+    if (this.userPaused) return;
+
     // Hand over to the auto loop; the default slide is retired for good.
     this.startTimer = setTimeout(function () {
       self.startTimer = null;
@@ -640,8 +707,12 @@
 
   /* --- the timer ------------------------------------------- */
 
+  /* Every restart path (hover/focus release, arrows, list scroll, tab
+   * becoming visible) comes through here, so this one check is what
+   * keeps a paused loop paused. */
   Hero.prototype.start = function () {
     var self = this;
+    if (this.userPaused) return;
     if (this.timer || !this.items.length || this.items.length < 2) return;
     this.timer = setInterval(function () {
       self.go(self.index + 1);
@@ -674,6 +745,38 @@
     }
   };
 
+  /* The pause button. `silent` = initial state at load: set the button up
+   * without touching the loop (showDefault() hasn't run yet). */
+  Hero.prototype.setPaused = function (on, silent) {
+    this.userPaused = on;
+
+    var btn = this.pauseBtn;
+    if (btn) {
+      btn.classList.toggle("is-paused", on);
+      btn.setAttribute("aria-label", on ? PLAY_LABEL : PAUSE_LABEL);
+      var pauseIcon = btn.querySelector("[data-hero-pause-icon]");
+      var playIcon = btn.querySelector("[data-hero-play-icon]");
+      // Without a play icon, keep the pause icon rather than show nothing.
+      setHidden(pauseIcon, on && !!playIcon);
+      setHidden(playIcon, !on);
+    }
+
+    if (silent) return;
+
+    if (on) {
+      this.stop();
+      return;
+    }
+
+    // Playing again. If the page-load default is still up (reduced motion
+    // started paused), hand over to the first collection now.
+    if (this.takeOver()) {
+      this.go(0);
+      this.retireDefault();
+    }
+    this.start();
+  };
+
   Hero.prototype.destroy = function () {
     this.stop();
     if (this.startTimer) clearTimeout(this.startTimer);
@@ -682,6 +785,10 @@
     if (this.retireTimer) clearTimeout(this.retireTimer);
     if (this.scrollResumeTimer) clearTimeout(this.scrollResumeTimer);
     if (this.settleTimer) clearTimeout(this.settleTimer);
+    this.listeners.forEach(function (l) {
+      l[0].removeEventListener(l[1], l[2], l[3]);
+    });
+    this.listeners = [];
   };
 
   /* ============================================================

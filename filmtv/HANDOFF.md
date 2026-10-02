@@ -606,6 +606,14 @@ same classes minus `is-disabled`, and the same two attributes
   front of the row, and scrolling the row by hand picks the item at the front.
   The switch comes from the list's CSS `flex-direction`, not from a width in
   the script.
+- **The pause button (`[data-hero-pause]`) is required for accessibility.**
+  The loop changes the covers every 5 s, and WCAG 2.2.2 requires a way to
+  stop anything that moves for more than 5 s. Don't remove it. Once paused,
+  nothing restarts the loop except pressing play again. Readers whose system
+  asks for reduced motion start paused. The script swaps the button's
+  `aria-label` (暫停輪播 / 播放輪播) and the `[data-hero-pause-icon]` /
+  `[data-hero-play-icon]` SVGs. The button sits inside `[data-hero-nav]`,
+  so when the list fits, only the two arrows are hidden, not the nav.
 - **Tuning** lives on the `<section data-hero>` as `data-hero-interval`,
   `-first-delay`, `-visible`, `-clear`, `-resume` (all ms, except
   `-visible` = rows). Defaults are in the header of `hero-gallery-loop.js`.
@@ -640,6 +648,12 @@ title. It uses the design system's `addons/nav-scroll.js` + `.css`, loaded from
   the band by that attribute; remove it and the band never appears on Home.
 - `.nav-bg { opacity: 0 }` lives in the **Home** Page CSS on purpose. Other
   pages don't load the add-on, so their band must stay visible.
+- **The nav logo rides the same switch.** On Home the Nav's `home` variant
+  hides the logo (opacity 0 + visibility hidden, so it can't be clicked or
+  tabbed to while invisible). The Home Page CSS shows it again with
+  `.nav:has(.nav-bg.is-scrolled) .nav-logo_link`. There is no separate
+  script; if `nav-scroll.js` doesn't load, the logo stays hidden along with
+  the band.
 
 ---
 
