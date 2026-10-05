@@ -166,6 +166,10 @@
         return r.json();
       })
       .then(function (data) {
+        // The real integration renders on its own. If it already has, this mock
+        // answer is stale (it carries no search keyword) — drop it rather than
+        // overwrite real data and trigger an extra grow animation later.
+        if (st.renderSeq > 0) return;
         render(root, data || {});
       })
       .catch(function (err) {
@@ -181,7 +185,14 @@
       return;
     }
     var st = root.__cooccur || initChart(root);
-    st.model = buildModel(root, data || {});
+    var model = buildModel(root, data || {});
+    // Same data as what's already on screen (e.g. the backend re-fetching when
+    // the modal opens): keep the drawn chart instead of replaying the grow-in
+    // animation, which reads as a flash.
+    var dataSig = JSON.stringify(model);
+    if (st.lastSig && dataSig === st.dataSig) return;
+    st.dataSig = dataSig;
+    st.model = model;
     st.renderSeq++;
     st.pendingAnim = true; // grow bubbles from 0 once the strips have real size
     hideTip(st);
