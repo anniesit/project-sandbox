@@ -30,6 +30,14 @@
  * re-render the chart (filmtvChart) — the chart shows the whole result set and
  * would re-animate. The chart is (re)rendered per search/filter, not per page.
  *
+ * LOADING MASK (avoid the placeholder flash): tag elements inside [data-results]
+ * with data-loading="mask" (shimmer over the element's box) or data-loading="hide"
+ * (display:none). They stay masked/hidden until the first render() — any render,
+ * including an empty or failed search — adds .cc-results-ready to the root.
+ * Link results.css in the page <head> for zero flash; otherwise the same rules
+ * are injected here at load (a frame or two of placeholder first). Same contract
+ * as book.js / book.css.
+ *
  * - Dependency-free, multi-instance safe. Never writes inline element styles.
  *   (It injects ONE <style> rule at runtime for view-panel visibility — see
  *   injectViewCss; this keeps the Designer canvas showing both panels.)
@@ -109,6 +117,7 @@
   /* ---------- bootstrap ---------- */
   ready(function () {
     injectViewCss();
+    ensureLoadingCss();
     var roots = document.querySelectorAll("[data-results]");
     for (var i = 0; i < roots.length; i++) {
       initToggle(roots[i]);
@@ -124,6 +133,24 @@
     var st = document.createElement("style");
     st.id = "filmtv-results-css";
     st.textContent = '[data-results][data-view="article"] [data-view-panel="book"],' + '[data-results][data-view="book"] [data-view-panel="article"]{display:none !important}';
+    (document.head || document.documentElement).appendChild(st);
+  }
+
+  // Fallback for pages without results.css in <head>: the SAME per-element rules,
+  // injected at load. Keep in sync with results.css.
+  function ensureLoadingCss() {
+    if (document.getElementById("filmtv-results-loading-css")) return;
+    var st = document.createElement("style");
+    st.id = "filmtv-results-loading-css";
+    st.textContent =
+      '[data-results]:not(.cc-results-ready) [data-loading="hide"]{display:none!important}' +
+      '[data-results]:not(.cc-results-ready) [data-loading="mask"]{' +
+      "border-radius:6px;color:transparent!important;min-height:.9em;" +
+      "background:linear-gradient(90deg,#eceef0 25%,#e0e3e6 37%,#eceef0 63%);" +
+      "background-size:400% 100%;animation:filmtv-results-shimmer 1.4s ease infinite}" +
+      '[data-results]:not(.cc-results-ready) [data-loading="mask"]>*{visibility:hidden!important}' +
+      "@keyframes filmtv-results-shimmer{0%{background-position:100% 0}100%{background-position:0 0}}" +
+      '@media(prefers-reduced-motion:reduce){[data-results] [data-loading="mask"]{animation:none}}';
     (document.head || document.documentElement).appendChild(st);
   }
 
@@ -202,6 +229,9 @@
       bHost.appendChild(bf);
     }
     setCounts(root, data, items);
+    // Any render — even an empty or failed search — ends the loading state, so
+    // the mask can never stick.
+    root.classList.add("cc-results-ready");
   }
 
   function setCounts(root, data, items) {

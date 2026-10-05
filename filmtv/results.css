@@ -1,0 +1,48 @@
+/* ============================================================
+ * results.css — render-blocking loading CLOAK for the Search page (zero flash).
+ *
+ * results.js loads in the page FOOTER, so on its own it can only mask the
+ * authored placeholder (sample card, sample book row, "0" counts) AFTER the
+ * browser has painted it. Linked in the page <head>, these rules apply BEFORE
+ * first paint. Same contract as book.css.
+ *
+ * PER-ELEMENT — tag any element inside [data-results]:
+ *   data-loading="mask"  → shimmer sized to that element's own box until the
+ *                          first render (its own text/children are hidden).
+ *   data-loading="hide"  → hidden until the first render.
+ * Untagged elements stay visible during load.
+ *
+ * results.js adds .cc-results-ready to [data-results] on EVERY render() — real
+ * results, an empty result or a failed search — so the mask cannot stick.
+ *
+ * ADD TO THE SEARCH PAGE <head>:
+ *   <link rel="stylesheet" href="…/results.css">
+ *   <noscript><style>[data-results]:not(.cc-results-ready) [data-loading="hide"]{display:revert!important}
+ *   [data-results]:not(.cc-results-ready) [data-loading="mask"]{background:none!important;
+ *   animation:none!important;color:inherit!important;min-height:0!important}
+ *   [data-results]:not(.cc-results-ready) [data-loading="mask"]>*{visibility:visible!important}</style></noscript>
+ * The <noscript> guard reveals content when JavaScript is off. It mirrors the
+ * selectors below (same specificity, later in source) — keep the two in sync,
+ * and keep both in sync with ensureLoadingCss() in results.js.
+ * ============================================================ */
+
+[data-results]:not(.cc-results-ready) [data-loading="hide"] { display: none !important; }
+
+[data-results]:not(.cc-results-ready) [data-loading="mask"] {
+  border-radius: 6px;
+  color: transparent !important;
+  min-height: .9em;
+  background: linear-gradient(90deg, #eceef0 25%, #e0e3e6 37%, #eceef0 63%);
+  background-size: 400% 100%;
+  animation: filmtv-results-shimmer 1.4s ease infinite;
+}
+[data-results]:not(.cc-results-ready) [data-loading="mask"] > * {
+  visibility: hidden !important;
+}
+@keyframes filmtv-results-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: 0 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-results] [data-loading="mask"] { animation: none; }
+}
