@@ -155,3 +155,57 @@ reference.
 - Thumbnails exist for the three seeded ids only. Every id added to the
   shortlist needs its own `DYP-000000.webp` in `images/home-highlights/`.
 - The intro copy is still `[placeholder]` in both languages, as it was before.
+
+## Hero — responsive (2026-10-06)
+
+The hero was built desktop-only from Figma `446:883`. It now has three layouts.
+All of it is Webflow classes; there is no embed CSS for layout.
+
+**One rule makes the title and tagline follow the photo.** `.hero-screen-wrap`
+now carries the screen's size (`width`, `min-width`, `margin-top`), and
+`.hero-screen` is `width: 100%` inside it. The wrap's other children — the `h1`
+(zero height) and `.tag-line-wrap` — are absolutely positioned, so the wrap's box
+*is* the screen's box. Every `top`/`left`/`right` percentage on `.title-block` and
+`.tag-line-wrap` is therefore a percentage of the photo. Before, they were
+percentages of the whole hero, so they drifted off the photo as the width changed.
+
+Do not give `.hero-screen-wrap` any in-flow child besides `.hero-screen`, or the
+wrap stops matching the photo and the percentages drift again.
+
+| | Desktop (base) | Tablet (≤991) | Phone (≤767) |
+|---|---|---|---|
+| `.home-hero` | `aspect-ratio 1440/1000`, `min-height 60rem` | `aspect-ratio auto`, `min-height 0` — height follows content | — |
+| `.hero-screen-wrap` | `61.39%`, `min-width 45rem`, top `5rem` | `80%`, no min, top `3rem` | `100%`, top `2rem` |
+| `.hero-screen` | 16:9 | **4:3** | — |
+| `.title-block.cc-title-1` | left `-11.15%`, top `1.3%` | — | left `0%` |
+| `.title-block.cc-title-2` | **right** `-17.4%`, top `73%` | right `-8%` | right `0%` |
+| `.tag-line-wrap` | left `-11.15%`, top `26.1%` | — | left `0%` |
+| `.stage` | `height 25.59%` of the hero | `height auto`, `aspect-ratio 5/1` | — |
+| `.hero-text-wrap` | absolute, pinned to the hero bottom | **in flow** below the stage, column, margin-top `Spacing/LG` | — |
+| `.paragraph-wrap.cc-hero` | `36.5%`, `min-width 32rem` | `100%`, max `36rem` | — |
+| `.hero-chair` | absolute bottom-left, `8%` | in flow under the button, `4.5rem` | — |
+
+Why each non-obvious value:
+
+- **The desktop percentages reproduce the 1440 layout exactly.** They were
+  converted from the old hero-relative values by measuring the published page at
+  1440, and checked pixel for pixel afterwards.
+- **`min-width 45rem`, not the old `51rem`.** The title blocks overhang the photo
+  by about 11% on the left and 17% on the right. At 992px a 51rem screen left no
+  room for that, and both titles ran off the page.
+- **Title 2 is anchored by `right`, not `left`.** "Archive" on `/en/home` is wider
+  than 資料庫. Anchored on the left it grew off the page at 992px; anchored on the
+  right it grows into the photo instead.
+- **`.title-block` has `white-space: nowrap`.** Inside the narrower wrap, an
+  absolutely positioned block near the right edge has little room and would wrap
+  one character per line.
+- **The stage needs a real height at every width.** The stage-collapse script
+  measures `.stage`'s CSS height on load and resize. A percentage of an
+  auto-height hero resolves to nothing, so tablet uses `aspect-ratio` instead.
+- **The 14 hero images' `sizes`** is now
+  `(max-width: 767px) 92vw, (max-width: 991px) 80vw, 61vw` on both pages, so
+  phones and tablets pick a large enough file from the `srcset`.
+
+Verified by injecting the same rules into the published page at 1440, 1100, 992,
+800 and 390, on both `/` and `/en/home`: no horizontal scroll, no overlap
+between the text and the photo, and the 1440 layout unchanged.
