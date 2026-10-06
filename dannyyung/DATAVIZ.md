@@ -95,16 +95,32 @@ colour still draws — filled versus hollow — is a real difference in what the
 mark does, not a category.
 
 The mark defaults to the design system's own accent token
-(`var(--primary--accent, #c0442a)`), so it follows the site's colour and its
-light/dark modes with nothing to keep in step. The literal is only a fallback
-for a page that does not load the system — the local harness, mainly.
+(`var(--primary--accent, #007e91)`), so it follows the site's colour with
+nothing to keep in step. The literal is only a fallback for a page that does
+not load the system — the local harness, mainly. The mark's ring is bound to
+the `Zuni/700` primitive, because the Theme has no "accent dark" token.
 
-The **treemap** keeps a five-step sequential ramp of the site's warm neutral →
-brick, plus a matching ink step per shade so labels stay legible on every one.
+The **treemap** keeps a five-step sequential ramp (Zuni 200 / 500 / 600 / 700 /
+800), plus a matching ink step per shade so labels stay legible on every one.
 There, colour restates size, which is legitimate redundancy on rectangles whose
 areas are hard to compare across a long tail.
 
+**The ramp is on a log scale** (2026-10-06). Credits are long-tailed, and equal
+slices of the range put almost everyone in the lightest step once the range
+widens: at 200 people on 1–60 credits, 192 boxes were step 1. `ramp()` in
+`dataviz.js` now places the four step edges geometrically between min and max
+(at 1–60: steps start at 1 / 2 / 5 / 12 / 26), rounds them to whole counts and
+pushes them apart so no step is ever empty. With five or fewer possible counts
+(today's 1–5) each count gets its own step, exactly as before. Every legend
+swatch carries a hover title with the counts it covers. The step count, 5, is
+`RAMP_STEPS` in `dataviz.js` and must match `--dyviz-ramp-1..5` in
+`dataviz.css`.
+
 ### Dark is keyed on `html.u-mode-dark`, not on `prefers-color-scheme`
+
+> **Superseded 2026-10-05: the site is light-only.** The client chose the light
+> theme and the dark theme was removed. What follows is history. The dark
+> settings and how to restore them are in `DARK-THEME-BACKUP.md`.
 
 The design system's `theme-toggle.js` owns that class: it seeds it from the OS
 preference once, then lets a saved choice or the toggle override it. An earlier

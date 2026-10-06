@@ -23,15 +23,20 @@
 
 /* --- 1a. tokens, light --- */
 :where([data-dataviz]) {
-  /* -- surfaces and text -- */
-  --dyviz-surface: #ffffff; /* tooltip bg; also the ring that separates
-                                       overlapping bubbles                     */
-  --dyviz-ink: #1d1c1a; /* row names, tooltip text                 */
-  --dyviz-muted: #6f6a60; /* year ticks, axis titles, button label   */
+  /* -- surfaces and text --
+     Bound to the site's neutral primitives and Theme tokens, with hex
+     fallbacks for the local harness. The charts sit on two backgrounds:
+     Primary/Background (Neutral/200 #cccccc) on the Data Viz page, and
+     Primary/Surface (Neutral/100 #dbdbdb) in the home card. Every value
+     below was checked against BOTH: text >= 4.5:1, axis rules ~2.5:1. */
+  --dyviz-surface: var(--_color---neutral--white, #ffffff); /* tooltip text; also the ring that
+                                       separates overlapping bubbles           */
+  --dyviz-ink: var(--primary--text, #171717); /* row names, tooltip bg              */
+  --dyviz-muted: var(--_color---neutral--600, #515151); /* year ticks, axis titles: 4.9 / 5.7:1 */
 
   /* -- graph lines -- */
-  --dyviz-line: #cccabf; /* the two axis rules, button border       */
-  --dyviz-grid: #e6e3da; /* row baselines, table rules              */
+  --dyviz-line: var(--_color---neutral--500, #808080); /* the two axis rules, button border */
+  --dyviz-grid: var(--_color---neutral--300, #b3b3b3); /* row baselines, table rules: a hairline, deliberately quiet */
 
   /* -- the y-axis switch --
      These mirror .button.secondary in the Webflow design system, so the one
@@ -41,17 +46,22 @@
      restyled upstream, re-check these against it. The fallbacks are the
      resolved light-mode values of those same tokens, for the local harness
      where the Webflow variables do not exist. */
-  --dyviz-control-border: var(--primary--accent, #cd2600);
-  --dyviz-control-bg: var(--primary--background, #f0eee6);
-  --dyviz-control-ink: var(--primary--text, #031333);
-  --dyviz-control-hover-fill: var(--primary--surface, #c4d8ff); /* the inset shadow that wipes up on hover */
+  --dyviz-control-border: var(--primary--accent, #007e91);
+  --dyviz-control-bg: var(--primary--background, #cccccc);
+  --dyviz-control-ink: var(--primary--text, #171717);
+  --dyviz-control-hover-fill: var(--primary--surface, #dbdbdb); /* the inset shadow that wipes up on hover */
 
   /* -- the bubble -- */
-  --dyviz-mark: var(--primary--accent, #c0442a); /* fill                      */
+  --dyviz-mark: var(--primary--accent, #007e91); /* fill — Zuni/600 via the Theme */
   --dyviz-mark-fill-opacity: 0.7; /* translucent, so overlaps read as overlaps */
-  --dyviz-mark-stroke: var(--primary--accent-dark, #9d1e01); /* a darker shade of the mark, so the ring reads as a border */
+  /* A darker shade of the mark, so the ring reads as a border (4.8 / 5.5:1).
+     Bound to the primitive, not a Theme token: the Theme has no "accent dark".
+     It used to ask for --primary--accent-dark, which does not exist in
+     Webflow, so the ring silently fell back to a hardcoded red. If the accent
+     changes ramp, change this ramp with it. */
+  --dyviz-mark-stroke: var(--_color---zuni--700, #005c6a);
   --dyviz-mark-stroke-width: 1px;
-  --dyviz-mark-none-ring: #8d877b; /* the hollow, unlinked bubble             */
+  --dyviz-mark-none-ring: var(--_color---neutral--600, #515151); /* the hollow, unlinked bubble */
   --dyviz-mark-none-width: 1.5px;
 
   /* -- bubble size --
@@ -64,26 +74,33 @@
   --dyviz-bubble-growth: 1; /* radius-proportional; see the note above */
 
   /* -- treemap ramp (collaborators chart; unused on the homepage) --
-     The project's fire ramp, light to dark. Each -ink- is the text colour that
+     The project's Zuni ramp, light to dark. Each -ink- is the text colour that
      sits ON that step; the pairs are chosen for contrast, so if you re-order
      the steps re-check the inks with them. Bound to the Webflow primitives with
      hex fallbacks for the harness.
-     Steps skip ramp positions on purpose: consecutive fire values are too close
-     to tell apart as areas. Validated in both modes — every step/ink pair is
-     AA or better, and no two adjacent steps are under 1.4:1. Re-run that check
-     if you re-pick any of them. */
-  --dyviz-ramp-1: var(--_color---fire--200, #f4b3a4);
-  --dyviz-ramp-2: var(--_color---fire--300, #f38972);
-  --dyviz-ramp-3: var(--_color---fire--400, #f55f3d);
-  --dyviz-ramp-4: var(--_color---fire--600, #9d1e01);
-  --dyviz-ramp-5: var(--_color---fire--700, #621402);
-  --dyviz-ramp-ink-1: var(--_color---fire--900, #280c05);
-  --dyviz-ramp-ink-2: var(--_color---fire--900, #280c05);
-  --dyviz-ramp-ink-3: var(--_color---fire--900, #280c05);
-  --dyviz-ramp-ink-4: var(--_color---fire--025, #fff3f0);
-  --dyviz-ramp-ink-5: var(--_color---fire--025, #fff3f0);
 
-  --dyviz-focus: var(--primary--accent, #d14424);
+     FIVE steps. dataviz.js uses RAMP_STEPS = 5 in ramp() and legendRamp(),
+     so adding a -6 here does nothing on its own. Steps are on a LOG scale of
+     the credit count (see ramp() for why), so the light steps cover few
+     counts each and the dark steps many.
+
+     Steps skip ramp positions on purpose. Zuni's light half is packed tight
+     (025 to 400 are only 1.03-1.18:1 apart), so 200 jumps straight to 500.
+     200/500/600/700/800 was the best of every 5-step pick: no two adjacent
+     steps are under 1.54:1, and each step/ink pair is AA or better
+     (10.3, 6.3, 4.8, 7.7, 11.8 :1). Re-run that check if you re-pick any. */
+  --dyviz-ramp-1: var(--_color---zuni--200, #8be6f3);
+  --dyviz-ramp-2: var(--_color---zuni--500, #00b9d7);
+  --dyviz-ramp-3: var(--_color---zuni--600, #007e91);
+  --dyviz-ramp-4: var(--_color---zuni--700, #005c6a);
+  --dyviz-ramp-5: var(--_color---zuni--800, #003e47);
+  --dyviz-ramp-ink-1: var(--_color---zuni--900, #032d33);
+  --dyviz-ramp-ink-2: var(--_color---zuni--900, #032d33);
+  --dyviz-ramp-ink-3: var(--_color---neutral--white, #ffffff);
+  --dyviz-ramp-ink-4: var(--_color---neutral--white, #ffffff);
+  --dyviz-ramp-ink-5: var(--_color---neutral--white, #ffffff);
+
+  --dyviz-focus: var(--primary--accent, #007e91);
 
   /* -- type --
      These are consumed as real CSS, so they TAKE UNITS (unlike the spacing
@@ -151,32 +168,10 @@
   --dyviz-axis-y-inset: 11; /* left edge -> rotated title  */
 }
 
-/* --- 1b. tokens, dark ---
-   Keyed on the theme class the design system's toggle owns, NEVER on
-   prefers-color-scheme: the toggle can put the page in a mode the OS did not
-   ask for, and asking the media query paints dark marks on a light page. */
-:where(html.u-mode-dark) :where([data-dataviz]) {
-  --dyviz-surface: #1d1c1a;
-  --dyviz-ink: #f2efe6;
-  --dyviz-muted: #a09a8e;
-  --dyviz-line: #4a4640;
-  --dyviz-grid: #33302b;
-  --dyviz-mark: var(--primary--accent, #d8563c);
-  --dyviz-control-border: var(--primary--accent, #fe3f14);
-  --dyviz-control-bg: var(--primary--background, #0e2147);
-  --dyviz-control-ink: var(--primary--text, #ffffff);
-  --dyviz-control-hover-fill: var(--primary--surface, #031333);
-  --dyviz-ramp-1: var(--_color---fire--900, #280c05);
-  --dyviz-ramp-2: var(--_color---fire--700, #621402);
-  --dyviz-ramp-3: var(--_color---fire--600, #9d1e01);
-  --dyviz-ramp-4: var(--_color---fire--500, #fe3f14);
-  --dyviz-ramp-5: var(--_color---fire--300, #f38972);
-  --dyviz-ramp-ink-1: var(--_color---fire--050, #ffeae5);
-  --dyviz-ramp-ink-2: var(--_color---fire--050, #ffeae5);
-  --dyviz-ramp-ink-3: var(--_color---fire--050, #ffeae5);
-  --dyviz-ramp-ink-4: var(--_color---fire--900, #280c05);
-  --dyviz-ramp-ink-5: var(--_color---fire--900, #280c05);
-}
+/* --- 1b. no dark tokens ---
+   The site is light-only since 2026-10-05 (see DARK-THEME-BACKUP.md). The
+   dark block that lived here was keyed on html.u-mode-dark, which the site
+   now never sets, so it was removed rather than left as dead weight. */
 
 /* --- 1c. where each token is applied --- */
 

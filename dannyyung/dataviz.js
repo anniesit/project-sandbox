@@ -205,15 +205,11 @@
      which is legitimate redundancy on rectangles whose areas are hard to compare
      across a long tail.
 
-     DARK IS KEYED ON html.u-mode-dark, NOT ON prefers-color-scheme. The design
-     system's theme-toggle script owns that class: it seeds it from the OS
-     preference once, then lets a saved choice or the toggle override it. Asking
-     the media query directly here would paint dark marks on a page the toggle
-     had just switched to light — which is exactly what it did before this
-     comment existed. If the theme script is absent the class is absent and the
-     charts render light, which is the right way to fail against an unstyled
-     white page. Nothing needs re-rendering when the toggle flips: these are
-     custom properties, so the swap is pure CSS. */
+     The site is light-only (2026-10-05), so there are no dark tokens. If a
+     dark theme ever returns, key it on html.u-mode-dark, NEVER on
+     prefers-color-scheme: the design system's theme-toggle script owns that
+     class, and asking the media query directly paints dark marks on a page the
+     toggle has set to light. DARK-THEME-BACKUP.md has the old values. */
   /* A MINIMAL STRUCTURAL FLOOR — not the chart's styling.
      Everything visual (colour, type, bubble size and border, spacing) lives in
      dataviz.css, which must be linked alongside this file. What is left here is
@@ -227,8 +223,8 @@
     ".dyviz-svg{display:block;width:100%;height:auto;overflow:visible}" +
     ".dyviz-hit{fill:transparent;stroke:none}" +
     ".dyviz-a{cursor:pointer}" +
-    ".dyviz-mark{fill:var(--dyviz-mark,#c0442a)}" +
-    ".dyviz-mark-none{fill:none;stroke:var(--dyviz-mark-none-ring,#8d877b)}" +
+    ".dyviz-mark{fill:var(--dyviz-mark,#007e91)}" +
+    ".dyviz-mark-none{fill:none;stroke:var(--dyviz-mark-none-ring,#515151)}" +
     ".dyviz-tree{position:relative;width:100%}" +
     ".dyviz-cell{position:absolute;overflow:hidden;box-sizing:border-box}" +
     ".dyviz-tip{position:absolute;z-index:9;pointer-events:none;opacity:0;" +
@@ -690,7 +686,7 @@
     var list = data.collaborators || [];
     if (!plot) return;
 
-    legendRamp(host, t);
+    legendRamp(host, t, list);
     note(host, t.noteCollab({ n: list.length }));
     tableCollab(host, data, t);
 
@@ -752,10 +748,61 @@
   }
 
   /* Five steps, assigned by where the value sits in the range rather than by
-     rank, so two people on 3 credits always get the same shade. */
+     rank, so two people on 3 credits always get the same shade.
+
+     LOG SCALE. Credits are long-tailed: many people with 1-2, a few with many.
+     Equal-width (linear) slices put almost everyone in step 1 once the range
+     widens. Tested at 200 people on 1-60 credits: 192 of 200 boxes were
+     step 1, and 22 credits shared a shade with 9. Here each step covers the
+     same RATIO rather than the same difference, so at 1-60 the steps start at
+     1 / 2 / 5 / 12 / 26. Area is drawn from the raw count either way; this
+     only changes which shade a box gets.
+
+     The edges are rounded to whole counts and then pushed apart, so all five
+     steps always cover at least one count. Rounding a log curve directly
+     skips steps on small ranges (at 1-6 it sent 2 straight to step 3).
+
+     SMALL RANGES. With five or fewer possible counts (max - min <= 4, e.g.
+     today's 1-5) each count simply gets its own step.
+
+     The number 5 is shared with dataviz.css (--dyviz-ramp-1..5) and with
+     legendRamp() below. Change all three together. */
+  var RAMP_STEPS = 5;
+
+  /* The first count of steps 2..5, geometric between min and max. */
+  function rampEdges(min, max) {
+    var lo = Math.max(min, 1), /* counts are >= 1; guard log(0) anyway */
+      edges = [],
+      prev = min;
+    for (var k = 1; k < RAMP_STEPS; k++) {
+      var e = Math.round(lo * Math.pow(max / lo, k / RAMP_STEPS));
+      e = Math.max(e, prev + 1); /* never an empty step...             */
+      e = Math.min(e, max - (RAMP_STEPS - 1 - k)); /* ...nor squeeze the next */
+      edges.push(e);
+      prev = e;
+    }
+    return edges;
+  }
+
   function ramp(v, min, max) {
     if (max === min) return 3;
-    return 1 + Math.round(((v - min) / (max - min)) * 4);
+    if (max - min <= RAMP_STEPS - 1) return 1 + (v - min);
+    var edges = rampEdges(min, max),
+      step = 1;
+    for (var i = 0; i < edges.length; i++) if (v >= edges[i]) step++;
+    return step;
+  }
+
+  /* Which counts each step covers, for the legend's hover titles. Walks the
+     integers once, so it stays exact whatever ramp() does. */
+  function rampBands(min, max) {
+    var bands = [];
+    for (var v = min; v <= max; v++) {
+      var s = ramp(v, min, max);
+      if (!bands[s]) bands[s] = [v, v];
+      else bands[s][1] = v;
+    }
+    return bands;
   }
 
   /* Squarified treemap (Bruls, Huizing & van Wijk). Plain rows would give the
@@ -833,7 +880,7 @@
 
   /* ---------- legend, notes, tooltips, tables ---------- */
 
-  function legendRamp(host, t) {
+  function legendRamp(host, t, list) {
     var box = part(host, "legend");
     if (!box) return;
     empty(box);
@@ -841,9 +888,14 @@
     box.appendChild(el("span", null, t.legendCredits));
     var ramp = el("span", { class: "dyviz-ramp", "aria-hidden": "true" });
     ramp.appendChild(el("span", null, t.fewer));
-    for (var i = 1; i <= 5; i++) {
+    /* Steps are not evenly sized on a log scale, so each swatch says which
+       counts it covers on hover ("2-4"). An unused step gets no title. */
+    var bands = list.length ? rampBands(list[list.length - 1].count, list[0].count) : [];
+    for (var i = 1; i <= RAMP_STEPS; i++) {
       var st = el("span", { class: "dyviz-ramp-step" });
       st.style.background = "var(--dyviz-ramp-" + i + ")";
+      var b = bands[i];
+      if (b) st.title = b[0] === b[1] ? String(b[0]) : b[0] + "\u2013" + b[1];
       ramp.appendChild(st);
     }
     ramp.appendChild(el("span", null, t.more));
