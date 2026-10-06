@@ -48,8 +48,10 @@ That rewrite lives in the harness's own demo script, not in `catalogue.js`.
       h2.entry-section-head       館藏資料
       .materials                  grid: 20rem 1fr
         .material-groups[data-groups]
-          .material-group[data-group-template]     ← cloned per content category
-            .material-group-label                  label + count
+          .material-tabs[data-group-tabs][role=tablist]   tablet only — see "Tablet: tabs"
+            button.tabs-link.cc-material[data-group-tab-template]  ← cloned per category
+          details.accordion-component.cc-group[data-group-template]  ← cloned per category
+            summary                                label + count (hidden on tablet)
             ul.thumb-grid[data-group-items]
               li.thumb-item[data-thumb-template]   ← cloned per material
                 button.thumb > img.thumb-image + span
@@ -439,26 +441,59 @@ with no JS change, and the data still carries both fields. The filename is still
 shown in the *placeholder* (`[data-field="viewerFilename"]`), which is a
 different sink and still earns its place while no files exist.
 
-## Responsive — planned for, not built
+## Responsive
 
-The user owns the responsive pass. Two things were shaped now so it stays cheap:
-
-- **Desktop** (Figma `394:1285`): left column lists every content category with
-  its thumbnails stacked underneath; right column holds the viewer.
-- **Tablet** (Figma `405:2200`): the hero moves **above** the title, and the
-  content categories become a **horizontal tab strip** with one panel of
-  thumbnails, the viewer below.
-
-The stacked-groups → tabs change is a behaviour change, not a CSS reflow, so it
-cannot be done with breakpoints alone. The markup is already shaped for it: each
-group is one block whose heading is a distinct element and whose grid is its
-sibling, which is exactly what the design system's `tabs` component needs
-(`[data-tabs-component]` / `[data-tabs-link]` / `[data-tabs-pane]`). Converting
-means making the headings the links and the grids the panes.
+- **Desktop** (Figma `394:1285`): left column lists every content category as
+  an accordion with its thumbnails underneath; right column holds the viewer.
+- **Tablet and below** (Figma `405:2200`, built 2026-10-06): one column. The
+  categories become a **horizontal tab strip** over one grey panel of
+  thumbnails, with the viewer below. When the tabs do not fit, the strip
+  scrolls sideways; the page never does.
 
 `.entry-head` and `.materials` are both two-column grids with `min-width: 0` on
-their children, so they collapse to one column with a single
-`grid-template-columns` override per breakpoint.
+their children. `.materials` drops to `1fr` at the Webflow **medium**
+breakpoint (991px and below).
+
+### Tablet: tabs drive the same accordions
+
+The tabs do not get their own copy of the thumbnails. `DYP-000074` has 141
+materials; building them twice would double the page for a layout switch.
+Instead the strip steers the accordion blocks that already exist:
+
+| Piece | Where | What it does |
+|---|---|---|
+| `.material-tabs` | Webflow class | `display: none` on desktop, `flex` at medium. `overflow-x: auto` is the horizontal scroll. |
+| `.tabs-link.cc-material` | combo on the DS `tabs-link` | one tab. `flex: 1 0 0` + `nowrap` makes tabs share the width equally, but never shrink below their text — that is what makes the strip scroll instead of squashing. |
+| `.tabs-link.cc-material.cc-active` | combo | the selected tab: `Primary/Surface` fill, same as the panel. The DS `.tabs-link.cc-active` underline applies too. |
+| `.accordion-trigger.cc-group` | existing combo | `display: none` at medium. The tab replaces the summary bar. |
+| `.accordion-content.cc-group` | existing combo | at medium: `Spacing/base` padding and `Primary/Surface` fill (the grey panel). |
+| `.accordion-component.cc-group.cc-tab-inactive` | new combo | `display: none` at medium **only**. `entry.js` puts it on every group except the selected one. It does nothing on desktop. |
+| `.thumb-grid` | existing | at medium: `repeat(auto-fill, minmax(8rem, 1fr))`, no top margin, `max-height: 40svh` so the viewer stays in reach. |
+
+`entry.js` (`buildTabs` / `activateTab`) clones one tab per category, sets
+`aria-selected`, `aria-controls` and a roving `tabindex`, and handles
+←/→/Home/End. Rules for anyone touching it:
+
+- **The selected group is opened by clicking its hidden `<summary>`**, not by
+  setting `open`. A group the design system has collapsed carries an inline
+  `height: 0` that only the accordion's own toggle handler clears; setting
+  `open` directly shows an empty grey bar. A click on a `display: none`
+  summary still toggles its `<details>`. Never click one that is already open
+  — that closes it.
+- **`role="tabpanel"` is only on the panels at 991px and below.** On desktop
+  they are accordion content again. The switch is re-run whenever the width
+  crosses 991px, which also reopens the selected group if it was collapsed as
+  an accordion on a wider screen. It listens to `resize`, not the media
+  query's `change` event — the Claude browser pane's emulated viewport fires
+  neither, so test the crossing by dispatching a `resize` by hand.
+- **991px is written in three places** and they must agree: the Webflow medium
+  breakpoint, `TABLET` in `entry.js`, and `(max-width: 991px)` in the design
+  system's `accordion.js`.
+- **A page without `[data-group-tabs]` is left alone.** The frozen mockup site
+  loads the same `entry.js` and keeps plain accordions at every width.
+
+Both language pages carry the strip. Its `aria-label` is 館藏資料分類 on the
+Chinese page and "Material categories" on `/en/entry`.
 
 ## State
 

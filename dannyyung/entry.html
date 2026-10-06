@@ -115,6 +115,29 @@
          project override block. */
       [hidden] { display:none !important; }
       .viewer-stage.cc-hidden { display:none; }
+
+      /* Tablet tabs (Webflow "medium" breakpoint, 991px and below). Mirrors the
+         Webflow classes: .material-tabs, .tabs-link.cc-material(.cc-active),
+         .accordion-component.cc-group.cc-tab-inactive. See ENTRY.md. */
+      .material-tabs { display:none; flex-wrap:nowrap; align-items:stretch;
+                       overflow-x:auto; overflow-y:hidden; scrollbar-width:thin;
+                       border-left:1px solid #cccabf; }
+      .tabs-link.cc-material { display:flex; flex:1 0 0px; gap:.5rem; align-items:baseline;
+                               padding:.7em 1em; white-space:nowrap; text-align:left;
+                               font:inherit; font-weight:700; color:inherit; background:#fff;
+                               cursor:pointer; border:1px solid #cccabf; border-left:0; }
+      .tabs-link.cc-material.cc-active { background:#f6f6f6; border-bottom-color:#000; }
+      .tabs-link.cc-material:focus-visible { outline:2px solid #d14424; outline-offset:-2px; }
+      @media (max-width: 991px) {
+        .material-tabs { display:flex; }
+        .materials { grid-template-columns:1fr; }
+        .material-groups { gap:0; }
+        .accordion-trigger.cc-group { display:none; }
+        .accordion-content.cc-group { padding:1rem; background:#f6f6f6; }
+        .accordion-component.cc-group.cc-tab-inactive { display:none; }
+        .thumb-grid { margin-top:0; padding:0; grid-template-columns:repeat(auto-fill,minmax(8rem,1fr));
+                      max-height:40svh; overflow:auto; }
+      }
     </style>
   </head>
   <body>
@@ -201,6 +224,16 @@
 
           <div class="materials">
             <div class="material-groups" data-groups>
+              <!-- Tablet tab strip: display:none above 991px. entry.js clones the
+                   template once per content category; the tabs switch which
+                   accordion below is shown. -->
+              <div class="material-tabs" role="tablist" aria-label="館藏資料分類" data-group-tabs>
+                <button class="tabs-link cc-material cc-active" type="button" role="tab"
+                        aria-selected="true" data-group-tab-template>
+                  <span data-field="groupLabel">演出照片</span>
+                  <span class="material-group-count" data-field="groupCount">8</span>
+                </button>
+              </div>
               <!-- Each content category is a design system accordion. Only the
                    FIRST rendered group starts open; entry.js sets `open` and
                    data-accordion-start-open on that clone and strips both from

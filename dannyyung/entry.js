@@ -88,6 +88,11 @@
  *   [data-groups] / [data-group-template] / [data-group-items]
  *                                     the left column: one block per content
  *                                     category, thumbnails nested inside
+ *   [data-group-tabs]                 optional; the tablet tab strip, hidden by
+ *                                     CSS above 991px. Without it the groups
+ *                                     stay accordions at every width.
+ *   [data-group-tab-template]         a <button> cloned per content category,
+ *                                     inside [data-group-tabs]
  *   [data-thumb-template]             a <button> cloned per material
  *   [data-viewer]                     wraps the four viewer states
  *   [data-viewer=image|pdf|video|empty]   exactly one is shown at a time —
@@ -255,6 +260,7 @@
 
     renderNav(root, context);
     buildGroups(root, record.materialGroups || []);
+    buildTabs(root, record.materialGroups || []);
 
     /* Open the first material so the viewer is never empty on load. */
     var first = firstMaterial(record);
@@ -409,6 +415,142 @@
     return li;
   }
 
+  /* ---------- tablet tabs ----------
+   *
+   * At 991px and below the content categories read as a horizontal tab strip
+   * over ONE panel of thumbnails (Figma 405:2200), instead of stacked
+   * accordions. The tabs drive the SAME accordion blocks — nothing is built
+   * twice, so 141 thumbnails stay 141 elements:
+   *
+   *   - each tab is a clone of [data-group-tab-template];
+   *   - the inactive groups carry .cc-tab-inactive, which is display:none at
+   *     the Webflow "medium" breakpoint and does nothing above it;
+   *   - the accordion's <summary> is hidden at that breakpoint, and the active
+   *     group is opened through it (see openGroup).
+   *
+   * Above 991px the strip is display:none and the accordions behave exactly as
+   * before. TABLET must match the Webflow medium breakpoint and the design
+   * system's own (max-width: 991px) in accordion.js.
+   *
+   * A page without [data-group-tabs] (older markup) is left alone. */
+  var TABLET = "(max-width: 991px)";
+  var tabUid = 0;
+
+  function buildTabs(root, groups) {
+    var strip = $(root, "[data-group-tabs]");
+    var host = $(root, "[data-groups]");
+    if (!strip || !host) return;
+    var tpl = template(root, "tab", "[data-group-tab-template]");
+    if (!tpl) return;
+
+    removeClones(strip);
+    root.__tabUid = root.__tabUid || ++tabUid;
+    var panels = all(host, "[data-group-key]");
+    strip.hidden = panels.length === 0;
+
+    var tabs = panels.map(function (panel, i) {
+      var g = groups[i] || {};
+      var tab = tpl.cloneNode(true);
+      var tabId = "dy-tab-" + root.__tabUid + "-" + i;
+      var content = $(panel, "[data-accordion='content']") || panel;
+      if (!content.id) content.id = "dy-pane-" + root.__tabUid + "-" + i;
+      content.setAttribute("data-tab-labelledby", tabId);
+
+      tab.setAttribute("data-clone", "");
+      tab.setAttribute("data-tab-index", String(i));
+      tab.id = tabId;
+      tab.setAttribute("aria-controls", content.id);
+      setField(tab, "groupLabel", g.label);
+      setField(tab, "groupCount", (g.items || []).length);
+      strip.appendChild(tab);
+      return tab;
+    });
+
+    root.__tabs = { strip: strip, tabs: tabs, panels: panels, active: 0 };
+    activateTab(root, 0, false);
+    applyTabRoles(root);
+  }
+
+  function activateTab(root, index, fromUser) {
+    var t = root.__tabs;
+    if (!t || !t.tabs[index]) return;
+    t.active = index;
+    t.tabs.forEach(function (tab, i) {
+      var on = i === index;
+      tab.classList.toggle("cc-active", on);
+      tab.setAttribute("aria-selected", on ? "true" : "false");
+      /* Roving tabindex: Tab enters the strip once, arrows move within it. */
+      tab.tabIndex = on ? 0 : -1;
+    });
+    t.panels.forEach(function (panel, i) {
+      panel.classList.toggle("cc-tab-inactive", i !== index);
+    });
+    if (window.matchMedia(TABLET).matches) openGroup(t.panels[index]);
+    if (fromUser) {
+      t.tabs[index].focus();
+      revealTab(t.strip, t.tabs[index]);
+    }
+  }
+
+  /* Opening goes through the <summary>, not the `open` property, so the design
+     system's accordion does it: a group it has collapsed carries an inline
+     height:0 that only its own toggle handler clears. A click on a summary
+     that is display:none still toggles its <details>. Never click an OPEN
+     group — that would close it. */
+  function openGroup(details) {
+    if (!details || details.open) return;
+    var summary = $(details, "summary");
+    if (summary) summary.click();
+    else details.open = true;
+  }
+
+  /* Scroll the strip — and only the strip — so a tab picked by keyboard is
+     fully visible. scrollIntoView() would also scroll the page. */
+  function revealTab(strip, tab) {
+    var s = strip.getBoundingClientRect();
+    var r = tab.getBoundingClientRect();
+    if (r.left < s.left) strip.scrollLeft -= s.left - r.left;
+    else if (r.right > s.right) strip.scrollLeft += r.right - s.right;
+  }
+
+  /* The panels are tab panels only while the strip is showing. Above 991px
+     they are accordion content again, and a stray role="tabpanel" there would
+     announce a tab interface the reader cannot see. Re-run on every crossing
+     of the breakpoint, which also re-opens the active group in case it was
+     collapsed as an accordion on a wider screen. */
+  function applyTabRoles(root) {
+    var t = root.__tabs;
+    if (!t) return;
+    var tablet = window.matchMedia(TABLET).matches;
+    t.panels.forEach(function (panel) {
+      var content = $(panel, "[data-accordion='content']");
+      if (!content) return;
+      if (tablet) {
+        content.setAttribute("role", "tabpanel");
+        content.setAttribute("aria-labelledby", content.getAttribute("data-tab-labelledby"));
+      } else {
+        content.removeAttribute("role");
+        content.removeAttribute("aria-labelledby");
+      }
+    });
+    if (tablet) openGroup(t.panels[t.active]);
+  }
+
+  function onTabKey(root, e) {
+    var t = root.__tabs;
+    var tab = e.target.closest && e.target.closest("[data-tab-index]");
+    if (!t || !tab) return;
+    var last = t.tabs.length - 1;
+    var next =
+      e.key === "ArrowRight" ? (t.active < last ? t.active + 1 : 0) :
+      e.key === "ArrowLeft" ? (t.active > 0 ? t.active - 1 : last) :
+      e.key === "Home" ? 0 :
+      e.key === "End" ? last : null;
+    if (next === null) return;
+    e.preventDefault();
+    activateTab(root, next, true);
+  }
+
   /* ---------- the viewer ---------- */
 
   function select(root, materialId) {
@@ -541,11 +683,29 @@
     if (root.__wired) return;
     root.__wired = true;
     root.addEventListener("click", function (e) {
+      var tab = e.target.closest && e.target.closest("[data-tab-index]");
+      if (tab && root.contains(tab)) {
+        activateTab(root, Number(tab.getAttribute("data-tab-index")), true);
+        return;
+      }
       var b = e.target.closest && e.target.closest("[data-material-id]");
       if (b && root.contains(b)) {
         e.preventDefault();
         select(root, b.getAttribute("data-material-id"));
       }
+    });
+    root.addEventListener("keydown", function (e) { onTabKey(root, e); });
+
+    /* Re-sync the tabs whenever the page crosses the 991px breakpoint. Driven
+       by `resize` and a comparison rather than the media query's own `change`
+       event, which some emulated viewports (and Safari < 14's addListener-only
+       API) never deliver. Does nothing until the width actually crosses. */
+    var wasTablet = window.matchMedia(TABLET).matches;
+    window.addEventListener("resize", function () {
+      var tablet = window.matchMedia(TABLET).matches;
+      if (tablet === wasTablet) return;
+      wasTablet = tablet;
+      applyTabRoles(root);
     });
   }
 
