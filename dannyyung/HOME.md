@@ -156,56 +156,79 @@ reference.
   shortlist needs its own `DYP-000000.webp` in `images/home-highlights/`.
 - The intro copy is still `[placeholder]` in both languages, as it was before.
 
-## Hero — responsive (2026-10-06)
+## Hero — responsive, and the new site name (2026-10-06)
 
-The hero was built desktop-only from Figma `446:883`. It now has three layouts.
-All of it is Webflow classes; there is no embed CSS for layout.
+The hero was built desktop-only from Figma `446:883`. It now has three layouts,
+and carries the new site name from Figma `573:1489` (中文) and `574:1708` (EN).
+All layout is Webflow classes; the only embed CSS is the mouse parallax.
 
-**One rule makes the title and tagline follow the photo.** `.hero-screen-wrap`
-now carries the screen's size (`width`, `min-width`, `margin-top`), and
-`.hero-screen` is `width: 100%` inside it. The wrap's other children — the `h1`
-(zero height) and `.tag-line-wrap` — are absolutely positioned, so the wrap's box
-*is* the screen's box. Every `top`/`left`/`right` percentage on `.title-block` and
-`.tag-line-wrap` is therefore a percentage of the photo. Before, they were
-percentages of the whole hero, so they drifted off the photo as the width changed.
+### The title is two positioned groups
 
-Do not give `.hero-screen-wrap` any in-flow child besides `.hero-screen`, or the
-wrap stops matching the photo and the percentages drift again.
+Each corner of the photo holds a **`.title-group`** (absolute, flex column,
+`Spacing/MD` gap). The `.title-block`s inside it are in normal flow, so a title
+and its subtitle stack and can never drift into each other as the type scales.
+
+| | top-left `.title-group.cc-top` | bottom-right `.title-group.cc-bottom` |
+|---|---|---|
+| 中文 | 榮念曾 (H1) + 與進念・二十面體 (`.cc-sub`) | 合作作品典藏 (H1) |
+| EN | A Digital Archive of (`.cc-sub`) | Danny Yung’s Work (H1) + with Zuni Icosahedron (`.cc-sub`) |
+
+- `.title-block.cc-sub` is the Figma H4 subtitle: the H4 font variables (the same
+  ones `.tag-line` uses), `0` vertical / `Spacing/SM` side padding.
+- `.cc-bottom` is `align-items: flex-end`, so its blocks line up on the right.
+- The `h1` carries an `aria-label` with the full name in reading order
+  (榮念曾與進念・二十面體合作作品典藏 / "A Digital Archive of Danny Yung’s Work with
+  Zuni Icosahedron"). The blocks are flex items, which screen readers may run
+  together without spaces.
+- The mouse parallax (`#dy-home-css` embed) moves the two **groups**, not single
+  blocks, so a subtitle travels with its title. The old per-block classes
+  `.title-block.cc-title-1/2` were deleted.
+
+### The title and tagline follow the photo
+
+`.hero-screen-wrap` carries the screen's size (`width`, `min-width`,
+`margin-top`), and `.hero-screen` is `width: 100%` inside it. The title groups
+and `.tag-line-wrap` are absolutely positioned in the wrap, so their percentages
+are percentages of the photo — at desktop and tablet.
+
+**Phone is the exception, on purpose.** At ≤767 the wrap is a padded flex box
+with a `min-height` (29rem, 26rem at ≤479) and the photo centred in it. The title
+groups sit at the wrap's top and bottom edges, i.e. just above and below the
+photo. Percentages there are of the padded box, not the photo.
+
+### Per breakpoint
 
 | | Desktop (base) | Tablet (≤991) | Phone (≤767) |
 |---|---|---|---|
-| `.home-hero` | `aspect-ratio 1440/1000`, `min-height 60rem` | `aspect-ratio auto`, `min-height 0` — height follows content | — |
-| `.hero-screen-wrap` | `61.39%`, `min-width 45rem`, top `5rem` | `80%`, no min, top `3rem` | `100%`, top `2rem` |
+| `.home-hero` | `aspect-ratio 1440/1000`, `min-height 64rem` | `aspect-ratio auto`, `min-height 0` | — |
+| `.home-hero.cc-tall` (EN only) | `min-height 84rem` | `min-height 0` | — |
+| `.hero-screen-wrap` | `61.39%`, `min-width 45rem`, top `5rem` | `80%`, top `3rem` | `100%`, padded, min-height — see above |
 | `.hero-screen` | 16:9 | **4:3** | — |
-| `.title-block.cc-title-1` | left `-11.15%`, top `1.3%` | — | left `0%` |
-| `.title-block.cc-title-2` | **right** `-17.4%`, top `73%` | right `-8%` | right `0%` |
-| `.tag-line-wrap` | left `-11.15%`, top `26.1%` | — | left `0%` |
-| `.stage` | `height 25.59%` of the hero | `height auto`, `aspect-ratio 5/1` | — |
-| `.hero-text-wrap` | absolute, pinned to the hero bottom | **in flow** below the stage, column, margin-top `Spacing/LG` | — |
-| `.paragraph-wrap.cc-hero` | `36.5%`, `min-width 32rem` | `100%`, max `36rem` | — |
-| `.hero-chair` | absolute bottom-left, `8%` | in flow under the button, `4.5rem` | — |
+| `.title-group.cc-top` | left `-11.15%`, top `5%` | — | left `0`, top `0` |
+| `.title-group.cc-bottom` | right `-14%`, bottom `5%` | right `-11%` | right `0`, bottom `0`, text right-aligned |
+| `.title-block` | `white-space: nowrap` | — | `normal` (EN title wraps) |
+| `.tag-line-wrap` (中文) | top `43%` | — | top `25%` |
+| `.tag-line-wrap.cc-en` | top `80%` (below-left of the photo) | — | top `25%` |
+| `.stage` | `height 25.59%` of the hero | `aspect-ratio 5/1.2` | `height 24svw`, min `8.2rem` |
+| `.hero-text-wrap` | absolute, bottom padding `max(14%, 12rem)` | in flow below the stage | — |
 
-Why each non-obvious value:
+Why the non-obvious values:
 
-- **The desktop percentages reproduce the 1440 layout exactly.** They were
-  converted from the old hero-relative values by measuring the published page at
-  1440, and checked pixel for pixel afterwards.
-- **`min-width 45rem`, not the old `51rem`.** The title blocks overhang the photo
-  by about 11% on the left and 17% on the right. At 992px a 51rem screen left no
-  room for that, and both titles ran off the page.
-- **Title 2 is anchored by `right`, not `left`.** "Archive" on `/en/home` is wider
-  than 資料庫. Anchored on the left it grew off the page at 992px; anchored on the
-  right it grows into the photo instead.
-- **`.title-block` has `white-space: nowrap`.** Inside the narrower wrap, an
-  absolutely positioned block near the right edge has little room and would wrap
-  one character per line.
+- **`.cc-tall` exists because the English intro is longer.** Its three
+  paragraphs are about 400px tall at desktop against about 260px for Chinese.
+  The text is pinned to the hero's bottom, so it rose over the photo and hid the
+  tagline. Figma's EN frame is likewise taller (1359px against 1219px).
+- **`.title-block` wraps on phones only.** "Danny Yung’s Work" at H1 size is wider
+  than a phone screen. Everywhere else it stays on one line, because a block
+  positioned near the wrap's edge has little room and would otherwise wrap.
+- **`min-width 45rem` on the wrap.** The titles overhang the photo; at 992px a
+  wider minimum left them no room and pushed them off the page.
 - **The stage needs a real height at every width.** The stage-collapse script
-  measures `.stage`'s CSS height on load and resize. A percentage of an
-  auto-height hero resolves to nothing, so tablet uses `aspect-ratio` instead.
-- **The 14 hero images' `sizes`** is now
-  `(max-width: 767px) 92vw, (max-width: 991px) 80vw, 61vw` on both pages, so
-  phones and tablets pick a large enough file from the `srcset`.
+  measures `.stage`'s CSS height. A percentage of an auto-height hero resolves
+  to nothing, so tablet and phone use `aspect-ratio` / `svw`.
+- **The 14 hero images' `sizes`** is
+  `(max-width: 767px) 92vw, (max-width: 991px) 80vw, 61vw` on both pages.
 
-Verified by injecting the same rules into the published page at 1440, 1100, 992,
-800 and 390, on both `/` and `/en/home`: no horizontal scroll, no overlap
-between the text and the photo, and the 1440 layout unchanged.
+Verified by rebuilding the same markup and rules on the published page at 1440,
+992, 800 and 390, on both `/` and `/en/home`: no horizontal scroll, no title or
+tagline overlap, and the 1440 layouts match the Figma frames.
