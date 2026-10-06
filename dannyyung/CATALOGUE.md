@@ -489,6 +489,10 @@ Paragraph reintroduces the margin and quietly shifts the layout.
 
 ### Theme toggle
 
+> **Superseded 2026-10-05: the site is light-only.** The client chose the light
+> theme and the dark theme was removed. What follows is history. The dark
+> settings and how to restore them are in `DARK-THEME-BACKUP.md`.
+
 The design system ships a theme system — `color-scheme: light dark`, a
 `u-mode-light` / `u-mode-dark` class on `<html>`, and a Theme Toggle component.
 Nothing was ever set to light-only; the toggle simply had not been placed on a
@@ -564,6 +568,10 @@ asked for site-wide, and a combo would only square the radios that opted in.
 It does not touch the Mast Fork starter, so other projects keep round radios.
 
 ## Two bugs that stopped the theme toggle working
+
+> **Superseded 2026-10-05: the site is light-only.** The client chose the light
+> theme and the dark theme was removed. What follows is history. The dark
+> settings and how to restore them are in `DARK-THEME-BACKUP.md`.
 
 Worth reading before touching the Custom Code component or the dropdowns.
 
