@@ -446,7 +446,7 @@ different sink and still earns its place while no files exist.
 - **Desktop** (Figma `394:1285`): left column lists every content category as
   an accordion with its thumbnails underneath; right column holds the viewer.
 - **Tablet and below** (Figma `405:2200`, built 2026-10-06): one column. The
-  categories become a **horizontal tab strip** over one grey panel of
+  categories become a **horizontal tab strip** over one panel of
   thumbnails, with the viewer below. When the tabs do not fit, the strip
   scrolls sideways; the page never does.
 
@@ -463,10 +463,10 @@ Instead the strip steers the accordion blocks that already exist:
 | Piece | Where | What it does |
 |---|---|---|
 | `.material-tabs` | Webflow class | `display: none` on desktop, `flex` at medium. `overflow-x: auto` is the horizontal scroll. |
-| `.tabs-link.cc-material` | combo on the DS `tabs-link` | one tab. `flex: 1 0 0` + `nowrap` makes tabs share the width equally, but never shrink below their text — that is what makes the strip scroll instead of squashing. |
-| `.tabs-link.cc-material.cc-active` | combo | the selected tab: `Primary/Surface` fill, same as the panel. The DS `.tabs-link.cc-active` underline applies too. |
+| `.tabs-link.cc-material` | combo on the DS `tabs-link` | one tab. `flex: 1 0 0` + `nowrap` makes tabs share the width equally, but never shrink below their text — that is what makes the strip scroll instead of squashing. Its colour is set back to full `Primary/Text`: the DS base mixes the text colour down to 40%, which made the unselected tabs too faint. |
+| `.tabs-link.cc-material.cc-active` | combo | the selected tab: `Primary/Surface` fill. The DS `.tabs-link.cc-active` underline applies too. |
 | `.accordion-trigger.cc-group` | existing combo | `display: none` at medium. The tab replaces the summary bar. |
-| `.accordion-content.cc-group` | existing combo | at medium: `Spacing/base` padding and `Primary/Surface` fill (the grey panel). |
+| `.accordion-content.cc-group` | existing combo | at medium: `Spacing/base` top and bottom padding, no side padding, transparent background. |
 | `.accordion-component.cc-group.cc-tab-inactive` | new combo | `display: none` at medium **only**. `entry.js` puts it on every group except the selected one. It does nothing on desktop. |
 | `.thumb-grid` | existing | at medium: `repeat(auto-fill, minmax(8rem, 1fr))`, no top margin, `max-height: 40svh` so the viewer stays in reach. |
 
