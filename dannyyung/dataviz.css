@@ -37,6 +37,8 @@
   /* -- graph lines -- */
   --dyviz-line: var(--_color---neutral--500, #808080); /* the two axis rules, button border */
   --dyviz-grid: var(--_color---neutral--300, #b3b3b3); /* row baselines, table rules: a hairline, deliberately quiet */
+  --dyviz-panel: var(--primary--background, #cccccc); /* the treemap's "others" panel (tablet and below):
+                                       opaque, so the boxes underneath do not show through */
 
   /* -- the y-axis switch --
      These mirror .button.secondary in the Webflow design system, so the one
@@ -275,6 +277,32 @@
   font-size: var(--dyviz-cell-count-size);
 }
 
+/* treemap "others" panel — tablet and below only, see drawTreemap() */
+.dyviz-others {
+  background: var(--dyviz-panel);
+  color: var(--dyviz-ink);
+}
+.dyviz-others-title {
+  font-size: var(--dyviz-tip-size);
+  font-weight: 600;
+}
+.dyviz-others-close {
+  border: 1px solid var(--dyviz-ink);
+  background: var(--dyviz-panel);
+  color: var(--dyviz-ink);
+  font-size: 1.25rem;
+}
+.dyviz-others-item {
+  background: var(--dyviz-ramp-1);
+  color: var(--dyviz-ramp-ink-1);
+  font-size: var(--dyviz-cell-name-size);
+  font-weight: 600;
+}
+.dyviz-others-close:focus-visible,
+.dyviz-others-item:focus-visible {
+  outline: 2px solid var(--dyviz-focus);
+}
+
 /* fallback table */
 .dyviz-table {
   font-size: var(--dyviz-table-size);
@@ -355,7 +383,13 @@
   -webkit-line-clamp: 2;
   overflow: hidden;
   max-width: 100%;
-  overflow-wrap: anywhere;
+  /* Break between words only. A word too long for its box is caught by
+     dataviz.js (fitName), which shrinks or drops the name rather than
+     splitting it mid-word ("Edwar / d Yang"). */
+  overflow-wrap: normal;
+}
+.dyviz-cell-name.dyviz-fit-sm {
+  font-size: 0.82em;
 }
 .dyviz-cell-count {
   flex: none;
@@ -369,7 +403,7 @@
   pointer-events: none;
   opacity: 0;
   transform: translate(-50%, -100%);
-  white-space: nowrap;
+  white-space: pre; /* one line per "\n" — the tablet tooltip adds "Click to search" */
   padding: 6px 8px;
   line-height: 1.35;
   transition: opacity 0.1s;
@@ -411,4 +445,67 @@
   .dyviz-tip {
     transition: none;
   }
+}
+
+/* The merged "others" box is a <button>, not a link: it opens a panel. */
+button.dyviz-cell {
+  border: 0;
+  margin: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* The "others" panel covers the plot; .dyviz-plot is position: relative. */
+.dyviz-others {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  overflow: auto;
+  padding: 0 8px 8px;
+  box-sizing: border-box;
+}
+.dyviz-others[hidden] {
+  display: none;
+}
+.dyviz-others-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 0;
+  background: inherit;
+}
+.dyviz-others-close {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;  /* 44px touch target */
+  height: 2.75rem;
+  padding: 0;
+  line-height: 1;
+  cursor: pointer;
+}
+.dyviz-others-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.dyviz-others-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  height: 100%;
+  padding: 4px 6px;
+  box-sizing: border-box;
+  text-align: center;
+  line-height: 1.25;
+  text-decoration: none;
 }

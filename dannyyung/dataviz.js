@@ -152,6 +152,19 @@
         return "共 " + d.n + " 位合作者。榮念曾本人不列於此圖。";
       },
       empty: "沒有可顯示的資料。",
+      /* Tablet and below only — see drawTreemap(). */
+      clickToSearch: "點擊搜尋",
+      others: function (n) {
+        return "其他 " + n + " 位";
+      },
+      othersEach: function (c) {
+        return "各 " + c + " 項合作";
+      },
+      othersOpen: "點擊顯示全部",
+      othersTitle: function (n, c) {
+        return "各有 " + c + " 項合作的 " + n + " 位合作者";
+      },
+      close: "關閉",
     },
     en: {
       en: true,
@@ -183,6 +196,19 @@
         return d.n + " collaborators. Danny Yung himself is left off this chart — " + "he is credited on most of the archive, and including him would cover " + "the chart and hide everyone else.";
       },
       empty: "Nothing to show.",
+      /* Tablet and below only — see drawTreemap(). */
+      clickToSearch: "Click to search",
+      others: function (n) {
+        return n + " others";
+      },
+      othersEach: function (c) {
+        return (c === 1 ? "1 credit" : c + " credits") + " each";
+      },
+      othersOpen: "Click to show all",
+      othersTitle: function (n, c) {
+        return n + " collaborators with " + (c === 1 ? "1 credit" : c + " credits") + " each";
+      },
+      close: "Close",
     },
   };
 
@@ -228,8 +254,10 @@
     ".dyviz-tree{position:relative;width:100%}" +
     ".dyviz-cell{position:absolute;overflow:hidden;box-sizing:border-box}" +
     ".dyviz-tip{position:absolute;z-index:9;pointer-events:none;opacity:0;" +
-    "transform:translate(-50%,-100%);white-space:nowrap}" +
+    "transform:translate(-50%,-100%);white-space:pre}" +
     ".dyviz-tip[data-on]{opacity:1}" +
+    ".dyviz-others{position:absolute;inset:0;z-index:8;overflow:auto;background:var(--dyviz-panel,#ccc)}" +
+    ".dyviz-others[hidden]{display:none}" +
     ".dyviz-table{width:100%;border-collapse:collapse}";
 
   function injectCss() {
@@ -679,6 +707,28 @@
 
   /* ---------- chart 2: the treemap ---------- */
 
+  /* ---------- tablet and below ----------
+     At 991px and below (the Webflow "medium" breakpoint, and the same number
+     accordion.js and entry.js use) the treemap changes two things:
+
+     1. The people on the LOWEST count are merged into one box when there are at
+        least GROUP_MIN of them. On today's data that is 30 people on 1 credit —
+        two-thirds of the chart, as boxes too small to hold a name on a phone.
+        The merged box keeps their combined area, so the encoding stays true.
+        Clicking it opens a panel OVER the chart listing them as a grid of
+        named tiles, with a close button. Those tiles link straight to the
+        search, because their names are already readable.
+
+     2. Every other box takes TWO clicks: the first shows the tooltip with a
+        "Click to search" line, the second follows the link. A touch screen
+        has no hover, so without this a tap on a nameless box goes straight to
+        a search the reader never chose. Keyboard Enter (click detail 0) still
+        follows the link at once, because focus has already shown the tooltip.
+
+     Above 991px nothing here runs and the chart behaves as before. */
+  var COMPACT = "(max-width: 991px)";
+  var GROUP_MIN = 6;
+
   function drawTreemap(root, host, data) {
     if (!host) return;
     var t = T[lang(root)];
@@ -697,54 +747,205 @@
       return;
     }
 
-    var W = Math.max(plot.clientWidth || 0, 280);
-    /* Height grows with how many people there are, so 43 boxes do not each end
-       up a 12px sliver on a phone. Capped so it cannot swallow the page. */
-    var H = Math.max(320, Math.min(760, Math.round(Math.sqrt(list.length) * W * 0.11)));
-    plot.style.height = H + "px";
-
     var min = list[list.length - 1].count,
       max = list[0].count;
-    var tip = tooltip(plot);
+    var compact = !!(window.matchMedia && window.matchMedia(COMPACT).matches);
 
-    squarify(
-      list.map(function (d) {
+    /* The lowest-count people, merged into one box on tablet and below. */
+    var tail = compact
+      ? list.filter(function (d) {
+          return d.count === min;
+        })
+      : [];
+    if (tail.length < GROUP_MIN || tail.length === list.length) tail = [];
+    var items = list
+      .filter(function (d) {
+        return tail.indexOf(d) === -1;
+      })
+      .map(function (d) {
         return { d: d, v: d.count };
-      }),
-      { x: 0, y: 0, w: W, h: H },
-    ).forEach(function (cell) {
-      var d = cell.d;
-      var step = ramp(d.count, min, max);
-      var label = d.name + " · " + t.credits(d.count);
-      var a = el("a", {
-        class: "dyviz-cell",
-        href: d.href,
-        "aria-label": t.filter + label,
-        title: label,
       });
-      a.style.left = cell.x + "px";
-      a.style.top = cell.y + "px";
-      /* The 2px gap is taken OUT of each box rather than added between them,
-           so the areas still sum to the container and the encoding stays true. */
-      a.style.width = Math.max(cell.w - 2, 0) + "px";
-      a.style.height = Math.max(cell.h - 2, 0) + "px";
-      a.style.background = "var(--dyviz-ramp-" + step + ")";
-      a.style.color = "var(--dyviz-ramp-ink-" + step + ")";
+    if (tail.length) items.push({ d: { group: true }, v: tail.length * min });
+    /* squarify() lays boxes out in the order given and expects largest first;
+       the merged box is usually the largest of all. */
+    items.sort(function (x, y) {
+      return y.v - x.v;
+    });
 
-      /* Direct-label whatever has room; the rest are reachable by hover, by
-           the accessible name, and by the table below. Writing a name into a
-           28px box just produces a smear of clipped glyphs. */
-      if (cell.w >= 46 && cell.h >= 26) {
-        a.appendChild(el("span", { class: "dyviz-cell-name" }, d.name));
-        if (cell.h >= 40) {
-          a.appendChild(el("span", { class: "dyviz-cell-count" }, String(d.count)));
+    var W = Math.max(plot.clientWidth || 0, 280);
+    /* Height grows with how many boxes there are, so 43 boxes do not each end
+       up a 12px sliver on a phone. Capped so it cannot swallow the page. */
+    var H = Math.max(320, Math.min(760, Math.round(Math.sqrt(items.length) * W * 0.11)));
+    plot.style.height = H + "px";
+
+    var tip = tooltip(plot);
+    var panel = tail.length ? othersPanel(plot, tail, t, min) : null;
+    var armed = null; /* the box whose tooltip is showing after a first click */
+
+    squarify(items, { x: 0, y: 0, w: W, h: H }).forEach(function (cell) {
+      var d = cell.d;
+      var at = function () {
+        return { x: cell.x + cell.w / 2, y: cell.y + 6 };
+      };
+      var node;
+
+      if (d.group) {
+        var each = t.othersEach(min);
+        node = el("button", {
+          class: "dyviz-cell dyviz-cell-group",
+          type: "button",
+          "aria-expanded": "false",
+          "aria-controls": panel.id,
+        });
+        node.style.background = "var(--dyviz-ramp-" + ramp(min, min, max) + ")";
+        node.style.color = "var(--dyviz-ramp-ink-" + ramp(min, min, max) + ")";
+        node.appendChild(el("span", { class: "dyviz-cell-name" }, t.others(tail.length)));
+        node.appendChild(el("span", { class: "dyviz-cell-count" }, each));
+        hover(node, tip, plot, t.others(tail.length) + " · " + each + "\n" + t.othersOpen, at);
+        node.addEventListener("click", function () {
+          tip.removeAttribute("data-on");
+          panel.open(node);
+        });
+      } else {
+        var step = ramp(d.count, min, max);
+        var label = d.name + " · " + t.credits(d.count);
+        var tipText = compact ? label + "\n" + t.clickToSearch : label;
+        node = el("a", {
+          class: "dyviz-cell",
+          href: d.href,
+          "aria-label": t.filter + label,
+          title: compact ? null : label,
+        });
+        node.style.background = "var(--dyviz-ramp-" + step + ")";
+        node.style.color = "var(--dyviz-ramp-ink-" + step + ")";
+
+        /* Direct-label whatever has room; the rest are reachable by the
+           tooltip, by the accessible name, and by the table below. Writing a
+           name into a 28px box just produces a smear of clipped glyphs. A box
+           too narrow for a name still shows its count, so it never reads as an
+           empty, broken box. */
+        var named = cell.w >= 46 && cell.h >= 26;
+        if (named) node.appendChild(el("span", { class: "dyviz-cell-name" }, d.name));
+        if (cell.w >= 18 && cell.h >= (named ? 40 : 20)) {
+          node.appendChild(el("span", { class: "dyviz-cell-count" }, String(d.count)));
+        }
+        var show = hover(node, tip, plot, tipText, at);
+        if (compact) {
+          node.addEventListener("click", function (e) {
+            if (e.detail === 0 || armed === node) return; /* keyboard, or 2nd click */
+            e.preventDefault();
+            armed = node;
+            show();
+          });
         }
       }
-      hover(a, tip, plot, label, function () {
-        return { x: cell.x + cell.w / 2, y: cell.y + 6 };
-      });
-      plot.appendChild(a);
+
+      node.style.left = cell.x + "px";
+      node.style.top = cell.y + "px";
+      /* The 2px gap is taken OUT of each box rather than added between them,
+         so the areas still sum to the container and the encoding stays true. */
+      node.style.width = Math.max(cell.w - 2, 0) + "px";
+      node.style.height = Math.max(cell.h - 2, 0) + "px";
+      plot.appendChild(node);
+      if (fitName(node.querySelector(".dyviz-cell-name")) && !node.querySelector(".dyviz-cell-count") && cell.h >= 20) {
+        node.appendChild(el("span", { class: "dyviz-cell-count" }, String(d.count)));
+      }
     });
+
+    /* A click anywhere outside the boxes disarms the first click. Bound once
+       per plot; the plot node survives re-renders, so it reads the current
+       state through plot.__disarm. */
+    plot.__disarm = function () {
+      armed = null;
+      tip.removeAttribute("data-on");
+    };
+    if (compact && !plot.__outside) {
+      plot.__outside = true;
+      document.addEventListener("click", function (e) {
+        if (!e.target.closest || !e.target.closest(".dyviz-cell")) {
+          if (plot.__disarm) plot.__disarm();
+        }
+      });
+    }
+  }
+
+  /* Names wrap between words only (dataviz.css). When one word is still wider
+     than its box — "Edward" in a 50px box — try a smaller size, and if that
+     still overflows, drop the name and leave the count. The full name stays in
+     the tooltip, the accessible name and the table. Must run after the box is
+     in the document, because it measures. Returns true when it dropped the name. */
+  function fitName(name) {
+    if (!name) return false;
+    var over = function () {
+      return name.scrollWidth > name.clientWidth + 1;
+    };
+    if (!over()) return false;
+    name.classList.add("dyviz-fit-sm");
+    if (!over()) return false;
+    name.parentNode.removeChild(name);
+    return true; /* dropped — the caller makes sure the count shows */
+  }
+
+  /* The panel that lists the merged lowest-count people. It sits OVER the plot
+     (the plot is position: relative) rather than below it, because the card
+     already has a chart and a table under it. Esc and the close button both
+     close it, and focus goes back to the box that opened it. */
+  function othersPanel(plot, tail, t, count) {
+    var id = "dyviz-others-" + Math.random().toString(36).slice(2, 8);
+    var box = el("div", {
+      class: "dyviz-others",
+      id: id,
+      role: "group",
+      "aria-label": t.othersTitle(tail.length, count),
+      hidden: "",
+    });
+    var head = el("div", { class: "dyviz-others-head" });
+    head.appendChild(el("span", { class: "dyviz-others-title" }, t.othersTitle(tail.length, count)));
+    var close = el("button", { class: "dyviz-others-close", type: "button", "aria-label": t.close });
+    close.appendChild(el("span", { "aria-hidden": "true" }, "\u00d7"));
+    head.appendChild(close);
+    box.appendChild(head);
+
+    var grid = el("ul", { class: "dyviz-others-grid", role: "list" });
+    tail.forEach(function (d) {
+      var li = el("li");
+      li.appendChild(
+        el(
+          "a",
+          {
+            class: "dyviz-others-item",
+            href: d.href,
+            "aria-label": t.filter + d.name + " · " + t.credits(d.count),
+          },
+          d.name,
+        ),
+      );
+      grid.appendChild(li);
+    });
+    box.appendChild(grid);
+    plot.appendChild(box);
+
+    var opener = null;
+    function hide() {
+      box.hidden = true;
+      if (opener) {
+        opener.setAttribute("aria-expanded", "false");
+        opener.focus();
+      }
+    }
+    close.addEventListener("click", hide);
+    box.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") hide();
+    });
+    box.id = id;
+    box.open = function (from) {
+      opener = from;
+      from.setAttribute("aria-expanded", "true");
+      box.hidden = false;
+      box.scrollTop = 0;
+      close.focus();
+    };
+    return box;
   }
 
   /* Five steps, assigned by where the value sits in the range rather than by
@@ -922,8 +1123,12 @@
          already the tooltip's coordinates. No scaling step, and none should be
          added without also fixing the viewBox. */
       var p = at();
-      tip.textContent = text;
-      tip.style.left = p.x + "px";
+      tip.textContent = text; /* "\n" breaks a line: .dyviz-tip is white-space: pre */
+      /* Keep the tip inside the plot. It is centred on the mark, so a mark at
+         either edge of a narrow phone chart would push half of it off-screen. */
+      var half = tip.offsetWidth / 2;
+      var x = Math.min(Math.max(p.x, half), Math.max(half, plot.clientWidth - half));
+      tip.style.left = x + "px";
       tip.style.top = p.y + "px";
       tip.setAttribute("data-on", "");
     }
@@ -934,6 +1139,7 @@
     node.addEventListener("mouseleave", hide);
     node.addEventListener("focus", show);
     node.addEventListener("blur", hide);
+    return show;
   }
 
   /* The fallback tables are not a courtesy. They are the route to the same

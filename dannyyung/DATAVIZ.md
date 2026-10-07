@@ -78,6 +78,49 @@ catalogue still carries it. It lives in one named constant, `ARCHIVE_SUBJECT` in
 own note says so on the page, in both languages, so a reader is not left to
 wonder where he went.
 
+## The treemap on tablet and phone (2026-10-07)
+
+At 991px and below (`COMPACT` in `dataviz.js`, the Webflow "medium"
+breakpoint) the treemap changes in two ways. Above it, nothing changes.
+
+**1. The lowest-count people merge into one box.** On today's data that is 30
+people (32 in English) with 1 credit each: two-thirds of the chart, as boxes
+too small to hold a name on a phone. They become one box, "其他 30 位 · 各 1 項合作"
+/ "32 others · 1 credit each".
+- The merged box keeps their combined area, so area still means credits.
+- It only happens when at least `GROUP_MIN` (6) people share the lowest count.
+  Fewer than that, and the chart draws as on desktop.
+- Clicking it opens a panel **over** the chart — not below it, because the card
+  already has the table underneath. The panel shows the people as a grid of
+  named tiles, with a title and a close button. Esc also closes it, and focus
+  goes back to the merged box.
+- Those tiles link straight to the search in one click, because their names
+  are readable. The panel scrolls inside the chart's height.
+
+**2. Every other box takes two clicks.** The first shows the tooltip, with an
+extra line, "點擊搜尋" / "Click to search". The second follows the link. A
+touch screen has no hover, so without this a tap on a small box would go to a
+search the reader never chose.
+- Clicking a different box moves the selection there; clicking outside the
+  chart clears it.
+- Keyboard Enter still searches at once: focus has already shown the tooltip.
+  The script tells them apart by the click's `detail` (0 for a keyboard click).
+
+**At every width:**
+- Names wrap only **between words**. Before, `overflow-wrap: anywhere` split
+  names mid-word ("Edwar / d Yang"). When one word is still too wide for its
+  box, `fitName()` tries a smaller size (`.dyviz-fit-sm`) and then drops the
+  name. A box without a name still shows its count, so it never looks empty.
+- The tooltip stays inside the chart. It is centred on its box, so at the edge
+  of a narrow chart half of it used to fall off-screen.
+- The tooltip text is `white-space: pre`, so a `\n` starts a new line. That rule
+  exists twice: in `dataviz.css` AND in the fallback CSS that `dataviz.js`
+  injects. The injected copy loads later and wins, so change both together.
+
+New `dataviz.css` pieces: the `--dyviz-panel` colour token (Primary/Background),
+`.dyviz-others*` for the panel, `button.dyviz-cell` (the merged box is a button,
+because it opens something rather than going somewhere) and `.dyviz-fit-sm`.
+
 ## Colour
 
 **The bubble chart has one mark colour, not a palette.** The y axis carries the
