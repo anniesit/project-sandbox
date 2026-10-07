@@ -88,16 +88,28 @@ people (32 in English) with 1 credit each: two-thirds of the chart, as boxes
 too small to hold a name on a phone. They become one box, "其他 30 位 · 各 1 項合作"
 / "32 others · 1 credit each".
 - The merged box keeps their combined area, so area still means credits.
+- It takes a full-height strip on the **right**, as wide as its share of the
+  credits, and the people are laid out in the space to its left. So the chart
+  reads from most credits (left) to fewest (right), although the merged box
+  is usually the biggest. It cannot simply be appended last to `squarify()`:
+  that function needs largest-first order, and a big last item squeezes the
+  box before it into a sliver.
 - It only happens when at least `GROUP_MIN` (6) people share the lowest count.
   Fewer than that, and the chart draws as on desktop.
 - Clicking it opens a panel **over** the chart — not below it, because the card
   already has the table underneath. The panel shows the people as a grid of
   named tiles, with a title and a close button. Esc also closes it, and focus
   goes back to the merged box.
-- Those tiles link straight to the search in one click, because their names
-  are readable. The panel scrolls inside the chart's height.
+- The tiles follow the same two-click rule as the boxes (below), with the
+  same tooltip. Scrolling the panel clears a pending first click, because the
+  tooltip would otherwise float while the tiles move under it.
+- The panel runs edge to edge, like the chart it covers, and its tiles sit
+  2px apart both ways, like the treemap's boxes. That needs
+  `.dyviz-others-grid > li { margin: 0 }`: the site gives every `<li>` a 5px
+  bottom margin, which made the rows 7px apart.
+- The panel scrolls inside the chart's height.
 
-**2. Every other box takes two clicks.** The first shows the tooltip, with an
+**2. Every other box, and every tile in the panel, takes two clicks.** The first shows the tooltip, with an
 extra line, "點擊搜尋" / "Click to search". The second follows the link. A
 touch screen has no hover, so without this a tap on a small box would go to a
 search the reader never chose.
@@ -109,8 +121,11 @@ search the reader never chose.
 **At every width:**
 - Names wrap only **between words**. Before, `overflow-wrap: anywhere` split
   names mid-word ("Edwar / d Yang"). When one word is still too wide for its
-  box, `fitName()` tries a smaller size (`.dyviz-fit-sm`) and then drops the
-  name. A box without a name still shows its count, so it never looks empty.
+  box, `fitName()` first shrinks it (`.dyviz-fit-sm`, 82% of the name size —
+  not `em`, which would measure from the box and GROW it), then cuts it to
+  one line with an ellipsis (`.dyviz-fit-cut`, "Peeramon Cho…").
+- A box narrower than 46px gets no name at all, only its count, so it never
+  looks empty. The tooltip and the table carry the name.
 - The tooltip stays inside the chart. It is centred on its box, so at the edge
   of a narrow chart half of it used to fall off-screen.
 - The tooltip text is `white-space: pre`, so a `\n` starts a new line. That rule

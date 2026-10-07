@@ -715,11 +715,14 @@
         least GROUP_MIN of them. On today's data that is 30 people on 1 credit —
         two-thirds of the chart, as boxes too small to hold a name on a phone.
         The merged box keeps their combined area, so the encoding stays true.
+        It takes a full-height strip on the RIGHT, so the chart still reads
+        from most credits (left) to fewest (right) — even though it is
+        usually the largest box.
         Clicking it opens a panel OVER the chart listing them as a grid of
-        named tiles, with a close button. Those tiles link straight to the
-        search, because their names are already readable.
+        named tiles, with a close button. The tiles follow rule 2 below.
 
-     2. Every other box takes TWO clicks: the first shows the tooltip with a
+     2. Every other box, and every tile in that panel, takes TWO clicks: the
+        first shows the tooltip with a
         "Click to search" line, the second follows the link. A touch screen
         has no hover, so without this a tap on a nameless box goes straight to
         a search the reader never chose. Keyboard Enter (click detail 0) still
@@ -765,12 +768,7 @@
       .map(function (d) {
         return { d: d, v: d.count };
       });
-    if (tail.length) items.push({ d: { group: true }, v: tail.length * min });
-    /* squarify() lays boxes out in the order given and expects largest first;
-       the merged box is usually the largest of all. */
-    items.sort(function (x, y) {
-      return y.v - x.v;
-    });
+    var groupV = tail.length ? tail.length * min : 0;
 
     var W = Math.max(plot.clientWidth || 0, 280);
     /* Height grows with how many boxes there are, so 43 boxes do not each end
@@ -779,10 +777,40 @@
     plot.style.height = H + "px";
 
     var tip = tooltip(plot);
-    var panel = tail.length ? othersPanel(plot, tail, t, min) : null;
-    var armed = null; /* the box whose tooltip is showing after a first click */
+    var armed = null; /* the box or tile whose tooltip is showing after a first click */
+    /* Rule 2: on tablet and below, the first click only shows the tooltip.
+       Keyboard Enter (detail 0) and the second click follow the link. */
+    function twoTap(node, show) {
+      if (!compact) return;
+      node.addEventListener("click", function (e) {
+        if (e.detail === 0 || armed === node) return;
+        e.preventDefault();
+        armed = node;
+        show();
+      });
+    }
+    var panel = tail.length ? othersPanel(plot, tail, t, min, tip, twoTap) : null;
 
-    squarify(items, { x: 0, y: 0, w: W, h: H }).forEach(function (cell) {
+    /* The merged box gets a full-height strip on the RIGHT, as wide as its
+       share of the credits, and the people are squarified in what is left.
+       So the chart reads from more (left) to fewer (right) even though the
+       merged box is usually the largest. Simply appending it to squarify()'s
+       list does not work: squarify() needs largest-first order, and a big
+       last item squeezes the box before it into a sliver. */
+    var cells;
+    if (groupV) {
+      var total = groupV;
+      items.forEach(function (i) {
+        total += i.v;
+      });
+      var gw = Math.round((W * groupV) / total);
+      cells = squarify(items, { x: 0, y: 0, w: W - gw, h: H });
+      cells.push({ d: { group: true }, x: W - gw, y: 0, w: gw, h: H });
+    } else {
+      cells = squarify(items, { x: 0, y: 0, w: W, h: H });
+    }
+
+    cells.forEach(function (cell) {
       var d = cell.d;
       var at = function () {
         return { x: cell.x + cell.w / 2, y: cell.y + 6 };
@@ -829,15 +857,7 @@
         if (cell.w >= 18 && cell.h >= (named ? 40 : 20)) {
           node.appendChild(el("span", { class: "dyviz-cell-count" }, String(d.count)));
         }
-        var show = hover(node, tip, plot, tipText, at);
-        if (compact) {
-          node.addEventListener("click", function (e) {
-            if (e.detail === 0 || armed === node) return; /* keyboard, or 2nd click */
-            e.preventDefault();
-            armed = node;
-            show();
-          });
-        }
+        twoTap(node, hover(node, tip, plot, tipText, at));
       }
 
       node.style.left = cell.x + "px";
@@ -847,9 +867,7 @@
       node.style.width = Math.max(cell.w - 2, 0) + "px";
       node.style.height = Math.max(cell.h - 2, 0) + "px";
       plot.appendChild(node);
-      if (fitName(node.querySelector(".dyviz-cell-name")) && !node.querySelector(".dyviz-cell-count") && cell.h >= 20) {
-        node.appendChild(el("span", { class: "dyviz-cell-count" }, String(d.count)));
-      }
+      fitName(node.querySelector(".dyviz-cell-name"));
     });
 
     /* A click anywhere outside the boxes disarms the first click. Bound once
@@ -862,7 +880,7 @@
     if (compact && !plot.__outside) {
       plot.__outside = true;
       document.addEventListener("click", function (e) {
-        if (!e.target.closest || !e.target.closest(".dyviz-cell")) {
+        if (!e.target.closest || !e.target.closest(".dyviz-cell, .dyviz-others-item")) {
           if (plot.__disarm) plot.__disarm();
         }
       });
@@ -870,27 +888,26 @@
   }
 
   /* Names wrap between words only (dataviz.css). When one word is still wider
-     than its box — "Edward" in a 50px box — try a smaller size, and if that
-     still overflows, drop the name and leave the count. The full name stays in
-     the tooltip, the accessible name and the table. Must run after the box is
-     in the document, because it measures. Returns true when it dropped the name. */
+     than its box — "Chomdhavat" in a 90px box — try a smaller size, and if
+     that still overflows, cut the name to one line with an ellipsis
+     ("Peeramon Cho…"). The full name stays in the tooltip, the accessible name
+     and the table. Must run after the box is in the document, because it
+     measures. */
   function fitName(name) {
-    if (!name) return false;
+    if (!name) return;
     var over = function () {
       return name.scrollWidth > name.clientWidth + 1;
     };
-    if (!over()) return false;
+    if (!over()) return;
     name.classList.add("dyviz-fit-sm");
-    if (!over()) return false;
-    name.parentNode.removeChild(name);
-    return true; /* dropped — the caller makes sure the count shows */
+    if (over()) name.classList.add("dyviz-fit-cut");
   }
 
   /* The panel that lists the merged lowest-count people. It sits OVER the plot
      (the plot is position: relative) rather than below it, because the card
      already has a chart and a table under it. Esc and the close button both
      close it, and focus goes back to the box that opened it. */
-  function othersPanel(plot, tail, t, count) {
+  function othersPanel(plot, tail, t, count, tip, twoTap) {
     var id = "dyviz-others-" + Math.random().toString(36).slice(2, 8);
     var box = el("div", {
       class: "dyviz-others",
@@ -909,24 +926,30 @@
     var grid = el("ul", { class: "dyviz-others-grid", role: "list" });
     tail.forEach(function (d) {
       var li = el("li");
-      li.appendChild(
-        el(
-          "a",
-          {
-            class: "dyviz-others-item",
-            href: d.href,
-            "aria-label": t.filter + d.name + " · " + t.credits(d.count),
-          },
-          d.name,
-        ),
-      );
+      var label = d.name + " · " + t.credits(d.count);
+      var a = el("a", { class: "dyviz-others-item", href: d.href, "aria-label": t.filter + label }, d.name);
+      li.appendChild(a);
       grid.appendChild(li);
+      /* The tooltip lives on the plot, so place it from the tile's position
+         relative to the plot — which already accounts for the panel's scroll. */
+      var at = function () {
+        var r = a.getBoundingClientRect(),
+          p = plot.getBoundingClientRect();
+        return { x: r.left - p.left + r.width / 2, y: r.top - p.top + 6 };
+      };
+      twoTap(a, hover(a, tip, plot, label + "\n" + t.clickToSearch, at));
     });
     box.appendChild(grid);
     plot.appendChild(box);
 
     var opener = null;
+    /* A tooltip pinned to a tile would float in place while the tiles scroll
+       away underneath it, so scrolling clears it (and the first click). */
+    box.addEventListener("scroll", function () {
+      if (plot.__disarm) plot.__disarm();
+    });
     function hide() {
+      if (plot.__disarm) plot.__disarm();
       box.hidden = true;
       if (opener) {
         opener.setAttribute("aria-expanded", "false");

@@ -384,12 +384,20 @@
   overflow: hidden;
   max-width: 100%;
   /* Break between words only. A word too long for its box is caught by
-     dataviz.js (fitName), which shrinks or drops the name rather than
-     splitting it mid-word ("Edwar / d Yang"). */
+     dataviz.js (fitName), which shrinks the name and then cuts it to one line
+     with an ellipsis, rather than splitting it mid-word ("Edwar / d Yang"). */
   overflow-wrap: normal;
 }
 .dyviz-cell-name.dyviz-fit-sm {
-  font-size: 0.82em;
+  /* relative to the NAME size, not the box's: an em here would grow it */
+  font-size: calc(var(--dyviz-cell-name-size) * 0.82);
+}
+/* Last resort: one line, cut with an ellipsis ("Peeramon Cho…"). */
+.dyviz-cell-name.dyviz-fit-cut {
+  display: block;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: unset;
 }
 .dyviz-cell-count {
   flex: none;
@@ -461,7 +469,7 @@ button.dyviz-cell {
   inset: 0;
   z-index: 8;
   overflow: auto;
-  padding: 0 8px 8px;
+  padding: 0; /* edge to edge, like the treemap it covers */
   box-sizing: border-box;
 }
 .dyviz-others[hidden] {
@@ -475,7 +483,7 @@ button.dyviz-cell {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 8px 0;
+  padding: 0 0 8px;
   background: inherit;
 }
 .dyviz-others-close {
@@ -496,6 +504,13 @@ button.dyviz-cell {
   margin: 0;
   padding: 0;
   list-style: none;
+}
+/* The site styles every <li> with a bottom margin; without this reset the
+   rows sit 7px apart while the columns sit 2px apart. 2px both ways matches
+   the gap between treemap boxes. */
+.dyviz-others-grid > li {
+  margin: 0;
+  padding: 0;
 }
 .dyviz-others-item {
   display: flex;
