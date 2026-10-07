@@ -166,6 +166,10 @@ html.u-mode-dark .filmtv-chart {
 .filmtv-chart-hit {
   cursor: pointer;
 }
+/* a year with 0 results: tooltip only, no filter */
+.filmtv-chart-hit.is-empty {
+  cursor: default;
+}
 
 /* grow each stacked column from the baseline (~200ms) on load + view toggle.
    Scales the whole <g> from its own bounding-box bottom; transform-only, so it

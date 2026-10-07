@@ -22,6 +22,8 @@
  * the query, re-fetches, and calls render() again:
  *   • click a bar  (desktop) / tap a bar then "查看此年結果 →" (touch)
  *       -> filmtv:filter  { detail: { year, publication:null } }
+ *     A year with 0 results shows its tooltip but never fires the event
+ *     (no pointer cursor, no "查看此年結果" button).
  *   • click a legend item
  *       -> filmtv:filter  { detail: { year:null, publication, label, prefixes } }
  *   document.addEventListener("filmtv:filter", e =>
@@ -448,9 +450,10 @@
       s.push('<text class="filmtv-chart-xlabel" x="' + X(xi) + '" y="' + (H - 10) + '" text-anchor="middle">' + years[xi] + "</text>");
     }
 
-    // transparent full-height hover targets, one per year band
+    // transparent full-height hover targets, one per year band. A year with 0
+    // results gets .is-empty: it still shows its tooltip, but can't be filtered.
     for (var hi = 0; hi < n; hi++) {
-      s.push('<rect class="filmtv-chart-hit" data-yi="' + hi + '" x="' + (GEOM.left + hi * band) + '" y="' + GEOM.top + '" width="' + band + '" height="' + plotH + '"/>');
+      s.push('<rect class="filmtv-chart-hit' + (totals[hi] > 0 ? "" : " is-empty") + '" data-yi="' + hi + '" x="' + (GEOM.left + hi * band) + '" y="' + GEOM.top + '" width="' + band + '" height="' + plotH + '"/>');
     }
 
     s.push("</svg>");
@@ -487,8 +490,9 @@
       var hit = closest(e.target, ".filmtv-chart-hit");
       if (!hit || !st.geom) return;
       var i = +hit.getAttribute("data-yi");
-      if (HOVER)
-        commitYear(root, st, i); // desktop: one click commits
+      if (HOVER) {
+        if (st.geom.totals[i] > 0) commitYear(root, st, i); // desktop: one click commits
+      }
       else showTip(root, st, i, true); // touch: first tap pins the tooltip
     });
 
@@ -529,9 +533,8 @@
       "</span>" +
       "</div>" +
       (rows.length ? '<ul class="filmtv-chart-tip-list">' + rows.join("") + "</ul>" : "") +
-      '<button type="button" class="filmtv-chart-commit">' +
-      commitLabel(view) +
-      "</button>";
+      // no filter button for a year with 0 results
+      (g.totals[i] > 0 ? '<button type="button" class="filmtv-chart-commit">' + commitLabel(view) + "</button>" : "");
 
     st.tipIndex = i;
     st.tooltip.classList.add("is-on");
@@ -558,6 +561,7 @@
 
   // emit a year-filter selection for the backend to act on
   function commitYear(root, st, i) {
+    if (!(st.geom.totals[i] > 0)) return; // a year with 0 results can't be filtered
     emitFilter(root, { year: st.geom.years[i], publication: null, label: null, prefixes: null });
     hideTip(st);
   }
