@@ -137,6 +137,12 @@
      Padding around the plot area. The bottom has to hold the year ticks AND
      the axis title under them; the left holds the rotated axis title. Raise
      the gaps below and you usually want to raise these to match.             */
+  /* Treemap: the smallest box worth drawing on its own, in px (40 = 40 x 40).
+     Credit levels whose boxes would be smaller merge into one box per level
+     (when 2+ people share it). Raise it to merge more, lower it to merge less.
+     Unitless, like the padding below. */
+  --dyviz-tree-min-box: 40;
+
   --dyviz-pad-top: 10;
   --dyviz-pad-right: 12;
   --dyviz-pad-bottom: 51;
@@ -277,7 +283,7 @@
   font-size: var(--dyviz-cell-count-size);
 }
 
-/* treemap "others" panel — tablet and below only, see drawTreemap() */
+/* treemap merged-box panel — see drawTreemap() */
 .dyviz-others {
   background: var(--dyviz-panel);
   color: var(--dyviz-ink);

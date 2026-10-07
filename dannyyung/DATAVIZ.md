@@ -78,63 +78,87 @@ catalogue still carries it. It lives in one named constant, `ARCHIVE_SUBJECT` in
 own note says so on the page, in both languages, so a reader is not left to
 wonder where he went.
 
-## The treemap on tablet and phone (2026-10-07)
+## Treemap: merged boxes and the touch rule (2026-10-07)
 
-At 991px and below (`COMPACT` in `dataviz.js`, the Webflow "medium"
-breakpoint) the treemap changes in two ways. Above it, nothing changes.
+### 1. Small boxes merge, at every width
 
-**1. The lowest-count people merge into one box.** On today's data that is 30
-people (32 in English) with 1 credit each: two-thirds of the chart, as boxes
-too small to hold a name on a phone. They become one box, "其他 30 位 · 各 1 項合作"
-/ "32 others · 1 credit each".
-- The merged box keeps their combined area, so area still means credits.
-- It takes a full-height strip on the **right**, as wide as its share of the
-  credits, and the people are laid out in the space to its left. So the chart
-  reads from most credits (left) to fewest (right), although the merged box
-  is usually the biggest. It cannot simply be appended last to `squarify()`:
-  that function needs largest-first order, and a big last item squeezes the
-  box before it into a sliver.
-- It only happens when at least `GROUP_MIN` (6) people share the lowest count.
-  Fewer than that, and the chart draws as on desktop.
-- Clicking it opens a panel **over** the chart — not below it, because the card
-  already has the table underneath. The panel shows the people as a grid of
-  named tiles, with a title and a close button. Esc also closes it, and focus
-  goes back to the merged box.
-- The tiles follow the same two-click rule as the boxes (below), with the
-  same tooltip. Scrolling the panel clears a pending first click, because the
-  tooltip would otherwise float while the tiles move under it.
+A box too small to read is not worth drawing on its own. The limit is one
+setting in `dataviz.css`:
+
+```css
+--dyviz-tree-min-box: 40;   /* px — the smallest box drawn on its own: 40 x 40 */
+```
+
+Raise it to merge more, lower it to merge less. It was chosen as a starting
+point; expect to tune it once the real data is loaded.
+
+**How the cut-off works.** In a treemap a box's area is fixed by its count:
+area = count × (chart area ÷ total credits). So "smaller than 40 × 40" turns
+into a credit cut-off before anything is drawn. Every count below it is a
+candidate. Merging never changes the other boxes, because the total stays the
+same. The chart's height is set from the whole list BEFORE merging, because the
+cut-off depends on the height.
+
+**One merged box per credit level** — "30 位合作者 · 各 1 項合作" /
+"30 collaborators · 1 credit each" — keeping the level's combined area.
+- A level with only one person is NOT merged. It stays an ordinary small box:
+  a "group" of one would just be a mislabelled box.
+- The merged boxes share a strip on the **right**, as wide as their share of the
+  credits, laid out in count order (most credits first). The ordinary boxes are
+  laid out to its left. So the chart reads from most credits (left) to fewest
+  (right).
+- Inside the strip they use the same near-square layout as the ordinary boxes.
+  Stacking them as full-width bands turned a small level into a 13px sliver,
+  although its area was big enough.
+
+**What it does today:** at 1280, 1000 and 800px nothing merges — every one of
+the 45 people is drawn and named. At phone width the 1-credit level merges
+(30 people in Chinese, 32 in English). Tested with a 200-person sample too: 8
+merged levels at phone width, smallest box 44 × 52px; one at desktop.
+
+**Clicking a merged box** opens a panel over the chart, at every width: its
+people as a grid of named tiles, a title and a close button. Esc also closes
+it, and focus goes back to the merged box. Each merged box has its own panel.
 - The panel runs edge to edge, like the chart it covers, and its tiles sit
   2px apart both ways, like the treemap's boxes. That needs
   `.dyviz-others-grid > li { margin: 0 }`: the site gives every `<li>` a 5px
   bottom margin, which made the rows 7px apart.
-- The panel scrolls inside the chart's height.
+- It scrolls inside the chart's height. Scrolling clears a pending first
+  click (below), because the tooltip would otherwise float while the tiles
+  move under it.
 
-**2. Every other box, and every tile in the panel, takes two clicks.** The first shows the tooltip, with an
-extra line, "點擊搜尋" / "Click to search". The second follows the link. A
-touch screen has no hover, so without this a tap on a small box would go to a
+### 2. Touch: two clicks, at 991px and below
+
+`COMPACT` in `dataviz.js`, the Webflow "medium" breakpoint. Every ordinary box,
+and every tile in a panel, takes two clicks: the first shows the tooltip with
+an extra line, "點擊搜尋" / "Click to search", and the second follows the link.
+A touch screen has no hover, so without this a tap on a small box would go to a
 search the reader never chose.
 - Clicking a different box moves the selection there; clicking outside the
   chart clears it.
 - Keyboard Enter still searches at once: focus has already shown the tooltip.
   The script tells them apart by the click's `detail` (0 for a keyboard click).
+- On desktop a single click searches, and the tooltip has no extra line.
 
-**At every width:**
+### At every width
+
 - Names wrap only **between words**. Before, `overflow-wrap: anywhere` split
   names mid-word ("Edwar / d Yang"). When one word is still too wide for its
   box, `fitName()` first shrinks it (`.dyviz-fit-sm`, 82% of the name size —
   not `em`, which would measure from the box and GROW it), then cuts it to
   one line with an ellipsis (`.dyviz-fit-cut`, "Peeramon Cho…").
-- A box narrower than 46px gets no name at all, only its count, so it never
-  looks empty. The tooltip and the table carry the name.
+- A box narrower than 46px gets no name, only its count, so it never looks
+  empty. The tooltip and the table carry the name.
 - The tooltip stays inside the chart. It is centred on its box, so at the edge
   of a narrow chart half of it used to fall off-screen.
 - The tooltip text is `white-space: pre`, so a `\n` starts a new line. That rule
   exists twice: in `dataviz.css` AND in the fallback CSS that `dataviz.js`
   injects. The injected copy loads later and wins, so change both together.
 
-New `dataviz.css` pieces: the `--dyviz-panel` colour token (Primary/Background),
-`.dyviz-others*` for the panel, `button.dyviz-cell` (the merged box is a button,
-because it opens something rather than going somewhere) and `.dyviz-fit-sm`.
+New `dataviz.css` pieces: `--dyviz-tree-min-box`, the `--dyviz-panel` colour
+token (Primary/Background), `.dyviz-others*` for the panel, `button.dyviz-cell`
+(a merged box is a button, because it opens something rather than going
+somewhere), `.dyviz-fit-sm` and `.dyviz-fit-cut`.
 
 ## Colour
 

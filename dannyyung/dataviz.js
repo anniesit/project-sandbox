@@ -152,10 +152,10 @@
         return "共 " + d.n + " 位合作者。榮念曾本人不列於此圖。";
       },
       empty: "沒有可顯示的資料。",
-      /* Tablet and below only — see drawTreemap(). */
+      /* Merged boxes and the touch rule — see drawTreemap(). */
       clickToSearch: "點擊搜尋",
-      others: function (n) {
-        return "其他 " + n + " 位";
+      people: function (n) {
+        return n + " 位合作者";
       },
       othersEach: function (c) {
         return "各 " + c + " 項合作";
@@ -196,10 +196,10 @@
         return d.n + " collaborators. Danny Yung himself is left off this chart — " + "he is credited on most of the archive, and including him would cover " + "the chart and hide everyone else.";
       },
       empty: "Nothing to show.",
-      /* Tablet and below only — see drawTreemap(). */
+      /* Merged boxes and the touch rule — see drawTreemap(). */
       clickToSearch: "Click to search",
-      others: function (n) {
-        return n + " others";
+      people: function (n) {
+        return n + " collaborators";
       },
       othersEach: function (c) {
         return (c === 1 ? "1 credit" : c + " credits") + " each";
@@ -707,30 +707,35 @@
 
   /* ---------- chart 2: the treemap ---------- */
 
-  /* ---------- tablet and below ----------
-     At 991px and below (the Webflow "medium" breakpoint, and the same number
-     accordion.js and entry.js use) the treemap changes two things:
+  /* ---------- merged boxes, and the touch rule ----------
+     1. MERGING, at every width. A box too small to read is not worth drawing
+        on its own. In a treemap a box's area is fixed by its count —
+        area = count x (plot area / total credits) — so "too small" is a credit
+        cut-off that can be worked out BEFORE layout: any count whose box would
+        be under --dyviz-tree-min-box squared (dataviz.css; 40 = 40 x 40px).
+        Merging never changes the other boxes, because the total stays the same.
 
-     1. The people on the LOWEST count are merged into one box when there are at
-        least GROUP_MIN of them. On today's data that is 30 people on 1 credit —
-        two-thirds of the chart, as boxes too small to hold a name on a phone.
-        The merged box keeps their combined area, so the encoding stays true.
-        It takes a full-height strip on the RIGHT, so the chart still reads
-        from most credits (left) to fewest (right) — even though it is
-        usually the largest box.
-        Clicking it opens a panel OVER the chart listing them as a grid of
-        named tiles, with a close button. The tiles follow rule 2 below.
+        Below the cut-off, each CREDIT LEVEL with two or more people becomes one
+        merged box ("30 位合作者 · 各 1 項合作"), keeping their combined area. A
+        level with a single person stays an ordinary box: a "group" of one is
+        just a mislabelled box. The merged boxes share a strip on the RIGHT, as
+        wide as their share of the credits, squarified in count order; the
+        ordinary boxes are squarified to its left. So the chart reads from most credits
+        (left) to fewest (right). (Appending a merged box to squarify()'s list
+        does not work: squarify() needs largest-first order, and a big last item
+        squeezes the box before it into a sliver.)
 
-     2. Every other box, and every tile in that panel, takes TWO clicks: the
-        first shows the tooltip with a
-        "Click to search" line, the second follows the link. A touch screen
-        has no hover, so without this a tap on a nameless box goes straight to
-        a search the reader never chose. Keyboard Enter (click detail 0) still
-        follows the link at once, because focus has already shown the tooltip.
+        Clicking a merged box opens a panel OVER the chart listing its people as
+        a grid of named tiles, with a close button.
 
-     Above 991px nothing here runs and the chart behaves as before. */
+     2. TOUCH, at 991px and below (the Webflow "medium" breakpoint — the same
+        number accordion.js and entry.js use). Every ordinary box, and every
+        tile in a panel, takes TWO clicks: the first shows the tooltip with a
+        "Click to search" line, the second follows the link. A touch screen has
+        no hover, so without this a tap on a small box goes straight to a search
+        the reader never chose. Keyboard Enter (click detail 0) still follows
+        the link at once, because focus has already shown the tooltip. */
   var COMPACT = "(max-width: 991px)";
-  var GROUP_MIN = 6;
 
   function drawTreemap(root, host, data) {
     if (!host) return;
@@ -754,27 +759,36 @@
       max = list[0].count;
     var compact = !!(window.matchMedia && window.matchMedia(COMPACT).matches);
 
-    /* The lowest-count people, merged into one box on tablet and below. */
-    var tail = compact
-      ? list.filter(function (d) {
-          return d.count === min;
-        })
-      : [];
-    if (tail.length < GROUP_MIN || tail.length === list.length) tail = [];
-    var items = list
-      .filter(function (d) {
-        return tail.indexOf(d) === -1;
-      })
-      .map(function (d) {
-        return { d: d, v: d.count };
-      });
-    var groupV = tail.length ? tail.length * min : 0;
-
     var W = Math.max(plot.clientWidth || 0, 280);
-    /* Height grows with how many boxes there are, so 43 boxes do not each end
-       up a 12px sliver on a phone. Capped so it cannot swallow the page. */
-    var H = Math.max(320, Math.min(760, Math.round(Math.sqrt(items.length) * W * 0.11)));
+    /* Height grows with how many people there are, so 43 boxes do not each end
+       up a 12px sliver on a phone. Capped so it cannot swallow the page. Sized
+       from the whole list, BEFORE merging: the merge cut-off depends on the
+       height, so the height must not depend on the merge. */
+    var H = Math.max(320, Math.min(760, Math.round(Math.sqrt(list.length) * W * 0.11)));
     plot.style.height = H + "px";
+
+    /* Which credit levels merge. The +2 is the gap each box gives up. */
+    var total = 0;
+    list.forEach(function (d) {
+      total += d.count;
+    });
+    var side = cssNum(plot, "--dyviz-tree-min-box", 40) + 2;
+    var perCredit = (W * H) / total;
+    var levels = {};
+    list.forEach(function (d) {
+      (levels[d.count] = levels[d.count] || []).push(d);
+    });
+    var groups = [],
+      singles = [];
+    list.forEach(function (d) {
+      var level = levels[d.count];
+      if (d.count * perCredit < side * side && level.length >= 2) {
+        if (level[0] === d) groups.push({ count: d.count, people: level });
+      } else {
+        singles.push({ d: d, v: d.count });
+      }
+    });
+    /* list is sorted most credits first, so groups and singles are too. */
 
     var tip = tooltip(plot);
     var armed = null; /* the box or tile whose tooltip is showing after a first click */
@@ -789,25 +803,31 @@
         show();
       });
     }
-    var panel = tail.length ? othersPanel(plot, tail, t, min, tip, twoTap) : null;
 
-    /* The merged box gets a full-height strip on the RIGHT, as wide as its
-       share of the credits, and the people are squarified in what is left.
-       So the chart reads from more (left) to fewer (right) even though the
-       merged box is usually the largest. Simply appending it to squarify()'s
-       list does not work: squarify() needs largest-first order, and a big
-       last item squeezes the box before it into a sliver. */
+    /* Layout: the merged boxes share a strip on the right; ordinary boxes are
+       squarified in what is left. */
     var cells;
-    if (groupV) {
-      var total = groupV;
-      items.forEach(function (i) {
-        total += i.v;
+    if (groups.length) {
+      var groupTotal = 0;
+      groups.forEach(function (g) {
+        g.v = g.count * g.people.length;
+        groupTotal += g.v;
       });
-      var gw = Math.round((W * groupV) / total);
-      cells = squarify(items, { x: 0, y: 0, w: W - gw, h: H });
-      cells.push({ d: { group: true }, x: W - gw, y: 0, w: gw, h: H });
+      var gw = singles.length ? Math.round((W * groupTotal) / total) : W;
+      cells = singles.length ? squarify(singles, { x: 0, y: 0, w: W - gw, h: H }) : [];
+      /* Squarified inside the strip too, in count order (most credits
+         first). Stacking them as full-width bands looked tidier but turned a
+         small level into a 13px sliver, although its AREA was big enough. */
+      squarify(
+        groups.map(function (g) {
+          return { d: { group: g }, v: g.v };
+        }),
+        { x: W - gw, y: 0, w: gw, h: H },
+      ).forEach(function (c) {
+        cells.push(c);
+      });
     } else {
-      cells = squarify(items, { x: 0, y: 0, w: W, h: H });
+      cells = squarify(singles, { x: 0, y: 0, w: W, h: H });
     }
 
     cells.forEach(function (cell) {
@@ -818,18 +838,23 @@
       var node;
 
       if (d.group) {
-        var each = t.othersEach(min);
+        var g = d.group;
+        var gStep = ramp(g.count, min, max);
+        var panel = othersPanel(plot, g.people, t, g.count, tip, twoTap, compact);
+        var who = t.people(g.people.length),
+          each = t.othersEach(g.count);
         node = el("button", {
           class: "dyviz-cell dyviz-cell-group",
           type: "button",
           "aria-expanded": "false",
           "aria-controls": panel.id,
+          "aria-label": t.othersTitle(g.people.length, g.count),
         });
-        node.style.background = "var(--dyviz-ramp-" + ramp(min, min, max) + ")";
-        node.style.color = "var(--dyviz-ramp-ink-" + ramp(min, min, max) + ")";
-        node.appendChild(el("span", { class: "dyviz-cell-name" }, t.others(tail.length)));
+        node.style.background = "var(--dyviz-ramp-" + gStep + ")";
+        node.style.color = "var(--dyviz-ramp-ink-" + gStep + ")";
+        node.appendChild(el("span", { class: "dyviz-cell-name" }, who));
         node.appendChild(el("span", { class: "dyviz-cell-count" }, each));
-        hover(node, tip, plot, t.others(tail.length) + " · " + each + "\n" + t.othersOpen, at);
+        hover(node, tip, plot, who + " · " + each + "\n" + t.othersOpen, at);
         node.addEventListener("click", function () {
           tip.removeAttribute("data-on");
           panel.open(node);
@@ -877,7 +902,7 @@
       armed = null;
       tip.removeAttribute("data-on");
     };
-    if (compact && !plot.__outside) {
+    if (!plot.__outside) {
       plot.__outside = true;
       document.addEventListener("click", function (e) {
         if (!e.target.closest || !e.target.closest(".dyviz-cell, .dyviz-others-item")) {
@@ -907,7 +932,7 @@
      (the plot is position: relative) rather than below it, because the card
      already has a chart and a table under it. Esc and the close button both
      close it, and focus goes back to the box that opened it. */
-  function othersPanel(plot, tail, t, count, tip, twoTap) {
+  function othersPanel(plot, tail, t, count, tip, twoTap, compact) {
     var id = "dyviz-others-" + Math.random().toString(36).slice(2, 8);
     var box = el("div", {
       class: "dyviz-others",
@@ -937,7 +962,7 @@
           p = plot.getBoundingClientRect();
         return { x: r.left - p.left + r.width / 2, y: r.top - p.top + 6 };
       };
-      twoTap(a, hover(a, tip, plot, label + "\n" + t.clickToSearch, at));
+      twoTap(a, hover(a, tip, plot, compact ? label + "\n" + t.clickToSearch : label, at));
     });
     box.appendChild(grid);
     plot.appendChild(box);
