@@ -1,0 +1,66 @@
+/* ============================================================
+ * feature-hint.css — the "try this" tooltip from feature-hint.js.
+ * Same look as the site's .popover (grass-100 fill, primary border, sm radius),
+ * plus an arrow pointing at the target. Floats up + fades in; fade only when
+ * the user prefers reduced motion.
+ * ============================================================ */
+
+.filmtv-hint {
+  --filmtv-hint-arrow-x: 50%;
+  position: fixed;
+  z-index: 900;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: min(20rem, calc(100vw - 32px));
+  padding: var(--_layout---spacing--sm, 0.75rem) var(--_layout---spacing--md, 1rem);
+  border: 1px solid var(--primary--border, #2c6a7f);
+  border-radius: var(--_components---border-radius--sm, 4px);
+  background-color: var(--_color---grass--100, #eef5e4);
+  color: var(--primary--text, #1a2a33);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  pointer-events: none; /* clicks go through to the page (and dismiss the hint) */
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 0.35s ease,
+    transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+.filmtv-hint.is-below {
+  transform: translateY(-10px);
+}
+.filmtv-hint.is-on {
+  opacity: 1;
+  transform: none;
+}
+
+/* arrow: a rotated square sharing the fill, bordered on the outward sides */
+.filmtv-hint::after {
+  content: "";
+  position: absolute;
+  left: var(--filmtv-hint-arrow-x);
+  bottom: -6px;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  background: inherit;
+  border-right: 1px solid var(--primary--border, #2c6a7f);
+  border-bottom: 1px solid var(--primary--border, #2c6a7f);
+  transform: rotate(45deg);
+}
+.filmtv-hint.is-below::after {
+  bottom: auto;
+  top: -6px;
+  transform: rotate(225deg);
+}
+
+.filmtv-hint-text {
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .filmtv-hint,
+  .filmtv-hint.is-below {
+    transform: none;
+    transition: opacity 0.3s ease;
+  }
+}
