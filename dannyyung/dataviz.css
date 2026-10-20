@@ -48,20 +48,20 @@
      restyled upstream, re-check these against it. The fallbacks are the
      resolved light-mode values of those same tokens, for the local harness
      where the Webflow variables do not exist. */
-  --dyviz-control-border: var(--primary--accent, #007e91);
+  --dyviz-control-border: var(--primary--accent, #d70028);
   --dyviz-control-bg: var(--primary--background, #cccccc);
   --dyviz-control-ink: var(--primary--text, #171717);
   --dyviz-control-hover-fill: var(--primary--surface, #dbdbdb); /* the inset shadow that wipes up on hover */
 
   /* -- the bubble -- */
-  --dyviz-mark: var(--primary--accent, #007e91); /* fill — Zuni/600 via the Theme */
+  --dyviz-mark: var(--primary--accent, #d70028); /* fill — Red/550 via the Theme */
   --dyviz-mark-fill-opacity: 0.7; /* translucent, so overlaps read as overlaps */
-  /* A darker shade of the mark, so the ring reads as a border (4.8 / 5.5:1).
+  /* A darker shade of the mark, so the ring reads as a border (5.2 / 6.1:1).
      Bound to the primitive, not a Theme token: the Theme has no "accent dark".
      It used to ask for --primary--accent-dark, which does not exist in
      Webflow, so the ring silently fell back to a hardcoded red. If the accent
      changes ramp, change this ramp with it. */
-  --dyviz-mark-stroke: var(--_color---zuni--700, #005c6a);
+  --dyviz-mark-stroke: var(--_color---red--600, #9f031f);
   --dyviz-mark-stroke-width: 1px;
   --dyviz-mark-none-ring: var(--_color---neutral--600, #515151); /* the hollow, unlinked bubble */
   --dyviz-mark-none-width: 1.5px;
@@ -76,7 +76,7 @@
   --dyviz-bubble-growth: 1; /* radius-proportional; see the note above */
 
   /* -- treemap ramp (collaborators chart; unused on the homepage) --
-     The project's Zuni ramp, light to dark. Each -ink- is the text colour that
+     The project's Red ramp, light to dark. Each -ink- is the text colour that
      sits ON that step; the pairs are chosen for contrast, so if you re-order
      the steps re-check the inks with them. Bound to the Webflow primitives with
      hex fallbacks for the harness.
@@ -86,23 +86,24 @@
      the credit count (see ramp() for why), so the light steps cover few
      counts each and the dark steps many.
 
-     Steps skip ramp positions on purpose. Zuni's light half is packed tight
-     (025 to 400 are only 1.03-1.18:1 apart), so 200 jumps straight to 500.
-     200/500/600/700/800 was the best of every 5-step pick: no two adjacent
-     steps are under 1.54:1, and each step/ink pair is AA or better
-     (10.3, 6.3, 4.8, 7.7, 11.8 :1). Re-run that check if you re-pick any. */
-  --dyviz-ramp-1: var(--_color---zuni--200, #8be6f3);
-  --dyviz-ramp-2: var(--_color---zuni--500, #00b9d7);
-  --dyviz-ramp-3: var(--_color---zuni--600, #007e91);
-  --dyviz-ramp-4: var(--_color---zuni--700, #005c6a);
-  --dyviz-ramp-5: var(--_color---zuni--800, #003e47);
-  --dyviz-ramp-ink-1: var(--_color---zuni--900, #032d33);
-  --dyviz-ramp-ink-2: var(--_color---zuni--900, #032d33);
+     Steps skip ramp positions on purpose: neighbouring reds such as 500/550
+     (1.11:1) or 800/900 (1.09:1) are too close to tell apart as areas.
+     100/300/500/600/800 has the most even spacing of the best 5-step picks:
+     adjacent steps are 1.96 / 1.74 / 1.74 / 2.05 :1, and each step/ink pair is
+     AA or better (13.3, 6.8, 4.8, 8.4, 17.2 :1). Re-run that check if you
+     re-pick any. The Zuni version (200/500/600/700/800) is in git history. */
+  --dyviz-ramp-1: var(--_color---red--100, #ffccd5);
+  --dyviz-ramp-2: var(--_color---red--300, #f37289);
+  --dyviz-ramp-3: var(--_color---red--500, #e5002b);
+  --dyviz-ramp-4: var(--_color---red--600, #9f031f);
+  --dyviz-ramp-5: var(--_color---red--800, #3f010c);
+  --dyviz-ramp-ink-1: var(--_color---red--900, #28050c);
+  --dyviz-ramp-ink-2: var(--_color---red--900, #28050c);
   --dyviz-ramp-ink-3: var(--_color---neutral--white, #ffffff);
   --dyviz-ramp-ink-4: var(--_color---neutral--white, #ffffff);
   --dyviz-ramp-ink-5: var(--_color---neutral--white, #ffffff);
 
-  --dyviz-focus: var(--primary--accent, #007e91);
+  --dyviz-focus: var(--primary--accent, #d70028);
 
   /* -- type --
      These are consumed as real CSS, so they TAKE UNITS (unlike the spacing

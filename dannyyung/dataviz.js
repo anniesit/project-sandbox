@@ -249,7 +249,7 @@
     ".dyviz-svg{display:block;width:100%;height:auto;overflow:visible}" +
     ".dyviz-hit{fill:transparent;stroke:none}" +
     ".dyviz-a{cursor:pointer}" +
-    ".dyviz-mark{fill:var(--dyviz-mark,#007e91)}" +
+    ".dyviz-mark{fill:var(--dyviz-mark,#d70028)}" +
     ".dyviz-mark-none{fill:none;stroke:var(--dyviz-mark-none-ring,#515151)}" +
     ".dyviz-tree{position:relative;width:100%}" +
     ".dyviz-cell{position:absolute;overflow:hidden;box-sizing:border-box}" +

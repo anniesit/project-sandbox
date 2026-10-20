@@ -177,12 +177,12 @@ colour still draws — filled versus hollow — is a real difference in what the
 mark does, not a category.
 
 The mark defaults to the design system's own accent token
-(`var(--primary--accent, #007e91)`), so it follows the site's colour with
+(`var(--primary--accent, #d70028)`), so it follows the site's colour with
 nothing to keep in step. The literal is only a fallback for a page that does
 not load the system — the local harness, mainly. The mark's ring is bound to
-the `Zuni/700` primitive, because the Theme has no "accent dark" token.
+the `Red/600` primitive, because the Theme has no "accent dark" token.
 
-The **treemap** keeps a five-step sequential ramp (Zuni 200 / 500 / 600 / 700 /
+The **treemap** keeps a five-step sequential ramp (Red 100 / 300 / 500 / 600 /
 800), plus a matching ink step per shade so labels stay legible on every one.
 There, colour restates size, which is legitimate redundancy on rectangles whose
 areas are hard to compare across a long tail.
