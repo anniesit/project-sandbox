@@ -268,6 +268,12 @@
     buildGroups(root, record.materialGroups || []);
     buildTabs(root, record.materialGroups || []);
 
+    /* A work with no materials hides the whole 館藏資料 section. Left visible,
+       it shows the Webflow template — an empty viewer reading "image ·
+       檔案名稱" and "—" rows — because nothing is selected to fill it. */
+    var section = $(root, ".materials-section");
+    if (section) section.hidden = !firstMaterial(record);
+
     /* Open the first material so the viewer is never empty on load. */
     var first = firstMaterial(record);
     if (first) select(root, first.id);
