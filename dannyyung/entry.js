@@ -132,9 +132,15 @@
      both languages: the Chinese page sits at the site root and the English one
      in /en/, so /catalogue is right for one and wrong for the other. The
      English page carries data-catalogue-path="/en/catalogue". A backend that
-     owns routing passes real URLs in `context` and none of this runs. */
+     owns routing passes real URLs in `context` and none of this runs.
+
+     A RELATIVE value ("catalogue.html") is resolved against the page and
+     returned as a path, so a static export works in any subfolder. It has to
+     come back as a path, not stay relative: mockContext() compares it as a
+     prefix of the stored catalogue location.pathname. */
   function pagePath(root, attr, dflt) {
-    return (root && root.getAttribute(attr)) || dflt;
+    var v = (root && root.getAttribute(attr)) || dflt;
+    return v.charAt(0) === "/" ? v : new URL(v, location.href).pathname;
   }
 
   /* ---------- small helpers ---------- */
