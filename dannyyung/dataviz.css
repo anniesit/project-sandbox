@@ -48,13 +48,13 @@
      restyled upstream, re-check these against it. The fallbacks are the
      resolved light-mode values of those same tokens, for the local harness
      where the Webflow variables do not exist. */
-  --dyviz-control-border: var(--primary--accent, #d70028);
+  --dyviz-control-border: var(--primary--accent, #cf0027);
   --dyviz-control-bg: var(--primary--background, #cccccc);
   --dyviz-control-ink: var(--primary--text, #171717);
   --dyviz-control-hover-fill: var(--primary--surface, #dbdbdb); /* the inset shadow that wipes up on hover */
 
   /* -- the bubble -- */
-  --dyviz-mark: var(--primary--accent, #d70028); /* fill — Red/550 via the Theme */
+  --dyviz-mark: var(--primary--accent, #cf0027); /* fill — Red/550 via the Theme */
   --dyviz-mark-fill-opacity: 0.7; /* translucent, so overlaps read as overlaps */
   /* A darker shade of the mark, so the ring reads as a border (5.2 / 6.1:1).
      Bound to the primitive, not a Theme token: the Theme has no "accent dark".
@@ -103,7 +103,7 @@
   --dyviz-ramp-ink-4: var(--_color---neutral--white, #ffffff);
   --dyviz-ramp-ink-5: var(--_color---neutral--white, #ffffff);
 
-  --dyviz-focus: var(--primary--accent, #d70028);
+  --dyviz-focus: var(--primary--accent, #cf0027);
 
   /* -- type --
      These are consumed as real CSS, so they TAKE UNITS (unlike the spacing

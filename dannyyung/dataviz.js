@@ -249,7 +249,7 @@
     ".dyviz-svg{display:block;width:100%;height:auto;overflow:visible}" +
     ".dyviz-hit{fill:transparent;stroke:none}" +
     ".dyviz-a{cursor:pointer}" +
-    ".dyviz-mark{fill:var(--dyviz-mark,#d70028)}" +
+    ".dyviz-mark{fill:var(--dyviz-mark,#cf0027)}" +
     ".dyviz-mark-none{fill:none;stroke:var(--dyviz-mark-none-ring,#515151)}" +
     ".dyviz-tree{position:relative;width:100%}" +
     ".dyviz-cell{position:absolute;overflow:hidden;box-sizing:border-box}" +
@@ -276,7 +276,9 @@
      documentation) is left alone — the check below is by resolved href, so a
      relative link and this absolute one still match. */
   function linkStylesheet() {
-    var href = SELF.replace(/dataviz\.js(\?.*)?$/, "dataviz.css");
+    /* Keep the ?v= — the pages bump it on dataviz.js, and dropping it here
+       let browsers keep a stale dataviz.css after a recolour. */
+    var href = SELF.replace(/dataviz\.js(\?.*)?$/, "dataviz.css$1");
     if (href === SELF) return; /* unrecognised filename */
     var links = document.querySelectorAll('link[rel~="stylesheet"]');
     for (var i = 0; i < links.length; i++) {

@@ -177,7 +177,7 @@ colour still draws — filled versus hollow — is a real difference in what the
 mark does, not a category.
 
 The mark defaults to the design system's own accent token
-(`var(--primary--accent, #d70028)`), so it follows the site's colour with
+(`var(--primary--accent, #cf0027)`), so it follows the site's colour with
 nothing to keep in step. The literal is only a fallback for a page that does
 not load the system — the local harness, mainly. The mark's ring is bound to
 the `Red/600` primitive, because the Theme has no "accent dark" token.
