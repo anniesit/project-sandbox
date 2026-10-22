@@ -21,7 +21,15 @@
  * data-* contract (authored in Webflow; changing these breaks the section):
  *   [data-home-highlights]     the root. It is the .home-card-wrap div, and
  *                              everything is queried inside it.
- *     data-src                 ABSOLUTE URL of the catalogue JSON. Required —
+ *     data-live                LIVE MODE. home.js does not fetch anything: the
+ *                              page's own script loads the records and calls
+ *                              window.dyHome.render(root, items), where items
+ *                              are catalogue items { id, title, titleEn,
+ *                              category, year, location, directors[], href }.
+ *                              The UAT/production pages use this, fed from the
+ *                              same getCatalogue request as the home chart.
+ *     data-src                 (no data-live) ABSOLUTE URL of the catalogue
+ *                              JSON, fetched by home.js itself. Required —
  *                              a relative path would resolve against the PAGE,
  *                              and /en/home would ask for /en/sample-data/…
  *                              (same rule as every other page on this site).
@@ -92,14 +100,12 @@
      One file per entry id, named after the id: DYP-000024.webp
 
      The default resolves against THIS SCRIPT's own URL, so it works unchanged
-     on the Webflow site, on the Vercel sandbox and in the local harness — the
-     script and the images travel together.
+     on the Webflow site, on the Vercel sandbox, in the local harness and in
+     the exported build (vendor/dannyyung/) — the script and the images travel
+     together. Leave the folder next to this file.
 
-     AT CODE EXPORT: change this one line to the site-absolute folder
-
-         var IMG_BASE = "/images/home-highlights/";
-
-     …or set data-img-base on [data-home-highlights] in Webflow, which wins. */
+     To use another folder, set data-img-base on [data-home-highlights],
+     which wins over this line. */
   var IMG_BASE = new URL("./images/home-highlights/", SELF).href;
   var IMG_EXT = ".webp";
 
@@ -276,52 +282,76 @@
         return r.json();
       })
       .then(function (data) {
-        var all = (data && data.items) || [];
-        var byId = {};
-        for (var i = 0; i < all.length; i++) byId[all[i].id] = all[i];
-
-        var ids = [];
-        var missing = [];
-        for (var k = 0; k < HIGHLIGHT_IDS.length; k++) {
-          if (byId[HIGHLIGHT_IDS[k]]) ids.push(HIGHLIGHT_IDS[k]);
-          else missing.push(HIGHLIGHT_IDS[k]);
-        }
-        if (missing.length) {
-          console.warn("[home] highlight ids not found in " + url + ": " + missing.join(", "));
-        }
-        /* Nothing to show. The static cards are still in the DOM at this point
-           — template() has not run — so leaving them alone is the best of the
-           bad outcomes: the section looks authored rather than empty. */
-        if (!ids.length) {
-          console.error("[home] no highlight ids matched the data; cards left as authored");
-          return;
-        }
-
-        var current = pick(ids, null);
-        render(root, byId, current);
-
-        /* The button lives outside the card wrap (it is a sibling, up in
-           .home-highlight-content), so the search starts at the section and
-           only falls back to the document. */
-        var scope = (root.closest && root.closest(".home-highlight")) || document;
-        var btn = scope.querySelector("[data-home-random]") || document.querySelector("[data-home-random]");
-        if (!btn) return;
-        /* The attribute may be on the .button wrapper or on something inside
-           it, and the Webflow button wraps a stretched <a>. Listening on the
-           whole thing catches the click wherever it lands. */
-        btn.addEventListener("click", function (e) {
-          e.preventDefault();
-          current = pick(ids, current);
-          render(root, byId, current);
-        });
+        start(root, (data && data.items) || [], url);
       })
       .catch(function (err) {
         console.error("[home] highlight load failed (" + url + "):", err);
       });
   }
 
+  /* Shared by both modes: match the shortlist against the records, draw,
+     render, and wire the shuffle button. `source` only labels the console
+     messages. */
+  function start(root, all, source) {
+    var byId = {};
+    for (var i = 0; i < all.length; i++) byId[all[i].id] = all[i];
+
+    var ids = [];
+    var missing = [];
+    for (var k = 0; k < HIGHLIGHT_IDS.length; k++) {
+      if (byId[HIGHLIGHT_IDS[k]]) ids.push(HIGHLIGHT_IDS[k]);
+      else missing.push(HIGHLIGHT_IDS[k]);
+    }
+    if (missing.length) {
+      console.warn("[home] highlight ids not found in " + source + ": " + missing.join(", "));
+    }
+    /* Nothing to show. The static cards are still in the DOM at this point
+       — template() has not run — so leaving them alone is the best of the
+       bad outcomes: the section looks authored rather than empty. */
+    if (!ids.length) {
+      console.error("[home] no highlight ids matched the data; cards left as authored");
+      return;
+    }
+
+    var current = pick(ids, null);
+    render(root, byId, current);
+
+    /* Live mode may be handed data more than once; bind the button once. */
+    if (root.__homeBound) {
+      root.__homeIds = ids;
+      root.__homeById = byId;
+      return;
+    }
+    root.__homeBound = true;
+    root.__homeIds = ids;
+    root.__homeById = byId;
+
+    /* The button lives outside the card wrap (it is a sibling, up in
+       .home-highlight-content), so the search starts at the section and
+       only falls back to the document. */
+    var scope = (root.closest && root.closest(".home-highlight")) || document;
+    var btn = scope.querySelector("[data-home-random]") || document.querySelector("[data-home-random]");
+    if (!btn) return;
+    /* The attribute may be on the .button wrapper or on something inside
+       it, and the Webflow button wraps a stretched <a>. Listening on the
+       whole thing catches the click wherever it lands. */
+    btn.addEventListener("click", function (e) {
+      e.preventDefault();
+      current = pick(root.__homeIds, current);
+      render(root, root.__homeById, current);
+    });
+  }
+
+  /* Live mode: the page script calls this with catalogue items. */
+  window.dyHome = {
+    render: function (root, items) {
+      if (root) start(root, items || [], "the live catalogue");
+    }
+  };
+
   ready(function () {
-    var roots = document.querySelectorAll("[data-home-highlights]");
+    /* A [data-live] root waits for window.dyHome.render(). */
+    var roots = document.querySelectorAll("[data-home-highlights]:not([data-live])");
     for (var i = 0; i < roots.length; i++) init(roots[i]);
   });
 })();
